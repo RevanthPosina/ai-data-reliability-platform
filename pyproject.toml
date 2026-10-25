@@ -1,0 +1,29 @@
+[project]
+name = "adrp"
+version = "0.0.0"
+description = "AI Data Reliability Platform: CDC -> Iceberg -> vector index + versioned training datasets"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["dbt_fixture/target", "dbt_fixture/dbt_packages", ".run", "runs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "BLE", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src", "scripts", "tests"]
+mypy_path = ["src", "scripts"]
+explicit_package_bases = true
+strict = true
+ignore_missing_imports = true
+# Heavy runtime deps (pyspark, torch, qdrant, dagster) live only in the images.
+disallow_untyped_decorators = false
+disallow_any_unimported = false
+warn_return_any = false
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "scripts"]
+testpaths = ["tests"]

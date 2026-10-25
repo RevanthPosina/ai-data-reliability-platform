@@ -1,0 +1,212 @@
+# Profiles (docs/design.md §1.2): core | transform | obs | lineage. `make up PROFILE="core transform"`.
+# Image pins come from versions.env (loaded by the Makefile via --env-file). Credentials from .env.
+name: adrp
+
+x-build-args: &build-args
+  MAVEN_IMAGE: ${MAVEN_IMAGE}
+  PYTHON_IMAGE: ${PYTHON_IMAGE}
+  SPARK_IMAGE: ${SPARK_IMAGE}
+  DEBEZIUM_VERSION: ${DEBEZIUM_VERSION}
+  CONFLUENT_CONVERTER_VERSION: ${CONFLUENT_CONVERTER_VERSION}
+  ICEBERG_VERSION: ${ICEBERG_VERSION}
+  SPARK_VERSION: ${SPARK_VERSION}
+  SCALA_BINARY: ${SCALA_BINARY}
+  SPARK_KAFKA_CLIENTS_VERSION: ${SPARK_KAFKA_CLIENTS_VERSION}
+  SPARK_COMMONS_POOL2_VERSION: ${SPARK_COMMONS_POOL2_VERSION}
+  SPARK_FASTAVRO_VERSION: ${SPARK_FASTAVRO_VERSION}
+  TORCH_VERSION: ${TORCH_VERSION}
+  EMBED_MODEL: ${EMBED_MODEL}
+  EMBED_MODEL_REVISION: ${EMBED_MODEL_REVISION}
+
+x-lake-env: &lake-env
+  CATALOG_URI: http://lakekeeper:8181/catalog
+  WAREHOUSE: lake
+  S3_ENDPOINT: http://seaweedfs:8333
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+  S3_SECRET_KEY: ${S3_SECRET_KEY}
+  AWS_REGION: us-east-1
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE}
+    profiles: [core]
+    command: >
+      postgres -c wal_level=logical -c track_commit_timestamp=on
+      -c max_replication_slots=4 -c max_wal_senders=4 -c shared_buffers=128MB
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DEBEZIUM_PASSWORD: ${DEBEZIUM_PASSWORD}
+      LAKEKEEPER_DB_PASSWORD: ${LAKEKEEPER_DB_PASSWORD}
+    volumes:
+      - ./infra/postgres:/docker-entrypoint-initdb.d:ro
+      - pg-data:/var/lib/postgresql/data
+    ports: ["127.0.0.1:5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shop"]
+      interval: 3s
+      retries: 40
+    mem_limit: 512m
+
+  redpanda:
+    image: ${REDPANDA_IMAGE}
+    profiles: [core]
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=1G
+      - --overprovisioned
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+      - --schema-registry-addr=0.0.0.0:8081
+    volumes: [rp-data:/var/lib/redpanda/data]
+    ports: ["127.0.0.1:19092:19092", "127.0.0.1:18081:8081", "127.0.0.1:9644:9644"]
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true'"]
+      interval: 3s
+      retries: 40
+    mem_limit: 1536m
+
+  connect:
+    build:
+      context: docker/connect
+      args: *build-args
+    image: adrp/connect:${DEBEZIUM_VERSION}
+    profiles: [core]
+    depends_on:
+      redpanda: {condition: service_healthy}
+      postgres: {condition: service_healthy}
+    environment:
+      BOOTSTRAP_SERVERS: redpanda:9092
+      GROUP_ID: connect-cluster
+      CONFIG_STORAGE_TOPIC: _connect_configs
+      OFFSET_STORAGE_TOPIC: _connect_offsets
+      STATUS_STORAGE_TOPIC: _connect_status
+      HEAP_OPTS: -Xms256m -Xmx768m
+    ports: ["127.0.0.1:8083:8083"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8083/ >/dev/null"]
+      interval: 5s
+      retries: 60
+    mem_limit: 1280m
+
+  seaweedfs:
+    image: ${SEAWEEDFS_IMAGE}
+    profiles: [core]
+    command: >
+      server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json
+      -master.volumeSizeLimitMB=256 -volume.max=0
+    volumes:
+      - ./.run/s3.json:/etc/seaweedfs/s3.json:ro
+      - s3-data:/data
+    ports: ["127.0.0.1:8333:8333"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9333/cluster/status >/dev/null"]
+      interval: 3s
+      retries: 40
+    mem_limit: 384m
+
+  lakekeeper-migrate:
+    image: ${LAKEKEEPER_IMAGE}
+    profiles: [core]
+    command: ["migrate"]
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment: &lakekeeper-env
+      LAKEKEEPER__PG_DATABASE_URL_READ: postgresql://lakekeeper:${LAKEKEEPER_DB_PASSWORD}@postgres:5432/lakekeeper
+      LAKEKEEPER__PG_DATABASE_URL_WRITE: postgresql://lakekeeper:${LAKEKEEPER_DB_PASSWORD}@postgres:5432/lakekeeper
+      LAKEKEEPER__PG_ENCRYPTION_KEY: ${LAKEKEEPER_ENCRYPTION_KEY}
+    restart: "no"
+
+  lakekeeper:
+    image: ${LAKEKEEPER_IMAGE}
+    profiles: [core]
+    command: ["serve"]
+    depends_on:
+      lakekeeper-migrate: {condition: service_completed_successfully}
+      seaweedfs: {condition: service_healthy}
+    environment: *lakekeeper-env
+    ports: ["127.0.0.1:8181:8181"]
+    healthcheck:
+      test: ["CMD", "/home/nonroot/lakekeeper", "healthcheck"]
+      interval: 3s
+      retries: 40
+    mem_limit: 256m
+
+  qdrant:
+    image: ${QDRANT_IMAGE}
+    profiles: [core]
+    volumes: [qdrant-data:/qdrant/storage]
+    ports: ["127.0.0.1:6333:6333"]
+    mem_limit: 512m
+
+  # Both streaming queries in one Spark application (local mode), separate checkpoints.
+  spark-streams:
+    build:
+      context: .
+      dockerfile: docker/spark/Dockerfile
+      args: *build-args
+    image: adrp/spark:${SPARK_VERSION}-iceberg${ICEBERG_VERSION}
+    profiles: [apps]
+    command: >
+      /opt/spark/bin/spark-submit --master local[2] --driver-memory 1536m
+      /opt/app/adrp/spark/streams.py
+    environment:
+      <<: *lake-env
+      KAFKA_BOOTSTRAP: redpanda:9092
+      SCHEMA_REGISTRY_URL: http://redpanda:8081
+      CHECKPOINT_ROOT: /checkpoints
+      ICEBERG_FORMAT_VERSION: ${ICEBERG_FORMAT_VERSION}
+    volumes: [spark-checkpoints:/checkpoints]
+    restart: on-failure
+    mem_limit: 2560m
+
+  # One-off Spark SQL queries (used by `make demo`); not a long-running service.
+  spark-query:
+    image: adrp/spark:${SPARK_VERSION}-iceberg${ICEBERG_VERSION}
+    profiles: [tools]
+    entrypoint: ["/opt/spark/bin/spark-submit", "--master", "local[1]", "--driver-memory", "768m"]
+    environment: *lake-env
+    mem_limit: 1280m
+
+  embedder:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      args: *build-args
+    image: adrp/app:dev
+    profiles: [apps]
+    command: ["python", "-m", "adrp.embed.worker"]
+    environment:
+      <<: *lake-env
+      QDRANT_URL: http://qdrant:6333
+      STATE_DIR: /state
+    volumes: [embedder-state:/state]
+    restart: on-failure
+    mem_limit: 1536m
+
+  dagster:
+    image: adrp/app:dev
+    profiles: [apps]
+    command: ["dagster", "dev", "-h", "0.0.0.0", "-p", "3000", "-m", "adrp_orch.definitions"]
+    environment:
+      <<: *lake-env
+      DAGSTER_HOME: /opt/dagster_home
+      QDRANT_URL: http://qdrant:6333
+    ports: ["127.0.0.1:3000:3000"]
+    mem_limit: 1024m
+
+  trino:
+    image: ${TRINO_IMAGE}
+    profiles: [transform]
+    ports: ["127.0.0.1:8080:8080"]
+    mem_limit: 3g
+
+volumes:
+  pg-data:
+  rp-data:
+  s3-data:
+  qdrant-data:
+  spark-checkpoints:
+  embedder-state:

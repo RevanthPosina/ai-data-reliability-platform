@@ -1,0 +1,10 @@
+# CI fixture: exercises dbt-core + dbt-trino against a Trino memory catalog (ADR-0008).
+# The real gold project arrives in G4.
+name: adrp_fixture
+version: "0.0.0"
+profile: adrp_fixture
+model-paths: [models]
+seed-paths: [seeds]
+models:
+  adrp_fixture:
+    +materialized: table

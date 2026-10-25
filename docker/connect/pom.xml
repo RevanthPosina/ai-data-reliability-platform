@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Resolves the Confluent AvroConverter and its runtime deps (ADR-0011). Not a real build. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>adrp</groupId>
+  <artifactId>connect-avro-deps</artifactId>
+  <version>0</version>
+  <packaging>pom</packaging>
+  <repositories>
+    <repository><id>confluent</id><url>https://packages.confluent.io/maven/</url></repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>io.confluent</groupId>
+      <artifactId>kafka-connect-avro-converter</artifactId>
+      <version>${confluent.version}</version>
+      <exclusions>
+        <!-- Provided by the Kafka Connect runtime in the Debezium image. -->
+        <exclusion><groupId>org.apache.kafka</groupId><artifactId>*</artifactId></exclusion>
+        <exclusion><groupId>org.slf4j</groupId><artifactId>*</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+</project>

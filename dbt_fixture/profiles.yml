@@ -1,0 +1,12 @@
+adrp_fixture:
+  target: ci
+  outputs:
+    ci:
+      type: trino
+      method: none
+      user: dbt
+      host: "{{ env_var('TRINO_HOST', 'localhost') }}"
+      port: "{{ env_var('TRINO_PORT', '8080') | int }}"
+      database: memory
+      schema: fixture
+      threads: 1

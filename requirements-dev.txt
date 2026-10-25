@@ -1,0 +1,8 @@
+# Host dev/CI tools. Pins follow the >=14-day policy (ADR-0000).
+ruff==0.17.0
+mypy==2.4.0
+pytest==9.1.1
+hypothesis==6.169.0
+fastavro==1.13.1
+dbt-core==1.12.5
+dbt-trino==1.10.6

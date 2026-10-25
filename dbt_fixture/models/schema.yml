@@ -1,0 +1,8 @@
+version: 2
+models:
+  - name: live_help_articles
+    columns:
+      - name: id
+        data_tests: [not_null, unique]
+      - name: lsn
+        data_tests: [not_null]

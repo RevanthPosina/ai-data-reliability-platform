@@ -1,0 +1,13 @@
+.env
+.run/
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+dbt_fixture/target/
+dbt_fixture/logs/
+dbt_fixture/dbt_packages/
+.DS_Store
