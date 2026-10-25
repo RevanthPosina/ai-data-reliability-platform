@@ -24,3 +24,13 @@ Version policy (ADR-0000): stable, non-prerelease, released on or before 2026-10
 | created | Docker volumes `adrp_pg-data`, `adrp_rp-data`, `adrp_s3-data`, `adrp_qdrant-data`, `adrp_spark-checkpoints` (recreated once for ownership), `adrp_embedder-state` | `make clean-volumes` removes them |
 
 Host disk after G0: ~11 GiB free.
+
+## 2026-10-25 (G1)
+
+| Action | What | Notes |
+|---|---|---|
+| pip (dev venv) | `faker==40.43.0`, `numpy==2.5.4` | `requirements-dev.constraints.txt` regenerated; 0 packages past the cutoff |
+| rebuilt | `adrp/app:dev` + `Faker==40.43.0` | lock regenerated; 0 packages past the cutoff; old image removed |
+| wiped + recreated | this project's Docker volumes (`make clean-volumes`) | schema changed (G1 domain); data was test-only |
+| changed | SeaweedFS `mem_limit` 384m → 512m | observed 357 MiB under generator load (after the max-rate run) |
+| created | `runs/data/` (git-ignored) | generator Parquet logs |

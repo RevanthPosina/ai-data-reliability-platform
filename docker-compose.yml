@@ -105,7 +105,7 @@ services:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9333/cluster/status >/dev/null"]
       interval: 3s
       retries: 40
-    mem_limit: 384m
+    mem_limit: 512m
 
   lakekeeper-migrate:
     image: ${LAKEKEEPER_IMAGE}
@@ -196,6 +196,18 @@ services:
       QDRANT_URL: http://qdrant:6333
     ports: ["127.0.0.1:3000:3000"]
     mem_limit: 1024m
+
+  # Data generator (PLAN G1). Runs inside the Docker VM so its clock matches the pipeline's (G11).
+  generator:
+    image: adrp/app:dev
+    profiles: [tools]
+    entrypoint: ["python", "-m"]
+    command: ["adrp.gen.runner", "--help"]
+    environment:
+      SHOP_DSN: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/shop
+      RUN_DATA_DIR: /runs/data
+    volumes: [./runs/data:/runs/data]
+    mem_limit: 768m
 
   trino:
     image: ${TRINO_IMAGE}

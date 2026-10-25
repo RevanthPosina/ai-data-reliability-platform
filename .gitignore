@@ -12,3 +12,4 @@ dbt_fixture/logs/
 dbt_fixture/dbt_packages/
 .DS_Store
 dbt_fixture/.user.yml
+runs/data/

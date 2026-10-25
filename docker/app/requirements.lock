@@ -1,4 +1,4 @@
-# pip freeze of adrp/app:dev (G0). Build pins: requirements.txt + constraints.txt
+# pip freeze of adrp/app:dev. Build pins: requirements.txt + constraints.txt
 alembic==1.20.0
 annotated-doc==0.0.5
 annotated-types==0.8.0
@@ -19,6 +19,7 @@ dagster-pipes==1.13.26
 dagster-shared==1.13.26
 dagster-webserver==1.13.26
 docstring_parser==0.18.0
+Faker==40.43.0
 filelock==3.32.3
 fsspec==2026.7.0
 gql==4.0.0

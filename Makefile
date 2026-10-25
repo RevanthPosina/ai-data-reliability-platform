@@ -6,7 +6,7 @@ INFRA := postgres redpanda connect seaweedfs lakekeeper-migrate lakekeeper qdran
 VENV := .venv
 PY := $(VENV)/bin/python
 
-.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs
+.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs gen gen-determinism gen-max-rate
 
 .run/compose.env: versions.env $(wildcard .env) .env.example infra/seaweedfs/s3.json.tmpl
 	python3 scripts/render.py
@@ -65,3 +65,14 @@ dbt-fixture: $(VENV)/.installed
 	cd dbt_fixture && ../$(VENV)/bin/dbt build --profiles-dir . --target ci
 
 ci: lint typecheck test versions compose-config dbt-fixture
+
+# ---- G1 generator ----
+SEED ?= 42
+gen: .run/compose.env
+	python3 scripts/generate.py run --seed $(SEED) --duration $(or $(DURATION),30) --rate $(or $(RATE),0)
+
+gen-determinism: .run/compose.env
+	python3 scripts/generate.py determinism --seed $(SEED) --txns $(or $(TXNS),5000)
+
+gen-max-rate: .run/compose.env
+	python3 scripts/generate.py max-rate --seed $(SEED) --reps $(or $(REPS),5) --duration $(or $(DURATION),30) --warmup $(or $(WARMUP),5)

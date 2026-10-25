@@ -4,7 +4,7 @@ CDC → Iceberg → vector index + versioned training datasets.
 
 Postgres changes flow through Debezium and Redpanda into Apache Iceberg (bronze/silver), then into a Qdrant vector index. The project's goal is to **measure** that the copies are fresh, idempotent, deletable and traceable.
 
-> Status: **Milestone A, G0 (walking skeleton).** No results yet. Every number below is a placeholder (`__`) until a run recorded in `runs/manifests/` produces it.
+> Status: **Milestone A, G1 (domain model and data generator) done.** No results yet. Every number below is a placeholder (`__`) until a run recorded in `runs/manifests/` produces it.
 
 ## Results (placeholders until measured)
 | ID | Question | Result | Run manifest |
@@ -23,6 +23,7 @@ Requirements: Docker Desktop with ≥ 8 GB for the VM (10–12 GB recommended), 
 
 ## Docs
 - Design, SLOs, data inventory, fault matrix, version matrix: [`docs/design.md`](docs/design.md)
+- Source schema, PII columns, data generator: [`docs/schema.md`](docs/schema.md)
 - Decisions: [`docs/adr/`](docs/adr/)
 - What was installed on the dev machine: [`docs/install-log.md`](docs/install-log.md)
 - Plan: [`delegated-orbiting-garden.md`](delegated-orbiting-garden.md)

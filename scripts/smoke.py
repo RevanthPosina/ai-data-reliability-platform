@@ -96,8 +96,8 @@ def main() -> int:
         "shop",
         "-At",
         "-c",
-        f"INSERT INTO help_articles (title, body) VALUES ('Smoke test {marker}', "
-        f"'Walking skeleton article {marker}. It should reach Qdrant.') RETURNING id;",
+        f"INSERT INTO help_articles (title, body, category) VALUES ('Smoke test {marker}', "
+        f"'Walking skeleton article {marker}. It should reach Qdrant.', 'smoke') RETURNING id;",
     )
     entity_id = row.strip().splitlines()[0]
     hops.append(hop("postgres insert", entity_id.isdigit(), f"id={entity_id}"))
