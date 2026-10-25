@@ -41,15 +41,19 @@ Both are inventory row 16 in [design.md](design.md) and are cleaned by the forge
 
 ### Determinism check (G1 done condition)
 `make gen-determinism` applies 5,000 transactions, then checks that: two dry runs give the same digest; the DB run's digest equals the dry run's; the Parquet ground truth recomputes to the same digest; seed + 1 differs; every run-log row has a commit timestamp; and DB row counts and every account balance match the model. The digest is SHA-256 over `(seq, op, table, pk, payload)` per op.
-Last run: all 6 checks passed, txns [5000, 10000), 11,278 ops. Manifest: `runs/manifests/20261025T220706Z-gen-determinism.json`.
+Run of record: all 6 checks passed, txns [103938, 108938), 11,400 ops, clean tree at `e06a844`. Manifest: `runs/manifests/20261025T221413Z-gen-determinism.json`. (An earlier run on uncommitted code, txns [5000, 10000), also passed: `20261025T220706Z-gen-determinism.json`.)
 
 ### Maximum sustainable change rate
 Definition: generator → Postgres, unthrottled, one connection, one logical transaction per DB transaction, **core profile running** (CDC, Spark and the embedder consuming at the same time), Docker VM 8 GB / 4 CPU on an Apple M1 Pro.
 Protocol: 5 repetitions × 30 s, first 5 s of each discarded.
 
+Run of record (clean tree at `801b56b`, manifest `runs/manifests/20261025T222234Z-gen-max-rate.json`):
+
 | Metric | Median | Min | Max |
 |---|---|---|---|
-| Row changes / s | 1489.9 | 1001.3 | 1632.3 |
-| Logical transactions / s | 653.2 | 438.6 | 716.9 |
+| Row changes / s | 1350.9 | 1086.2 | 1379.4 |
+| Logical transactions / s | 593.8 | 478.2 | 604.9 |
 
-Manifest: `runs/manifests/20261025T221023Z-gen-max-rate.json`. The spread is wide (one repetition at 1001.3), consistent with contention from the concurrently running pipeline on 4 VM CPUs. This is the generator's ceiling into Postgres. Whether the *pipeline* keeps up at a given rate is a separate question, measured in G11 (freshness vs achieved rate).
+Variance across runs is large. Two earlier runs with the same protocol, on uncommitted code, gave medians of 1489.9 and 1565.9 changes/s (`20261025T221023Z-gen-max-rate.json`, `20261025T221754Z-gen-max-rate.json`). Within the run of record the per-rep range was 1086.2–1379.4. Likely causes, not isolated: contention from the concurrently running pipeline on 4 VM CPUs, and the database growing across runs (the run of record covered txns 212,905–301,107). Treat the ceiling as roughly 1.1k–1.6k changes/s on this machine, and always report the achieved rate per run.
+
+This is the generator's ceiling into Postgres. Whether the *pipeline* keeps up at a given rate is a separate question, measured in G11 (freshness vs achieved rate).
