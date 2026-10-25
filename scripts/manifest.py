@@ -44,14 +44,22 @@ def image_digests() -> dict[str, str]:
     return {r.get("ContainerName", "?"): f"{r.get('Repository')}:{r.get('Tag')}@{r.get('ID')}" for r in rows}
 
 
+def _dirty_paths() -> list[str]:
+    out = _run("git", "-C", str(ROOT), "status", "--porcelain", "--", ".", ":(exclude)runs/manifests")
+    return [line[3:] for line in out.splitlines() if line.strip()]
+
+
 def write_manifest(kind: str, profile: str, seed: int | None, result: dict[str, Any]) -> Path:
     now = datetime.now(UTC)
+    dirty = _dirty_paths()
     manifest = {
         "kind": kind,
         "started_at": result.pop("started_at", None),
         "written_at": now.isoformat(),
         "git_sha": _run("git", "-C", str(ROOT), "rev-parse", "--verify", "-q", "HEAD") or None,
-        "git_dirty": bool(_run("git", "-C", str(ROOT), "status", "--porcelain")),
+        # Other run manifests do not make the code dirty; anything else does, and is listed.
+        "git_dirty": bool(dirty),
+        "git_dirty_paths": dirty,
         "versions": read_env(ROOT / "versions.env"),
         "seed": seed,
         "profile": profile,

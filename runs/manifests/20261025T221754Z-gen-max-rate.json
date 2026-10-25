@@ -1,0 +1,211 @@
+{
+  "kind": "gen-max-rate",
+  "started_at": "2026-10-25T22:14:14.247327+00:00",
+  "written_at": "2026-10-25T22:17:54.337089+00:00",
+  "git_sha": "e06a84462aa6343f9c3cca00515b58e5387a9edc",
+  "git_dirty": true,
+  "versions": {
+    "POSTGRES_IMAGE": "postgres:17.10-alpine",
+    "DEBEZIUM_VERSION": "3.7.0.Final",
+    "CONFLUENT_CONVERTER_VERSION": "8.3.2",
+    "REDPANDA_IMAGE": "redpandadata/redpanda:v26.2.4",
+    "SPARK_VERSION": "4.1.3",
+    "SPARK_IMAGE": "apache/spark:4.1.3-scala2.13-java17-python3-ubuntu",
+    "SCALA_BINARY": "2.13",
+    "SPARK_KAFKA_CLIENTS_VERSION": "3.9.1",
+    "SPARK_COMMONS_POOL2_VERSION": "2.12.1",
+    "ICEBERG_VERSION": "1.12.0",
+    "LAKEKEEPER_IMAGE": "quay.io/lakekeeper/catalog:v0.13.6",
+    "SEAWEEDFS_IMAGE": "chrislusf/seaweedfs:4.48",
+    "QDRANT_IMAGE": "qdrant/qdrant:v1.19.2",
+    "MAVEN_IMAGE": "maven:3.9.16-eclipse-temurin-17",
+    "PYTHON_IMAGE": "python:3.12.14-slim-bookworm",
+    "TRINO_IMAGE": "trinodb/trino:483",
+    "MARQUEZ_IMAGE": "marquezproject/marquez:0.50.0",
+    "DAGSTER_VERSION": "1.13.26",
+    "DAGSTER_LIB_VERSION": "0.29.26",
+    "DBT_CORE_VERSION": "1.12.5",
+    "DBT_TRINO_VERSION": "1.10.6",
+    "OPENLINEAGE_VERSION": "1.53.0",
+    "PYICEBERG_VERSION": "0.12.0",
+    "QDRANT_CLIENT_VERSION": "1.19.1",
+    "SENTENCE_TRANSFORMERS_VERSION": "6.1.0",
+    "TORCH_VERSION": "2.14.1",
+    "FASTAVRO_VERSION": "1.13.1",
+    "SPARK_FASTAVRO_VERSION": "1.12.2",
+    "EMBED_MODEL": "sentence-transformers/all-MiniLM-L6-v2",
+    "EMBED_MODEL_REVISION": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "BOTO3_VERSION": "1.43.111",
+    "PSYCOPG_VERSION": "3.3.6",
+    "ICEBERG_FORMAT_VERSION": "2"
+  },
+  "seed": 42,
+  "profile": "core",
+  "hardware": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "release": "27.2.0",
+    "cpu": "Apple M1 Pro",
+    "ncpu": "8",
+    "mem_bytes": "17179869184",
+    "docker": {
+      "ServerVersion": "20.10.22",
+      "NCPU": 4,
+      "MemTotal": 8233013248,
+      "OperatingSystem": "Docker Desktop",
+      "Architecture": "aarch64"
+    }
+  },
+  "images": {
+    "adrp-connect-1": "adrp/connect:3.7.0.Final@sha256:e5d531c466ff145c28ccfe22654ba22d9c42f2b551f4e27c0202d8fa09d5c2b2",
+    "adrp-dagster-1": ":@sha256:e5429562391aeddc7513b0d661d4fed55c497bae019f1688e7e0620a93d89a19",
+    "adrp-embedder-1": ":@sha256:e5429562391aeddc7513b0d661d4fed55c497bae019f1688e7e0620a93d89a19",
+    "adrp-lakekeeper-1": "quay.io/lakekeeper/catalog:v0.13.6@sha256:3e1ab4b94aabcb06b36e00ac890d6264aaa3980f3b549b3ae6a491c075c1548d",
+    "adrp-lakekeeper-migrate-1": "quay.io/lakekeeper/catalog:v0.13.6@sha256:3e1ab4b94aabcb06b36e00ac890d6264aaa3980f3b549b3ae6a491c075c1548d",
+    "adrp-postgres-1": "postgres:17.10-alpine@sha256:8ee7c900f4de054e8f0a3b42b8f5da38b8fba57c3ccd7c1a02be28cb0b06494f",
+    "adrp-qdrant-1": "qdrant/qdrant:v1.19.2@sha256:2ca0be6b5b2a5c55549ec0c84ce5610ef0c2145b6b36ff6efb515ca971566ba0",
+    "adrp-redpanda-1": "redpandadata/redpanda:v26.2.4@sha256:b2c8b3578d36ba6e00a81627ec9c802add1deea0fdf391b5ac696d16a687c9b7",
+    "adrp-seaweedfs-1": "chrislusf/seaweedfs:4.48@sha256:8f17c8c82e037886f6aaceb3f6282a5c2a1b52bbef5339d323b0067a75bbbc79",
+    "adrp-spark-streams-1": "adrp/spark:4.1.3-iceberg1.12.0@sha256:20ee4168675048fb6599824b2061e43a5631b43089160d790851232094d03957"
+  },
+  "result": {
+    "definition": "generator -> Postgres, unthrottled, one connection, one logical txn per DB txn, core profile running (CDC + Spark + embedder consuming concurrently)",
+    "reps": [
+      {
+        "run_id": "20261025T221415Z",
+        "seed": 42,
+        "txn_range": [
+          108938,
+          131768
+        ],
+        "ops": 51957,
+        "stream_sha256": "e42d828d9694a82026c1d725d361b1c5721da026106aad0bfcef62625707c216",
+        "target_rate_changes_per_s": 0.0,
+        "duration_s": 30.0,
+        "warmup_s": 5.0,
+        "measured_s": 24.996,
+        "achieved_changes_per_s": 1666.9,
+        "achieved_txns_per_s": 732.8,
+        "fell_behind": false,
+        "commit_ts_missing": 0,
+        "fast_forward_s": 5.388,
+        "data_dir": "/runs/data/20261025T221415Z"
+      },
+      {
+        "run_id": "20261025T221452Z",
+        "seed": 42,
+        "txn_range": [
+          131768,
+          152877
+        ],
+        "ops": 47629,
+        "stream_sha256": "e980e4ae8936c87877763c50d8fe34b144ff5f16ac2e1b65765e56668d8a158b",
+        "target_rate_changes_per_s": 0.0,
+        "duration_s": 30.0,
+        "warmup_s": 5.0,
+        "measured_s": 25.003,
+        "achieved_changes_per_s": 1594.9,
+        "achieved_txns_per_s": 707.1,
+        "fell_behind": false,
+        "commit_ts_missing": 0,
+        "fast_forward_s": 6.943,
+        "data_dir": "/runs/data/20261025T221452Z"
+      },
+      {
+        "run_id": "20261025T221532Z",
+        "seed": 42,
+        "txn_range": [
+          152877,
+          173482
+        ],
+        "ops": 47041,
+        "stream_sha256": "e2a97e965724ff3e88e7bda35464ef235d92a20d7aef5cd06d38b9ffeb93b194",
+        "target_rate_changes_per_s": 0.0,
+        "duration_s": 30.0,
+        "warmup_s": 5.0,
+        "measured_s": 25.0,
+        "achieved_changes_per_s": 1512.6,
+        "achieved_txns_per_s": 661.2,
+        "fell_behind": false,
+        "commit_ts_missing": 0,
+        "fast_forward_s": 8.933,
+        "data_dir": "/runs/data/20261025T221532Z"
+      },
+      {
+        "run_id": "20261025T221613Z",
+        "seed": 42,
+        "txn_range": [
+          173482,
+          191702
+        ],
+        "ops": 41361,
+        "stream_sha256": "24873f93892257ca4e4bd8fc1d1792f00ca46b69cfa4760299f2c8112a497e30",
+        "target_rate_changes_per_s": 0.0,
+        "duration_s": 30.0,
+        "warmup_s": 5.0,
+        "measured_s": 25.001,
+        "achieved_changes_per_s": 1377.8,
+        "achieved_txns_per_s": 605.3,
+        "fell_behind": false,
+        "commit_ts_missing": 0,
+        "fast_forward_s": 11.412,
+        "data_dir": "/runs/data/20261025T221613Z"
+      },
+      {
+        "run_id": "20261025T221657Z",
+        "seed": 42,
+        "txn_range": [
+          191702,
+          212905
+        ],
+        "ops": 48289,
+        "stream_sha256": "191eaedd5c18c3e739132be38a4453896c3176396283482857e4f9bc9ebd68a4",
+        "target_rate_changes_per_s": 0.0,
+        "duration_s": 30.0,
+        "warmup_s": 5.0,
+        "measured_s": 25.0,
+        "achieved_changes_per_s": 1565.9,
+        "achieved_txns_per_s": 687.6,
+        "fell_behind": false,
+        "commit_ts_missing": 0,
+        "fast_forward_s": 11.711,
+        "data_dir": "/runs/data/20261025T221657Z"
+      }
+    ],
+    "changes_per_s": {
+      "median": 1565.9,
+      "min": 1377.8,
+      "max": 1666.9
+    },
+    "txns_per_s": {
+      "median": 687.6,
+      "min": 605.3,
+      "max": 732.8
+    },
+    "verify": {
+      "seed": 42,
+      "next_txn": 212905,
+      "counts_match": true,
+      "expected": {
+        "customers": 6462,
+        "merchants": 1084,
+        "accounts": 7546,
+        "transactions": 133432,
+        "refunds": 10656,
+        "support_tickets": 16551,
+        "help_articles": 1048
+      },
+      "actual": {
+        "customers": 6462,
+        "merchants": 1084,
+        "accounts": 7546,
+        "transactions": 133432,
+        "refunds": 10656,
+        "support_tickets": 16551,
+        "help_articles": 1048
+      },
+      "balance_mismatches": 0,
+      "ok": true
+    }
+  }
+}
