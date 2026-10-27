@@ -44,3 +44,14 @@ Host disk after G0: ~11 GiB free.
 | wiped + recreated | this project's Docker volumes (`make g2-check` does this on purpose) | a real snapshot needs empty volumes; data was test-only |
 | pulled | none | `make contracts-ci` runs a throwaway container from the already-present Redpanda image and removes it |
 | added | Compose service `exporter` (apps profile, `127.0.0.1:9108`, 128 MB) | slot lag and connector status metrics |
+
+## 2026-10-27 (G3)
+
+| Action | What | Notes |
+|---|---|---|
+| rebuilt | `adrp/spark:4.1.3-iceberg1.12.0` (1.7 GB) | + `io.openlineage:openlineage-spark_2.13:1.53.0` (shaded listener jar); pip (Python 3.10): `dagster`/`dagster-webserver` 1.13.26, `qdrant-client` 1.19.1, `hypothesis` 6.168.5 (newest that supports 3.10), `pytest` 9.1.1, `fastavro` 1.12.2 + transitive deps held to the policy by `docker/spark/constraints.txt` (6 would have resolved newer). Full set: `docker/spark/requirements.lock`. |
+| rebuilt | `adrp/app:dev` | `dagster` and `dagster-webserver` removed (Dagster now runs in the Spark image) |
+| pip (dev venv) | `pyarrow==26.0.0` | reads the Parquet event logs on the host |
+| changed | Compose: `dagster` now uses the Spark image (2.5 GB limit); new services `spark-test` (tools profile); `spark-streams` gets the event-log mount and OpenLineage settings | |
+| wiped + recreated | this project's Docker volumes and `runs/data/eventlog` (`make g3-check` does this on purpose) | fresh state for a ground-truth comparison |
+| created | `runs/data/eventlog/` (git-ignored): `silver_batches/` (Parquet), `openlineage/events.ndjson`, `maintenance/runs.jsonl` | inventory rows 17 and 23: contain primary keys / table names, no row values |

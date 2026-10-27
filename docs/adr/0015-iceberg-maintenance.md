@@ -11,4 +11,7 @@
 ## Findings that matter for G8
 `remove_orphan_files` is the only step that deletes files no snapshot references (for example the files a SIGKILLed writer left behind). It must be part of any physical-deletion procedure.
 ## Layout note
-Bronze is partitioned `(source_table, days(kafka_ts), bucket(16, pk))`, so each micro-batch writes up to 7 x 16 small files. Compaction is what keeps the file count in check; the measured effect is in the G3 run manifest.
+Bronze is partitioned `(source_table, days(kafka_ts), bucket(16, pk))`, so each micro-batch writes up to 7 x 16 small files. Compaction is what keeps the file count in check.
+
+## Measured (G3 run of record, `runs/manifests/20261027T055029Z-g3-check.json`, clean tree `ec8f2e1`)
+After roughly 6,300 generator transactions streamed through 7 silver tables and bronze, one Dagster maintenance run took the total data+delete file count from 2,044 to 335 with every table's count and checksum unchanged. A second compaction run executed while the generator was writing needed 8 attempts with 0 failures (conflict rate 0 of 8 here; one small run, not a rate to quote), and silver still matched the ground truth afterwards. Those 2,044 files are what 10-second micro-batches produce with this partition spec on this machine; they are not a general claim.

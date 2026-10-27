@@ -4,7 +4,7 @@ CDC → Iceberg → vector index + versioned training datasets.
 
 Postgres changes flow through Debezium and Redpanda into Apache Iceberg (bronze/silver), then into a Qdrant vector index. The project's goal is to **measure** that the copies are fresh, idempotent, deletable and traceable.
 
-> Status: **Milestone A, G2 (CDC ingestion) done.** No results yet. Every number below is a placeholder (`__`) until a run recorded in `runs/manifests/` produces it.
+> Status: **Milestone A, G3 (Iceberg bronze and silver) done.** No results yet. Every number below is a placeholder (`__`) until a run recorded in `runs/manifests/` produces it.
 
 ## Results (placeholders until measured)
 | ID | Question | Result | Run manifest |
