@@ -26,7 +26,7 @@ from typing import Any
 
 from _env import ROOT, all_env
 from bootstrap import ensure_connector
-from confluent_kafka import Consumer, TopicPartition
+from confluent_kafka import Consumer, KafkaException, TopicPartition
 from generate import run_once
 from manifest import write_manifest
 
@@ -83,11 +83,22 @@ def consumer() -> Consumer:
     )
 
 
-def end_offsets(c: Consumer, topic: str) -> dict[int, int]:
-    meta = c.list_topics(topic, timeout=15)
-    if topic not in meta.topics or meta.topics[topic].error is not None:
-        return {}
-    return {p: c.get_watermark_offsets(TopicPartition(topic, p), timeout=15)[1] for p in meta.topics[topic].partitions}
+def end_offsets(c: Consumer, topic: str, attempts: int = 10) -> dict[int, int]:
+    """Per-partition end offsets. Retries transient broker errors (e.g. leader election on a new topic)."""
+    for attempt in range(attempts):
+        try:
+            meta = c.list_topics(topic, timeout=15)
+            if topic not in meta.topics or meta.topics[topic].error is not None:
+                return {}
+            return {
+                p: c.get_watermark_offsets(TopicPartition(topic, p), timeout=15)[1]
+                for p in meta.topics[topic].partitions
+            }
+        except KafkaException:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(1.0)
+    return {}
 
 
 def read_range(c: Consumer, topic: str, start: dict[int, int], end: dict[int, int]) -> list[dict[str, Any]]:
