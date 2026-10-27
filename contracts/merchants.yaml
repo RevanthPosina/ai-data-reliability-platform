@@ -1,0 +1,30 @@
+table: merchants
+topic: cdc.public.merchants
+subject: cdc.public.merchants-value
+key:
+- id
+columns:
+- name: id
+  type: long
+  nullable: false
+  pii: false
+- name: name
+  type: string
+  nullable: false
+  pii: false
+- name: category
+  type: string
+  nullable: false
+  pii: false
+- name: country
+  type: string
+  nullable: false
+  pii: false
+- name: created_at
+  type: timestamptz
+  nullable: false
+  pii: false
+- name: updated_at
+  type: timestamptz
+  nullable: false
+  pii: false

@@ -1,0 +1,270 @@
+{
+  "connect.name": "cdc.public.accounts.Envelope",
+  "connect.version": 2,
+  "fields": [
+    {
+      "default": null,
+      "name": "before",
+      "type": [
+        "null",
+        {
+          "connect.name": "cdc.public.accounts.Value",
+          "fields": [
+            {
+              "name": "id",
+              "type": "long"
+            },
+            {
+              "name": "owner_type",
+              "type": "string"
+            },
+            {
+              "default": null,
+              "name": "customer_id",
+              "type": [
+                "null",
+                "long"
+              ]
+            },
+            {
+              "default": null,
+              "name": "merchant_id",
+              "type": [
+                "null",
+                "long"
+              ]
+            },
+            {
+              "name": "currency",
+              "type": "string"
+            },
+            {
+              "name": "balance",
+              "type": {
+                "connect.name": "org.apache.kafka.connect.data.Decimal",
+                "connect.parameters": {
+                  "connect.decimal.precision": "14",
+                  "scale": "2"
+                },
+                "connect.version": 1,
+                "logicalType": "decimal",
+                "precision": 14,
+                "scale": 2,
+                "type": "bytes"
+              }
+            },
+            {
+              "default": "1970-01-01T00:00:00.000000Z",
+              "name": "created_at",
+              "type": {
+                "connect.default": "1970-01-01T00:00:00.000000Z",
+                "connect.name": "io.debezium.time.ZonedTimestamp",
+                "connect.version": 1,
+                "type": "string"
+              }
+            },
+            {
+              "default": "1970-01-01T00:00:00.000000Z",
+              "name": "updated_at",
+              "type": {
+                "connect.default": "1970-01-01T00:00:00.000000Z",
+                "connect.name": "io.debezium.time.ZonedTimestamp",
+                "connect.version": 1,
+                "type": "string"
+              }
+            }
+          ],
+          "name": "Value",
+          "type": "record"
+        }
+      ]
+    },
+    {
+      "default": null,
+      "name": "after",
+      "type": [
+        "null",
+        "Value"
+      ]
+    },
+    {
+      "name": "source",
+      "type": {
+        "connect.name": "io.debezium.connector.postgresql.Source",
+        "connect.version": 1,
+        "fields": [
+          {
+            "name": "version",
+            "type": "string"
+          },
+          {
+            "name": "connector",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "ts_ms",
+            "type": "long"
+          },
+          {
+            "default": "false",
+            "name": "snapshot",
+            "type": [
+              {
+                "connect.default": "false",
+                "connect.name": "io.debezium.data.Enum",
+                "connect.parameters": {
+                  "allowed": "true,first,first_in_data_collection,last_in_data_collection,last,false,incremental"
+                },
+                "connect.version": 1,
+                "type": "string"
+              },
+              "null"
+            ]
+          },
+          {
+            "name": "db",
+            "type": "string"
+          },
+          {
+            "default": null,
+            "name": "sequence",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          {
+            "default": null,
+            "name": "ts_us",
+            "type": [
+              "null",
+              "long"
+            ]
+          },
+          {
+            "default": null,
+            "name": "ts_ns",
+            "type": [
+              "null",
+              "long"
+            ]
+          },
+          {
+            "name": "schema",
+            "type": "string"
+          },
+          {
+            "name": "table",
+            "type": "string"
+          },
+          {
+            "default": null,
+            "name": "txId",
+            "type": [
+              "null",
+              "long"
+            ]
+          },
+          {
+            "default": null,
+            "name": "lsn",
+            "type": [
+              "null",
+              "long"
+            ]
+          },
+          {
+            "default": null,
+            "name": "xmin",
+            "type": [
+              "null",
+              "long"
+            ]
+          },
+          {
+            "default": null,
+            "name": "origin",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          {
+            "default": null,
+            "name": "origin_lsn",
+            "type": [
+              "null",
+              "long"
+            ]
+          }
+        ],
+        "name": "Source",
+        "namespace": "io.debezium.connector.postgresql",
+        "type": "record"
+      }
+    },
+    {
+      "default": null,
+      "name": "transaction",
+      "type": [
+        "null",
+        {
+          "connect.name": "event.block",
+          "connect.version": 1,
+          "fields": [
+            {
+              "name": "id",
+              "type": "string"
+            },
+            {
+              "name": "total_order",
+              "type": "long"
+            },
+            {
+              "name": "data_collection_order",
+              "type": "long"
+            }
+          ],
+          "name": "block",
+          "namespace": "event",
+          "type": "record"
+        }
+      ]
+    },
+    {
+      "name": "op",
+      "type": "string"
+    },
+    {
+      "default": null,
+      "name": "ts_ms",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "default": null,
+      "name": "ts_us",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "default": null,
+      "name": "ts_ns",
+      "type": [
+        "null",
+        "long"
+      ]
+    }
+  ],
+  "name": "Envelope",
+  "namespace": "cdc.public.accounts",
+  "type": "record"
+}

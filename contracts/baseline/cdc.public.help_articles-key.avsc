@@ -1,0 +1,12 @@
+{
+  "connect.name": "cdc.public.help_articles.Key",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    }
+  ],
+  "name": "Key",
+  "namespace": "cdc.public.help_articles",
+  "type": "record"
+}

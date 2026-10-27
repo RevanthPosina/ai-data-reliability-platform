@@ -1,0 +1,38 @@
+table: customers
+topic: cdc.public.customers
+subject: cdc.public.customers-value
+key:
+- id
+columns:
+- name: id
+  type: long
+  nullable: false
+  pii: false
+- name: full_name
+  type: string
+  nullable: false
+  pii: true
+- name: email
+  type: string
+  nullable: false
+  pii: true
+- name: phone
+  type: string
+  nullable: false
+  pii: true
+- name: address
+  type: string
+  nullable: false
+  pii: true
+- name: date_of_birth
+  type: date
+  nullable: false
+  pii: true
+- name: created_at
+  type: timestamptz
+  nullable: false
+  pii: false
+- name: updated_at
+  type: timestamptz
+  nullable: false
+  pii: false

@@ -1,0 +1,12 @@
+{
+  "connect.name": "cdc.public.support_tickets.Key",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    }
+  ],
+  "name": "Key",
+  "namespace": "cdc.public.support_tickets",
+  "type": "record"
+}

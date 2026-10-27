@@ -1,0 +1,26 @@
+table: refunds
+topic: cdc.public.refunds
+subject: cdc.public.refunds-value
+key:
+- id
+columns:
+- name: id
+  type: long
+  nullable: false
+  pii: false
+- name: transaction_id
+  type: long
+  nullable: false
+  pii: false
+- name: amount
+  type: decimal(12,2)
+  nullable: false
+  pii: false
+- name: reason
+  type: string
+  nullable: false
+  pii: false
+- name: created_at
+  type: timestamptz
+  nullable: false
+  pii: false

@@ -103,12 +103,21 @@ def main() -> None:
     wait_http("http://localhost:18081/subjects")
     http("PUT", "http://localhost:18081/config", {"compatibility": "BACKWARD"})
 
+    if "--skip-connector" in sys.argv:
+        step("skipping connector (--skip-connector)")
+    else:
+        ensure_connector(env)
+    step("done")
+
+
+def ensure_connector(env: dict[str, str], timeout: float = 120) -> None:
+    """Create or update the Debezium connector and wait until connector and task are RUNNING."""
     step("Debezium connector pg-shop")
     wait_http("http://localhost:8083/connectors")
     cfg = json.loads(string.Template((ROOT / "infra/connect/pg-shop.json").read_text()).substitute(env))
     http("PUT", "http://localhost:8083/connectors/pg-shop/config", cfg)
 
-    deadline = time.monotonic() + 120
+    deadline = time.monotonic() + timeout
     state = None
     while time.monotonic() < deadline:
         try:
@@ -116,15 +125,13 @@ def main() -> None:
             tasks = st.get("tasks", [])
             state = (st["connector"]["state"], tasks[0]["state"] if tasks else None)
             if state == ("RUNNING", "RUNNING"):
-                break
+                return
             if "FAILED" in state:
                 sys.exit(f"connector failed: {json.dumps(st)[:2000]}")
         except RuntimeError:
             pass
         time.sleep(2)
-    else:
-        sys.exit(f"connector not RUNNING: {state}")
-    step("done")
+    sys.exit(f"connector not RUNNING: {state}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,38 @@
+table: accounts
+topic: cdc.public.accounts
+subject: cdc.public.accounts-value
+key:
+- id
+columns:
+- name: id
+  type: long
+  nullable: false
+  pii: false
+- name: owner_type
+  type: string
+  nullable: false
+  pii: false
+- name: customer_id
+  type: long
+  nullable: true
+  pii: true
+- name: merchant_id
+  type: long
+  nullable: true
+  pii: false
+- name: currency
+  type: string
+  nullable: false
+  pii: false
+- name: balance
+  type: decimal(14,2)
+  nullable: false
+  pii: false
+- name: created_at
+  type: timestamptz
+  nullable: false
+  pii: false
+- name: updated_at
+  type: timestamptz
+  nullable: false
+  pii: false

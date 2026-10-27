@@ -1,0 +1,34 @@
+table: help_articles
+topic: cdc.public.help_articles
+subject: cdc.public.help_articles-value
+key:
+- id
+columns:
+- name: id
+  type: long
+  nullable: false
+  pii: false
+- name: title
+  type: string
+  nullable: false
+  pii: false
+- name: body
+  type: string
+  nullable: false
+  pii: false
+- name: category
+  type: string
+  nullable: false
+  pii: false
+- name: view_count
+  type: int
+  nullable: false
+  pii: false
+- name: created_at
+  type: timestamptz
+  nullable: false
+  pii: false
+- name: updated_at
+  type: timestamptz
+  nullable: false
+  pii: false

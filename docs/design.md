@@ -85,7 +85,7 @@ All latencies are measured at a stated **achieved** change rate. Each measuremen
 | S10 | Reconciliation: 0 mismatches after recovery | Consistent-cut reconciler: pause the generator; `cut = pg_current_wal_lsn()`; wait for `confirmed_flush_lsn ≥ cut`; record topic end offsets; wait for silver's committed offsets ≥ those offsets; compare counts and `Σ xxhash64(canonical row) mod 2^64` per table and per pk bucket. | A |
 | S11 | DQ: every "expected: caught" fault in §5 is caught by its named check | Fault runs scored against §5 (pre-registered). Reported caught / self-healed / silent. Blind faults are reported separately. | A (6) / B (all) |
 | S12 | DQ false alarms ≤ 1 per 20 clean runs | Count of blocking-check failures over ≥ 20 fault-free runs. | A |
-| S13 | Replication slot health: retained WAL < 1 GiB and connector RUNNING | `pg_replication_slots` (`pg_current_wal_lsn() − confirmed_flush_lsn`) + Connect REST status, exported as metrics. An alert on breach is a named check. | A |
+| S13 | Replication slot health: retained WAL < 1 GiB and connector RUNNING | `pg_replication_slots` (`pg_current_wal_lsn() − confirmed_flush_lsn`) + Connect REST status, exported by `adrp.obs.exporter` on `:9108/metrics` (`adrp_replication_slot_lag_bytes`, `adrp_replication_slot_retained_wal_bytes`, `adrp_connector_up`). Note `confirmed_flush_lsn` advances when Connect flushes offsets (default every 60 s) and on heartbeats, so lag is a sawtooth, not a smooth line. An alert on breach is a named check (G13). | A |
 
 ## 3. Data inventory (every place a customer's data can live; drives G8)
 

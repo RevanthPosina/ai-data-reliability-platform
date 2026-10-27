@@ -197,6 +197,18 @@ services:
     ports: ["127.0.0.1:3000:3000"]
     mem_limit: 1024m
 
+  # CDC health metrics: replication-slot lag and connector status (design S13).
+  exporter:
+    image: adrp/app:dev
+    profiles: [apps]
+    command: ["python", "-m", "adrp.obs.exporter"]
+    environment:
+      SHOP_DSN: postgresql://debezium:${DEBEZIUM_PASSWORD}@postgres:5432/shop
+      CONNECT_URL: http://connect:8083
+    ports: ["127.0.0.1:9108:9108"]
+    restart: on-failure
+    mem_limit: 128m
+
   # Data generator (PLAN G1). Runs inside the Docker VM so its clock matches the pipeline's (G11).
   generator:
     image: adrp/app:dev

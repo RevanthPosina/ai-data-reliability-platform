@@ -1,0 +1,12 @@
+{
+  "connect.name": "cdc.public.refunds.Key",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    }
+  ],
+  "name": "Key",
+  "namespace": "cdc.public.refunds",
+  "type": "record"
+}

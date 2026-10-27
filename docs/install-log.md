@@ -34,3 +34,13 @@ Host disk after G0: ~11 GiB free.
 | wiped + recreated | this project's Docker volumes (`make clean-volumes`) | schema changed (G1 domain); data was test-only |
 | changed | SeaweedFS `mem_limit` 384m → 512m | observed 357 MiB under generator load (after the max-rate run) |
 | created | `runs/data/` (git-ignored) | generator Parquet logs |
+
+## 2026-10-27 (G2)
+
+| Action | What | Notes |
+|---|---|---|
+| pip (dev venv) | `confluent-kafka==2.16.0`, `PyYAML==6.0.3`, `psycopg[binary]==3.3.6` | host-side Kafka consumer for the G2 check; YAML for contracts; psycopg for the exporter's unit tests. Constraints regenerated, 0 packages past the cutoff. |
+| rebuilt | `adrp/app:dev` | now includes `adrp.obs.exporter`, `adrp.contracts`; no new app dependencies |
+| wiped + recreated | this project's Docker volumes (`make g2-check` does this on purpose) | a real snapshot needs empty volumes; data was test-only |
+| pulled | none | `make contracts-ci` runs a throwaway container from the already-present Redpanda image and removes it |
+| added | Compose service `exporter` (apps profile, `127.0.0.1:9108`, 128 MB) | slot lag and connector status metrics |

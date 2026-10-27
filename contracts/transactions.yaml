@@ -1,0 +1,50 @@
+table: transactions
+topic: cdc.public.transactions
+subject: cdc.public.transactions-value
+key:
+- id
+columns:
+- name: id
+  type: long
+  nullable: false
+  pii: false
+- name: txn_type
+  type: string
+  nullable: false
+  pii: false
+- name: customer_id
+  type: long
+  nullable: false
+  pii: true
+- name: merchant_id
+  type: long
+  nullable: true
+  pii: false
+- name: payer_account_id
+  type: long
+  nullable: true
+  pii: false
+- name: payee_account_id
+  type: long
+  nullable: false
+  pii: false
+- name: amount
+  type: decimal(12,2)
+  nullable: false
+  pii: false
+- name: currency
+  type: string
+  nullable: false
+  pii: false
+- name: status
+  type: string
+  nullable: false
+  pii: false
+- name: description
+  type: string
+  nullable: false
+  pii: false
+- name: created_at
+  type: timestamptz
+  nullable: false
+  pii: false

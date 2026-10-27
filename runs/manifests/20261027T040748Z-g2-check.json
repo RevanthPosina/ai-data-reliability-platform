@@ -1,0 +1,212 @@
+{
+  "kind": "g2-check",
+  "started_at": "2026-10-27T04:06:40.647518+00:00",
+  "written_at": "2026-10-27T04:07:48.296909+00:00",
+  "git_sha": "23788c8bab8a6d46a994c218d8135f4d27968da8",
+  "git_dirty": true,
+  "git_dirty_paths": [
+    "github/workflows/ci.yml",
+    "Makefile",
+    "docker-compose.yml",
+    "infra/connect/pg-shop.json",
+    "requirements-dev.constraints.txt",
+    "requirements-dev.txt",
+    "scripts/bootstrap.py",
+    "docs/adr/0012-cdc-configuration.md",
+    "scripts/contracts.py",
+    "scripts/g2_check.py",
+    "src/adrp/contracts.py",
+    "src/adrp/obs/",
+    "tests/test_contracts.py",
+    "tests/test_exporter.py"
+  ],
+  "versions": {
+    "POSTGRES_IMAGE": "postgres:17.10-alpine",
+    "DEBEZIUM_VERSION": "3.7.0.Final",
+    "CONFLUENT_CONVERTER_VERSION": "8.3.2",
+    "REDPANDA_IMAGE": "redpandadata/redpanda:v26.2.4",
+    "SPARK_VERSION": "4.1.3",
+    "SPARK_IMAGE": "apache/spark:4.1.3-scala2.13-java17-python3-ubuntu",
+    "SCALA_BINARY": "2.13",
+    "SPARK_KAFKA_CLIENTS_VERSION": "3.9.1",
+    "SPARK_COMMONS_POOL2_VERSION": "2.12.1",
+    "ICEBERG_VERSION": "1.12.0",
+    "LAKEKEEPER_IMAGE": "quay.io/lakekeeper/catalog:v0.13.6",
+    "SEAWEEDFS_IMAGE": "chrislusf/seaweedfs:4.48",
+    "QDRANT_IMAGE": "qdrant/qdrant:v1.19.2",
+    "MAVEN_IMAGE": "maven:3.9.16-eclipse-temurin-17",
+    "PYTHON_IMAGE": "python:3.12.14-slim-bookworm",
+    "TRINO_IMAGE": "trinodb/trino:483",
+    "MARQUEZ_IMAGE": "marquezproject/marquez:0.50.0",
+    "DAGSTER_VERSION": "1.13.26",
+    "DAGSTER_LIB_VERSION": "0.29.26",
+    "DBT_CORE_VERSION": "1.12.5",
+    "DBT_TRINO_VERSION": "1.10.6",
+    "OPENLINEAGE_VERSION": "1.53.0",
+    "PYICEBERG_VERSION": "0.12.0",
+    "QDRANT_CLIENT_VERSION": "1.19.1",
+    "SENTENCE_TRANSFORMERS_VERSION": "6.1.0",
+    "TORCH_VERSION": "2.14.1",
+    "FASTAVRO_VERSION": "1.13.1",
+    "SPARK_FASTAVRO_VERSION": "1.12.2",
+    "EMBED_MODEL": "sentence-transformers/all-MiniLM-L6-v2",
+    "EMBED_MODEL_REVISION": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "BOTO3_VERSION": "1.43.111",
+    "PSYCOPG_VERSION": "3.3.6",
+    "ICEBERG_FORMAT_VERSION": "2"
+  },
+  "seed": 42,
+  "profile": "core",
+  "hardware": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "release": "27.2.0",
+    "cpu": "Apple M1 Pro",
+    "ncpu": "8",
+    "mem_bytes": "17179869184",
+    "docker": {
+      "ServerVersion": "20.10.22",
+      "NCPU": 4,
+      "MemTotal": 8233013248,
+      "OperatingSystem": "Docker Desktop",
+      "Architecture": "aarch64"
+    }
+  },
+  "images": {
+    "adrp-connect-1": "adrp/connect:3.7.0.Final@sha256:e5d531c466ff145c28ccfe22654ba22d9c42f2b551f4e27c0202d8fa09d5c2b2",
+    "adrp-exporter-1": "adrp/app:dev@sha256:0b49b2387e53e3a80806c6fa3475e516bdc6cc9cefaae564db6f466c13611643",
+    "adrp-lakekeeper-1": "quay.io/lakekeeper/catalog:v0.13.6@sha256:3e1ab4b94aabcb06b36e00ac890d6264aaa3980f3b549b3ae6a491c075c1548d",
+    "adrp-lakekeeper-migrate-1": "quay.io/lakekeeper/catalog:v0.13.6@sha256:3e1ab4b94aabcb06b36e00ac890d6264aaa3980f3b549b3ae6a491c075c1548d",
+    "adrp-postgres-1": "postgres:17.10-alpine@sha256:8ee7c900f4de054e8f0a3b42b8f5da38b8fba57c3ccd7c1a02be28cb0b06494f",
+    "adrp-qdrant-1": "qdrant/qdrant:v1.19.2@sha256:2ca0be6b5b2a5c55549ec0c84ce5610ef0c2145b6b36ff6efb515ca971566ba0",
+    "adrp-redpanda-1": "redpandadata/redpanda:v26.2.4@sha256:b2c8b3578d36ba6e00a81627ec9c802add1deea0fdf391b5ac696d16a687c9b7",
+    "adrp-seaweedfs-1": "chrislusf/seaweedfs:4.48@sha256:8f17c8c82e037886f6aaceb3f6282a5c2a1b52bbef5339d323b0067a75bbbc79"
+  },
+  "result": {
+    "passed": true,
+    "checks": [
+      {
+        "check": "generator digest on the host equals the in-container digest",
+        "ok": true,
+        "detail": "txns [0,2000) ops=4507"
+      },
+      {
+        "check": "snapshot: every table's topic holds at least its row count",
+        "ok": true,
+        "detail": "{\"customers\": 255, \"merchants\": 31, \"accounts\": 286, \"transactions\": 1131, \"refunds\": 90, \"support_tickets\": 142, \"help_articles\": 40}"
+      },
+      {
+        "check": "snapshot: all events are op='r'",
+        "ok": true,
+        "detail": "non-r events=0"
+      },
+      {
+        "check": "snapshot: no missing, extra or differing rows vs ground truth",
+        "ok": true,
+        "detail": "missing=0 extra=0 differing=0"
+      },
+      {
+        "check": "snapshot events carry a source LSN (needed for LSN-conditional upsert)",
+        "ok": true,
+        "detail": "distinct snapshot LSNs=1"
+      },
+      {
+        "check": "live: every logical change produced its event(s)",
+        "ok": true,
+        "detail": "{\"transactions\": 942, \"accounts\": 1899, \"customers\": 124, \"support_tickets\": 327, \"help_articles\": 59, \"refunds\": 71, \"merchants\": 7}"
+      },
+      {
+        "check": "live: per-key op sequences equal ground truth (c/u/d, then tombstone after d)",
+        "ok": true,
+        "detail": "keys with a different sequence=0"
+      },
+      {
+        "check": "live: no duplicate records",
+        "ok": true,
+        "detail": "keys with duplicates=0"
+      },
+      {
+        "check": "live: last image of every key equals the final ground-truth row (deleted keys end in d)",
+        "ok": true,
+        "detail": "mismatching keys=0"
+      },
+      {
+        "check": "live: every delete is followed by a tombstone",
+        "ok": true,
+        "detail": "missing tombstones=0"
+      },
+      {
+        "check": "delete: Postgres DELETE produces a d event followed by a tombstone",
+        "ok": true,
+        "detail": "events=['d', 'T']"
+      },
+      {
+        "check": "delete: the d event carries the full before-image (REPLICA IDENTITY FULL), after is null",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "toast: update of a non-text column emits an 'u' event",
+        "ok": true,
+        "detail": "body chars=10019"
+      },
+      {
+        "check": "toast: after-image body is intact (equals Postgres md5), not the unavailable placeholder",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "toast: before-image body is intact",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "metrics: slot lag, retained WAL and connector status are exported",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "metrics: connector_up=1 and slot active while healthy",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "metrics: while paused, slot lag grows as changes accumulate and connector_up=0",
+        "ok": true,
+        "detail": "lag 1971600 -> 2391856 bytes"
+      },
+      {
+        "check": "metrics: after resume, connector_up=1 and slot lag drops below a quarter of the paused peak",
+        "ok": true,
+        "detail": "lag now 195232 bytes"
+      }
+    ],
+    "snapshot": {
+      "counts_at_snapshot": {
+        "customers": 255,
+        "merchants": 31,
+        "accounts": 286,
+        "transactions": 1131,
+        "refunds": 90,
+        "support_tickets": 142,
+        "help_articles": 40
+      },
+      "snapshot_lsns": 1,
+      "txn_range": [
+        0,
+        2000
+      ]
+    },
+    "delete": {
+      "ticket_deleted": true
+    },
+    "toast": {
+      "article_body_chars": 10019
+    },
+    "slot_lag": {
+      "lag_bytes_baseline": 1971600.0,
+      "lag_bytes_paused": 2391856.0,
+      "lag_bytes_recovered": 195232.0
+    }
+  }
+}

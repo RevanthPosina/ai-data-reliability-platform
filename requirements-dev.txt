@@ -8,3 +8,6 @@ dbt-core==1.12.5
 dbt-trino==1.10.6
 faker==40.43.0
 numpy==2.5.4
+confluent-kafka==2.16.0
+PyYAML==6.0.3
+psycopg[binary]==3.3.6

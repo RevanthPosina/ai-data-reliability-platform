@@ -1,0 +1,38 @@
+table: support_tickets
+topic: cdc.public.support_tickets
+subject: cdc.public.support_tickets-value
+key:
+- id
+columns:
+- name: id
+  type: long
+  nullable: false
+  pii: false
+- name: customer_id
+  type: long
+  nullable: false
+  pii: true
+- name: subject
+  type: string
+  nullable: false
+  pii: false
+- name: body
+  type: string
+  nullable: false
+  pii: true
+- name: status
+  type: string
+  nullable: false
+  pii: false
+- name: priority
+  type: string
+  nullable: false
+  pii: false
+- name: created_at
+  type: timestamptz
+  nullable: false
+  pii: false
+- name: updated_at
+  type: timestamptz
+  nullable: false
+  pii: false

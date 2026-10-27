@@ -25,6 +25,17 @@ jobs:
         run: for i in $(seq 1 60); do curl -fs localhost:8080/v1/info | grep -q '"starting":false' && break; sleep 2; done
       - run: cd dbt_fixture && dbt build --profiles-dir . --target ci
 
+  # Fails on an Avro schema change the registry would reject (BACKWARD), judged against committed contracts.
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements-dev.txt -c requirements-dev.constraints.txt
+      - run: make contracts-ci
+
   # Smoke-tests the pinned matrix: builds the images and runs the G0 thin slice end to end.
   matrix-smoke:
     runs-on: ubuntu-24.04

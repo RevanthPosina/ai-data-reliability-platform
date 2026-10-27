@@ -3,10 +3,11 @@ PROFILE ?= core
 COMPOSE := docker compose --env-file .run/compose.env
 PROFILE_FLAGS := $(foreach p,$(PROFILE),--profile $(p))
 INFRA := postgres redpanda connect seaweedfs lakekeeper-migrate lakekeeper qdrant
+REDPANDA_IMAGE_REF := $(shell sed -n 's/^REDPANDA_IMAGE=//p' versions.env)
 VENV := .venv
 PY := $(VENV)/bin/python
 
-.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs gen gen-determinism gen-max-rate
+.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs gen gen-determinism gen-max-rate g2-check contracts-export contracts-check contracts-ci
 
 .run/compose.env: versions.env $(wildcard .env) .env.example infra/seaweedfs/s3.json.tmpl
 	python3 scripts/render.py
@@ -64,7 +65,7 @@ compose-config: .run/compose.env
 dbt-fixture: $(VENV)/.installed
 	cd dbt_fixture && ../$(VENV)/bin/dbt build --profiles-dir . --target ci
 
-ci: lint typecheck test versions compose-config dbt-fixture
+ci: lint typecheck test versions compose-config dbt-fixture contracts-ci
 
 # ---- G1 generator ----
 SEED ?= 42
@@ -76,3 +77,27 @@ gen-determinism: .run/compose.env
 
 gen-max-rate: .run/compose.env
 	python3 scripts/generate.py max-rate --seed $(SEED) --reps $(or $(REPS),5) --duration $(or $(DURATION),30) --warmup $(or $(WARMUP),5)
+
+# ---- G2 CDC ingestion ----
+# DESTRUCTIVE for this project's Docker volumes: starts from empty volumes so the snapshot is real.
+g2-check: .run/compose.env $(VENV)/.installed
+	$(MAKE) clean-volumes
+	$(COMPOSE) --profile core up -d --wait $(INFRA)
+	python3 scripts/bootstrap.py --skip-connector
+	$(PY) scripts/g2_check.py
+	$(COMPOSE) --profile core --profile apps up -d
+
+contracts-export: $(VENV)/.installed
+	$(PY) scripts/contracts.py export $(if $(OVERWRITE),--overwrite,)
+
+contracts-check: $(VENV)/.installed
+	$(PY) scripts/contracts.py check
+
+# Same steps as the CI job: a throwaway registry that has only ever seen the committed baselines.
+contracts-ci: $(VENV)/.installed
+	-docker rm -f adrp-contracts-registry >/dev/null 2>&1
+	docker run -d --name adrp-contracts-registry -p 28081:8081 $(REDPANDA_IMAGE_REF) redpanda start --mode dev-container \
+	  --smp 1 --memory 1G --overprovisioned --schema-registry-addr=0.0.0.0:8081 >/dev/null
+	@for i in $$(seq 1 60); do curl -fs localhost:28081/subjects >/dev/null && break; sleep 1; done
+	$(PY) scripts/contracts.py --registry http://localhost:28081 check --register-baseline; rc=$$?; \
+	  docker rm -f adrp-contracts-registry >/dev/null; exit $$rc

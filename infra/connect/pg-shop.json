@@ -11,7 +11,7 @@
   "slot.name": "dbz_shop",
   "publication.name": "dbz_pub",
   "publication.autocreate.mode": "disabled",
-  "table.include.list": "public.help_articles",
+  "table.include.list": "public.customers,public.merchants,public.accounts,public.transactions,public.refunds,public.support_tickets,public.help_articles",
   "snapshot.mode": "initial",
   "tombstones.on.delete": "true",
   "heartbeat.interval.ms": "10000",

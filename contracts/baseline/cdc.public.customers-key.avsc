@@ -1,0 +1,12 @@
+{
+  "connect.name": "cdc.public.customers.Key",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    }
+  ],
+  "name": "Key",
+  "namespace": "cdc.public.customers",
+  "type": "record"
+}

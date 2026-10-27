@@ -1,0 +1,12 @@
+{
+  "connect.name": "cdc.public.merchants.Key",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    }
+  ],
+  "name": "Key",
+  "namespace": "cdc.public.merchants",
+  "type": "record"
+}
