@@ -493,6 +493,9 @@ def phase_lineage() -> dict[str, Any]:
 
 
 def main() -> int:
+    # Every `docker compose up` this script runs must keep the fault hooks enabled, or compose recreates the
+    # container with them off (it reads this from the environment).
+    os.environ["ADRP_FAULT_HOOKS"] = "1"
     started = datetime.now(timezone.utc).isoformat()
     c = g2.consumer()
     drain = Drain(c)
