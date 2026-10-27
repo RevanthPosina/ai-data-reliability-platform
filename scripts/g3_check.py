@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import threading
 import time
 from collections import defaultdict
 from datetime import date, datetime, timezone
@@ -222,37 +223,51 @@ def clear_fault_file() -> None:
        SPARK_IMAGE_REF, "-f", "/checkpoints/fault")  # fmt: skip
 
 
+class LoadGenerator:
+    """Keeps changes flowing (resumable generator runs back to back) until stopped, so every kill lands on a batch."""
+
+    def __init__(self, rate: int = 60, chunk_txns: int = 300) -> None:
+        self.rate, self.chunk = rate, chunk_txns
+        self.stop = threading.Event()
+        self.end_txn = 0
+        self.thread = threading.Thread(target=self._run, daemon=True)
+
+    def _run(self) -> None:
+        while not self.stop.is_set():
+            s = run_once(SEED, duration=1e9, rate=self.rate, warmup=0, max_txns=self.chunk)
+            self.end_txn = s["txn_range"][1]
+
+    def __enter__(self) -> LoadGenerator:
+        self.thread.start()
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.stop.set()
+        self.thread.join(timeout=600)
+
+
 def phase_kill(c: Any, drain: Drain, start_txn: int) -> tuple[int, dict[str, Any]]:
     print("P2 kill and restart under load")
-    gen = subprocess.Popen(
-        [*COMPOSE, "run", "--rm", "generator", "adrp.gen.runner", "--seed", str(SEED), "--duration", "1e9",
-         "--rate", "60", "--max-txns", "2500"],
-        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, encoding="utf-8", errors="replace",
-    )  # fmt: skip
     kills = []
-    for point in ("before_merge", "mid_merge", "after_merge"):
-        before = log_text().count(f"FAULT_HOOK point={point}")
-        compose("exec", "-T", "spark-streams", "sh", "-c", f"echo {point} > /checkpoints/fault")
-        hit = g2.wait_for(lambda p=point, b=before: log_text().count(f"FAULT_HOOK point={p}") > b, 150, 1.0)
-        if not hit:
-            check(f"kill: driver reached fault point {point}", False)
-            continue
-        sh("docker", "kill", "adrp-spark-streams-1")
-        clear_fault_file()
-        compose("--profile", "core", "--profile", "apps", "up", "-d", "spark-streams")
-        kills.append(point)
-        time.sleep(20)  # let it resume before the next hook
+    with LoadGenerator() as gen:
+        for point in ("before_merge", "mid_merge", "after_merge"):
+            before = log_text().count(f"FAULT_HOOK point={point}")
+            compose("exec", "-T", "spark-streams", "sh", "-c", f"echo {point} > /checkpoints/fault")
+            hit = g2.wait_for(lambda p=point, b=before: log_text().count(f"FAULT_HOOK point={p}") > b, 240, 1.0)
+            if not hit:
+                check(f"kill: driver reached fault point {point}", False)
+                clear_fault_file()
+                continue
+            sh("docker", "kill", "adrp-spark-streams-1")
+            clear_fault_file()
+            compose("--profile", "core", "--profile", "apps", "up", "-d", "spark-streams")
+            kills.append(point)
+            time.sleep(45)  # driver start-up and catch-up before the next hook is armed
+    end = gen.end_txn or start_txn
     check("kill: SIGKILLed the streaming container inside a batch at before_merge, mid_merge and after_merge",
           kills == ["before_merge", "mid_merge", "after_merge"], f"kills={kills}")  # fmt: skip
-    summary_line = ""
-    for line in (gen.communicate(timeout=900)[0] or "").splitlines():
-        if line.startswith("SUMMARY "):
-            summary_line = line
-    end = json.loads(summary_line[len("SUMMARY ") :])["txn_range"][1] if summary_line else start_txn
     check(
-        "kill: the generator finished its run while the container was being killed",
-        bool(summary_line),
-        f"txns to {end}",
+        "kill: changes kept flowing while the container was being killed", end > start_txn, f"txns {start_txn} -> {end}"
     )
     ok = drain.wait_silver(420)
     check("kill: silver caught up after the restarts", ok)
