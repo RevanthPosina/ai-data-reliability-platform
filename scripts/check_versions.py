@@ -42,18 +42,28 @@ def main() -> int:
     for label, key in ROWS.items():
         if table.get(label) != env.get(key):
             errors.append(f"{label}: design.md={table.get(label)!r} versions.env[{key}]={env.get(key)!r}")
-    # Requirements pins must match too.
-    reqs = (ROOT / "docker/app/requirements.txt").read_text()
-    for pkg, key in {
-        "dagster": "DAGSTER_VERSION",
-        "pyiceberg[pyarrow]": "PYICEBERG_VERSION",
-        "qdrant-client": "QDRANT_CLIENT_VERSION",
-        "sentence-transformers": "SENTENCE_TRANSFORMERS_VERSION",
-        "psycopg[binary]": "PSYCOPG_VERSION",
-        "boto3": "BOTO3_VERSION",
-    }.items():
-        if f"{pkg}=={env[key]}" not in reqs:
-            errors.append(f"docker/app/requirements.txt: {pkg} != {env[key]}")
+    # Requirements pins must match too (the Spark image runs Python 3.10 and has its own pins).
+    checks = {
+        "docker/app/requirements.txt": {
+            "pyiceberg[pyarrow]": "PYICEBERG_VERSION",
+            "qdrant-client": "QDRANT_CLIENT_VERSION",
+            "sentence-transformers": "SENTENCE_TRANSFORMERS_VERSION",
+            "psycopg[binary]": "PSYCOPG_VERSION",
+            "boto3": "BOTO3_VERSION",
+        },
+        "docker/spark/requirements.txt": {
+            "fastavro": "SPARK_FASTAVRO_VERSION",
+            "dagster": "DAGSTER_VERSION",
+            "dagster-webserver": "DAGSTER_VERSION",
+            "qdrant-client": "QDRANT_CLIENT_VERSION",
+            "hypothesis": "SPARK_HYPOTHESIS_VERSION",
+        },
+    }
+    for path, pins in checks.items():
+        text = (ROOT / path).read_text()
+        for pkg, key in pins.items():
+            if f"{pkg}=={env[key]}" not in text:
+                errors.append(f"{path}: {pkg} != {env[key]}")
     for e in errors:
         print("DRIFT", e)
     print(f"version matrix: {len(ROWS)} rows checked, {len(errors)} drift")

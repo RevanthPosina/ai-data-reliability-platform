@@ -12,7 +12,7 @@ import json
 import statistics
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from _env import ROOT
@@ -45,7 +45,7 @@ def run_once(seed: int, duration: float, rate: float, warmup: float, max_txns: i
 
 
 def cmd_run(a: argparse.Namespace) -> int:
-    started = datetime.now(UTC).isoformat()
+    started = datetime.now(timezone.utc).isoformat()
     s = run_once(a.seed, a.duration, a.rate, a.warmup, a.max_txns)
     v = tagged(in_container("adrp.gen.verify"), "VERIFY")
     path = write_manifest("gen-run", "core", a.seed, {"started_at": started, "summary": s, "verify": v})
@@ -56,7 +56,7 @@ def cmd_run(a: argparse.Namespace) -> int:
 
 def cmd_determinism(a: argparse.Namespace) -> int:
     """Same seed -> identical logical op sequence, checked three ways (PLAN G1 done condition)."""
-    started = datetime.now(UTC).isoformat()
+    started = datetime.now(timezone.utc).isoformat()
     s = run_once(a.seed, duration=1e9, rate=0, warmup=0, max_txns=a.txns)
     start, end = s["txn_range"]
     count = end - start
@@ -90,7 +90,7 @@ def cmd_determinism(a: argparse.Namespace) -> int:
 
 def cmd_max_rate(a: argparse.Namespace) -> int:
     """Unthrottled fixed-duration reps; achieved row changes/s after warmup (median, min, max)."""
-    started = datetime.now(UTC).isoformat()
+    started = datetime.now(timezone.utc).isoformat()
     reps = []
     for i in range(a.reps):
         s = run_once(a.seed, a.duration, rate=0, warmup=a.warmup, max_txns=0)

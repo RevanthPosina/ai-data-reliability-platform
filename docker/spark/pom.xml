@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Explicit jar list (no transitive resolution): shaded Iceberg runtime + AWS bundle, Kafka source. -->
+<!-- Explicit jar list (no transitive resolution): shaded Iceberg runtime + AWS bundle, Kafka source, OpenLineage listener (shaded). -->
 <project xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>adrp</groupId>
@@ -12,6 +12,7 @@
     <dependency><groupId>org.apache.spark</groupId><artifactId>spark-sql-kafka-0-10_${scala.binary}</artifactId><version>${spark.version}</version></dependency>
     <dependency><groupId>org.apache.spark</groupId><artifactId>spark-token-provider-kafka-0-10_${scala.binary}</artifactId><version>${spark.version}</version></dependency>
     <dependency><groupId>org.apache.kafka</groupId><artifactId>kafka-clients</artifactId><version>${kafka.version}</version></dependency>
+    <dependency><groupId>io.openlineage</groupId><artifactId>openlineage-spark_${scala.binary}</artifactId><version>${openlineage.version}</version></dependency>
     <dependency><groupId>org.apache.commons</groupId><artifactId>commons-pool2</artifactId><version>${pool2.version}</version></dependency>
   </dependencies>
 </project>

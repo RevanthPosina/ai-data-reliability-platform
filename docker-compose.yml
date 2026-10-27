@@ -13,7 +13,7 @@ x-build-args: &build-args
   SCALA_BINARY: ${SCALA_BINARY}
   SPARK_KAFKA_CLIENTS_VERSION: ${SPARK_KAFKA_CLIENTS_VERSION}
   SPARK_COMMONS_POOL2_VERSION: ${SPARK_COMMONS_POOL2_VERSION}
-  SPARK_FASTAVRO_VERSION: ${SPARK_FASTAVRO_VERSION}
+  OPENLINEAGE_VERSION: ${OPENLINEAGE_VERSION}
   TORCH_VERSION: ${TORCH_VERSION}
   EMBED_MODEL: ${EMBED_MODEL}
   EMBED_MODEL_REVISION: ${EMBED_MODEL_REVISION}
@@ -142,6 +142,7 @@ services:
     mem_limit: 512m
 
   # Both streaming queries in one Spark application (local mode), separate checkpoints.
+  # Event logs (silver batches, OpenLineage events) go to ./runs/data/eventlog on the host (inventory rows 17, 23).
   spark-streams:
     build:
       context: .
@@ -151,24 +152,49 @@ services:
     profiles: [apps]
     command: >
       /opt/spark/bin/spark-submit --master local[2] --driver-memory 1536m
+      --conf spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener
+      --conf spark.openlineage.transport.type=file
+      --conf spark.openlineage.transport.location=/eventlog/openlineage/events.ndjson
+      --conf spark.openlineage.namespace=adrp
+      --conf spark.driver.extraJavaOptions=--add-opens=java.base/java.security=ALL-UNNAMED
       /opt/app/adrp/spark/streams.py
     environment:
       <<: *lake-env
       KAFKA_BOOTSTRAP: redpanda:9092
       SCHEMA_REGISTRY_URL: http://redpanda:8081
       CHECKPOINT_ROOT: /checkpoints
+      EVENT_LOG_DIR: /eventlog
       ICEBERG_FORMAT_VERSION: ${ICEBERG_FORMAT_VERSION}
-    volumes: [spark-checkpoints:/checkpoints]
+      TRIGGER_INTERVAL: ${TRIGGER_INTERVAL:-10 seconds}
+      ADRP_FAULT_HOOKS: ${ADRP_FAULT_HOOKS:-0}
+    volumes:
+      - spark-checkpoints:/checkpoints
+      - ./runs/data/eventlog:/eventlog
     restart: on-failure
     mem_limit: 2560m
 
-  # One-off Spark SQL queries (used by `make demo`); not a long-running service.
+  # One-off Spark jobs (inspection, rebuild, tests); not a long-running service.
   spark-query:
     image: adrp/spark:${SPARK_VERSION}-iceberg${ICEBERG_VERSION}
     profiles: [tools]
-    entrypoint: ["/opt/spark/bin/spark-submit", "--master", "local[1]", "--driver-memory", "768m"]
-    environment: *lake-env
-    mem_limit: 1280m
+    entrypoint: ["/opt/spark/bin/spark-submit", "--master", "local[2]", "--driver-memory", "1024m"]
+    environment:
+      <<: *lake-env
+      SCHEMA_REGISTRY_URL: http://redpanda:8081
+      EVENT_LOG_DIR: /eventlog
+    volumes: [./runs/data/eventlog:/eventlog]
+    mem_limit: 1536m
+
+  # Spark image without the spark-submit entrypoint: pytest for the Spark property tests.
+  spark-test:
+    image: adrp/spark:${SPARK_VERSION}-iceberg${ICEBERG_VERSION}
+    profiles: [tools]
+    entrypoint: ["python3", "-m", "pytest", "-q", "-p", "no:cacheprovider"]
+    working_dir: /opt/app
+    environment:
+      PYTHONPATH: /opt/app:/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.9-src.zip
+    volumes: [./tests:/opt/app/tests:ro]
+    mem_limit: 2g
 
   embedder:
     build:
@@ -187,15 +213,22 @@ services:
     mem_limit: 1536m
 
   dagster:
-    image: adrp/app:dev
+    image: adrp/spark:${SPARK_VERSION}-iceberg${ICEBERG_VERSION}
     profiles: [apps]
+    entrypoint: []
     command: ["dagster", "dev", "-h", "0.0.0.0", "-p", "3000", "-m", "adrp_orch.definitions"]
     environment:
       <<: *lake-env
+      HOME: /tmp  # the spark user has no home directory
+      PYTHONPATH: /opt/app:/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.9-src.zip
+      PYSPARK_SUBMIT_ARGS: --master local[2] --driver-memory 1g pyspark-shell
       DAGSTER_HOME: /opt/dagster_home
       QDRANT_URL: http://qdrant:6333
+      SCHEMA_REGISTRY_URL: http://redpanda:8081
+      EVENT_LOG_DIR: /eventlog
+    volumes: [./runs/data/eventlog:/eventlog]
     ports: ["127.0.0.1:3000:3000"]
-    mem_limit: 1024m
+    mem_limit: 2560m
 
   # CDC health metrics: replication-slot lag and connector status (design S13).
   exporter:

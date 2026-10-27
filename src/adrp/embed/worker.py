@@ -10,7 +10,7 @@ import json
 import logging
 import os
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -79,7 +79,7 @@ class Worker:
     def upsert_version(self, entity_id: str, version: int, title: str, body: str) -> None:
         chunks = chunk_text(f"{title}\n\n{body}")
         vectors = self.model.encode(chunks, normalize_embeddings=True)
-        now = datetime.now(UTC).isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         points = [
             models.PointStruct(
                 id=point_id(entity_id, version, i),
@@ -99,11 +99,11 @@ class Worker:
         # New version first, then remove older versions (PLAN G6 ordering).
         self.qdrant.upsert(COLLECTION, points=points, wait=True)
         self.qdrant.delete(COLLECTION, points_selector=entity_filter(entity_id, below_version=version), wait=True)
-        log.info("upserted version=%s chunks=%d ack=%s", version, len(points), datetime.now(UTC).isoformat())
+        log.info("upserted version=%s chunks=%d ack=%s", version, len(points), datetime.now(timezone.utc).isoformat())
 
     def delete_entity(self, entity_id: str) -> None:
         self.qdrant.delete(COLLECTION, points_selector=entity_filter(entity_id), wait=True)
-        log.info("deleted entity chunks ack=%s", datetime.now(UTC).isoformat())
+        log.info("deleted entity chunks ack=%s", datetime.now(timezone.utc).isoformat())
 
     def poll_once(self, table: Any) -> None:
         table.refresh()

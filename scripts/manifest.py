@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import platform
 import subprocess
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -50,7 +50,7 @@ def _dirty_paths() -> list[str]:
 
 
 def write_manifest(kind: str, profile: str, seed: int | None, result: dict[str, Any]) -> Path:
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     dirty = _dirty_paths()
     manifest = {
         "kind": kind,

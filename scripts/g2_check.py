@@ -20,7 +20,7 @@ import time
 import urllib.request
 import uuid
 from collections import defaultdict
-from datetime import UTC, date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -166,7 +166,7 @@ def replay_state(ops: list[Any]) -> dict[str, dict[int, dict[str, Any]]]:
 
 def norm_expected(v: Any) -> Any:
     if isinstance(v, datetime):
-        return v.astimezone(UTC)
+        return v.astimezone(timezone.utc)
     if isinstance(v, date):
         return (v - EPOCH).days
     return v
@@ -174,7 +174,7 @@ def norm_expected(v: Any) -> Any:
 
 def norm_actual(expected: Any, v: Any) -> Any:
     if isinstance(expected, datetime) and isinstance(v, str):
-        return datetime.fromisoformat(v).astimezone(UTC)
+        return datetime.fromisoformat(v).astimezone(timezone.utc)
     if isinstance(v, (bytes, bytearray)):
         return v
     return v
@@ -389,7 +389,7 @@ def _try(fn: Any) -> Any:
 
 
 def main() -> int:
-    started = datetime.now(UTC).isoformat()
+    started = datetime.now(timezone.utc).isoformat()
     if _try(lambda: urllib.request.urlopen("http://localhost:8083/connectors/pg-shop", timeout=5)):
         raise SystemExit("a pg-shop connector already exists: run via `make g2-check` (fresh volumes, no connector)")
     c = consumer()

@@ -1,0 +1,7 @@
+# Top-level pins for the Spark image (Python 3.10). Transitive pins: constraints.txt; resolved set: requirements.lock.
+fastavro==1.12.2
+dagster==1.13.26
+dagster-webserver==1.13.26
+qdrant-client==1.19.1
+hypothesis==6.168.5
+pytest==9.1.1

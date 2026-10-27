@@ -16,7 +16,7 @@ import json
 import os
 import signal
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -138,7 +138,7 @@ def main() -> None:
     ap.add_argument("--max-txns", type=int, default=0, help="stop after N txns (0 = duration only)")
     ap.add_argument("--rate", type=float, default=0.0, help="target row changes/s (0 = unthrottled)")
     ap.add_argument("--warmup", type=float, default=0.0, help="seconds excluded from achieved-rate stats")
-    ap.add_argument("--run-id", default=datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ"))
+    ap.add_argument("--run-id", default=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     args = ap.parse_args()
 
     dsn = os.environ["SHOP_DSN"]

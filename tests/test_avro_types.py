@@ -41,7 +41,7 @@ def test_find_record_and_columns() -> None:
         ("id", "BIGINT", False),
         ("title", "STRING", False),
         ("body", "STRING", True),
-        ("updated_at", "STRING", False),
+        ("updated_at", "TIMESTAMP", False),
         ("amount", "DECIMAL(12,2)", False),
     ]
     assert struct_ddl(cols[:2]) == "`id` BIGINT, `title` STRING"
@@ -54,3 +54,21 @@ def test_after_resolves_named_reference() -> None:
 def test_rejects_multi_type_union() -> None:
     with pytest.raises(ValueError):
         avro_to_spark(["null", "string", "long"])
+
+
+def test_date_fields_only_for_envelopes() -> None:
+    from adrp.spark.decode import _date_fields
+
+    assert _date_fields({"type": "record", "name": "Key", "fields": [{"name": "id", "type": "long"}]}) == []
+    env = {
+        "type": "record", "name": "Envelope",
+        "fields": [
+            {"name": "before", "type": ["null", {"type": "record", "name": "Value", "fields": [
+                {"name": "id", "type": "long"},
+                {"name": "born", "type": {"type": "int", "connect.name": "io.debezium.time.Date"}},
+                {"name": "dob", "type": ["null", {"type": "int", "connect.name": "io.debezium.time.Date"}]},
+            ]}]},
+            {"name": "after", "type": ["null", "Value"]},
+        ],
+    }  # fmt: skip
+    assert _date_fields(env) == ["born", "dob"]

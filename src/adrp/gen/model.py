@@ -13,7 +13,7 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -22,7 +22,7 @@ from faker import Faker
 
 from adrp.common import canonical_json
 
-EPOCH = datetime(2026, 1, 1, tzinfo=UTC)
+EPOCH = datetime(2026, 1, 1, tzinfo=timezone.utc)
 CENT = Decimal("0.01")
 
 # Logical transaction mix (weights, normalized at load). Bootstrap transactions come first.

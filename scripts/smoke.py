@@ -12,7 +12,7 @@ import sys
 import time
 import urllib.request
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from _env import ROOT
@@ -80,7 +80,7 @@ def qdrant_points(entity_id: str, version: int) -> list[dict[str, Any]]:
 
 
 def main() -> int:
-    started = datetime.now(UTC).isoformat()
+    started = datetime.now(timezone.utc).isoformat()
     marker = f"g0-smoke-{uuid.uuid4().hex[:12]}"
     hops: list[dict[str, Any]] = []
     print(f"G0 thin slice, marker={marker}")

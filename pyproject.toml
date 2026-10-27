@@ -6,14 +6,17 @@ requires-python = ">=3.12"
 
 [tool.ruff]
 line-length = 120
-target-version = "py312"
+target-version = "py310"  # the Spark image runs Python 3.10
 extend-exclude = ["dbt_fixture/target", "dbt_fixture/dbt_packages", ".run", "runs"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "RUF"]
 
+[tool.ruff.lint.per-file-ignores]
+"scripts/g3_check.py" = ["E501"]  # long human-readable check descriptions
+
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.10"  # code that runs in the Spark image must be 3.10-safe
 files = ["src", "scripts", "tests"]
 mypy_path = ["src", "scripts"]
 explicit_package_bases = true
@@ -27,3 +30,5 @@ warn_return_any = false
 [tool.pytest.ini_options]
 pythonpath = ["src", "scripts"]
 testpaths = ["tests"]
+# tests/spark needs a JVM and runs in the Spark image (make test-spark)
+addopts = "--ignore=tests/spark"
