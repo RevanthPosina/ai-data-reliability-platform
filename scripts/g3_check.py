@@ -135,6 +135,17 @@ def gt_ok(res: dict[str, Any]) -> bool:
 # ---- waiting for the pipeline to drain ----------------------------------------------------------------
 
 
+def read_event_log(columns: list[str]) -> list[dict[str, Any]]:
+    """Rows of the silver batch event log. Reads finished part files one by one: Spark may be mid-write."""
+    rows: list[dict[str, Any]] = []
+    for f in sorted((EVENT_LOG / "silver_batches").glob("part-*.parquet")):
+        try:
+            rows += pq.read_table(f, columns=columns).to_pylist()
+        except Exception:  # noqa: BLE001 - file still being written or renamed; the next poll sees it
+            continue
+    return rows
+
+
 class Drain:
     """Knows the highest LSN in each topic and the highest LSN the silver event log has carried."""
 
@@ -154,12 +165,10 @@ class Drain:
 
     @staticmethod
     def event_log_lsn() -> dict[str, int]:
-        d = EVENT_LOG / "silver_batches"
         out: dict[str, int] = defaultdict(int)
-        if d.exists():
-            for r in pq.read_table(d, columns=["table", "max_lsn"]).to_pylist():
-                if r["max_lsn"]:
-                    out[r["table"]] = max(out[r["table"]], r["max_lsn"])
+        for r in read_event_log(["table", "max_lsn"]):
+            if r["max_lsn"]:
+                out[r["table"]] = max(out[r["table"]], r["max_lsn"])
         return out
 
     def silver_caught_up(self) -> bool:
