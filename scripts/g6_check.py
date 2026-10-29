@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import time
 import urllib.request
@@ -127,7 +128,7 @@ def phase_bootstrap(drain: g3.Drain) -> int:
 
 
 def embedder_logs() -> str:
-    r = g3.subprocess.run(
+    r = subprocess.run(
         ["docker", "logs", "adrp-embedder-1"], capture_output=True, encoding="utf-8", errors="replace", check=False
     )
     return r.stdout + r.stderr  # the worker logs to stderr
