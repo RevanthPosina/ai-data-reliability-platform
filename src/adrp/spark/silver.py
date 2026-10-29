@@ -68,6 +68,8 @@ def create_silver(
         """
     )
     spark.sql(f"ALTER TABLE {fq} WRITE ORDERED BY {', '.join(f'`{k}`' for k in keys)}")
+    # WRITE ORDERED BY resets the distribution mode to `range`; the plan specifies `hash` (re-set it after).
+    spark.sql(f"ALTER TABLE {fq} SET TBLPROPERTIES ('write.distribution-mode'='hash')")
     return SilverTable(fq, keys)
 
 

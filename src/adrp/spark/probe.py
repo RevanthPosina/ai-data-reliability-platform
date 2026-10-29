@@ -91,6 +91,15 @@ def file_stats(spark: SparkSession, fq: str) -> dict[str, Any]:
     }
 
 
+def cmd_props(spark: SparkSession, tables: list[str]) -> None:
+    keys = ("write.merge.mode", "write.update.mode", "write.delete.mode", "write.distribution-mode", "format-version")
+    res = {}
+    for t in tables:
+        props = {r["key"]: r["value"] for r in spark.sql(f"SHOW TBLPROPERTIES lake.silver.{t}").collect()}
+        res[t] = {k: props.get(k) for k in keys}
+    out("RESULT", res)
+
+
 def cmd_files(spark: SparkSession, tables: list[str]) -> None:
     out("RESULT", {t: file_stats(spark, t if t.startswith("lake.") else f"lake.silver.{t}") for t in tables})
 
@@ -159,7 +168,7 @@ def cmd_rebuild_check(spark: SparkSession, tables: list[str], picks: int) -> Non
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        "cmd", choices=["dump", "bronze-stats", "quarantine", "columns", "files", "checksum", "rebuild-check"]
+        "cmd", choices=["dump", "bronze-stats", "quarantine", "columns", "props", "files", "checksum", "rebuild-check"]
     )
     ap.add_argument("--tables", default="")
     ap.add_argument("--pick", type=int, default=3)
@@ -175,6 +184,8 @@ def main() -> None:
         cmd_quarantine(spark)
     elif a.cmd == "columns":
         cmd_columns(spark, tables)
+    elif a.cmd == "props":
+        cmd_props(spark, tables)
     elif a.cmd == "files":
         cmd_files(spark, tables)
     elif a.cmd == "checksum":
