@@ -4,7 +4,7 @@ Compares Qdrant with silver directly (it does not go through the worker's state)
 CLI (run inside the embedder container):
   python -m adrp.embed.checks            ->  CHECKS {json}
   python -m adrp.embed.checks silver     ->  SILVER {entity: [lsn, is_deleted]}   (pyiceberg view of silver)
-  python -m adrp.embed.checks points     ->  POINTS {point_id: [source_version, chunk_hash, ingested_at, model]}
+  python -m adrp.embed.checks points     ->  POINTS {point_id: [entity, source_version, chunk_hash, ingested_at, model]}
 """
 
 from __future__ import annotations
@@ -52,6 +52,7 @@ def main() -> None:
     if cmd == "points":
         body = {
             str(p.id): [
+                p.payload["entity_id"],
                 p.payload["source_version"],
                 p.payload["chunk_hash"],
                 p.payload["ingested_at"],

@@ -31,6 +31,7 @@ from manifest import write_manifest
 
 sys.path.insert(0, str(ROOT / "src"))
 from adrp.common import chunk_hash, chunk_text
+from adrp.embed import logic
 
 SEED = g2.SEED
 SLO_S = 120  # design S3: freshness to Qdrant
@@ -105,7 +106,50 @@ def points_snapshot() -> dict[str, Any]:
 
 
 def drain_silver(drain: g3.Drain) -> None:
-    drain.wait_silver(420)
+    check("silver caught up to the end of every topic", drain.wait_silver(420))
+
+
+def postgres_expected() -> dict[str, list[str]]:
+    """entity -> sorted chunk hashes of its current text in Postgres: the index must equal this, whatever silver says."""
+    out: dict[str, list[str]] = {}
+    for table, cols in logic.TEXT_TABLES.items():
+        for r in pg_json(f"SELECT id, {', '.join(cols)} FROM {table}"):
+            hashes = sorted(chunk_hash(c) for c in chunk_text(logic.document(table, r)))
+            if hashes:
+                out[logic.entity_id(table, int(r["id"]))] = hashes
+    return out
+
+
+def index_vs_postgres() -> dict[str, int]:
+    actual: dict[str, list[str]] = {}
+    versions: dict[str, set[int]] = {}
+    for eid, version, h, _, _ in points_snapshot().values():
+        actual.setdefault(eid, []).append(h)
+        versions.setdefault(eid, set()).add(version)
+    actual = {k: sorted(v) for k, v in actual.items()}
+    want = postgres_expected()
+    return {
+        "entities_expected": len(want),
+        "missing": len(want.keys() - actual.keys()),
+        "extra": len(actual.keys() - want.keys()),
+        "differing": sum(1 for k in want.keys() & actual.keys() if want[k] != actual[k]),
+        "multi_version": sum(1 for v in versions.values() if len(v) > 1),
+    }
+
+
+def matches_postgres(r: dict[str, int]) -> bool:
+    return r["entities_expected"] > 0 and r["missing"] == r["extra"] == r["differing"] == r["multi_version"] == 0
+
+
+def wait_matches_postgres(timeout: float) -> tuple[bool, float, dict[str, int]]:
+    t0 = time.monotonic()
+    last: dict[str, int] = {}
+    while time.monotonic() - t0 < timeout:
+        last = index_vs_postgres()
+        if matches_postgres(last):
+            return True, time.monotonic() - t0, last
+        time.sleep(3)
+    return False, time.monotonic() - t0, last
 
 
 # ---- phases ---------------------------------------------------------------------------------------------
@@ -118,6 +162,12 @@ def phase_bootstrap(drain: g3.Drain) -> int:
     ok, _, r = wait_consistent(300)
     check(
         "bootstrap: the index is consistent (stale, orphaned, duplicate, wrong-model, missing all 0)", ok, json.dumps(r)
+    )
+    ok2, _, pg = wait_matches_postgres(120)
+    check(
+        "bootstrap: the index equals Postgres's current text for every entity (no missing, extra or differing)",
+        ok2,
+        json.dumps(pg),
     )
     check(
         "bootstrap: both text tables are indexed",
@@ -166,6 +216,8 @@ def phase_burst(drain: g3.Drain) -> dict[str, Any]:
     drain_silver(drain)
     ok, _, r = wait_consistent(SLO_S + 60)
     check("burst A (generator, 600 transactions): the index agrees with silver", ok, json.dumps(r))
+    ok2, _, pg = wait_matches_postgres(SLO_S)
+    check("burst A: the index equals Postgres's current text for every entity", ok2, json.dumps(pg))
     # (b) a scripted burst, judged against Postgres directly so a lagging silver cannot make it look consistent
     arts = [r["id"] for r in pg_json("SELECT id FROM help_articles WHERE id < 1000000000000 ORDER BY id LIMIT 60")]
     tickets = [r["id"] for r in pg_json("SELECT id FROM support_tickets WHERE id < 1000000000000 ORDER BY id LIMIT 60")]
@@ -197,6 +249,8 @@ def phase_burst(drain: g3.Drain) -> dict[str, Any]:
         ok,
         json.dumps(r),
     )
+    ok2, _, pg = wait_matches_postgres(60)
+    check("burst B: the whole index equals Postgres's current text for every entity", ok2, json.dumps(pg))
     check("burst B: updated articles' chunks are all at one version",
           vs_postgres("help_articles", text_upd, ("title", "body")) == 0, f"{len(text_upd)} articles, {len(tk_upd)} tickets")  # fmt: skip
     acts = actions_since(n0)
@@ -311,7 +365,9 @@ def main() -> int:
     details["rerun"] = phase_rerun()
     phase_bronze(drain)
     final = index_checks()
-    check("final: the index is consistent", consistent(final), json.dumps(final))
+    check("final: the index is consistent with silver", consistent(final), json.dumps(final))
+    pg = index_vs_postgres()
+    check("final: the index equals Postgres's current text for every entity", matches_postgres(pg), json.dumps(pg))
     details["final"] = final
     c.close()
     passed = all(r["ok"] for r in RESULTS)
