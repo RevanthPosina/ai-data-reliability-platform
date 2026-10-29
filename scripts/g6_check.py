@@ -1,0 +1,274 @@
+"""G6 done-condition check: the Qdrant index follows the text tables.
+
+Precondition (Makefile target `g6-check`): fresh volumes, core + apps up, nothing generated yet.
+
+  P1 bootstrap   generate rows; the index becomes consistent (stale = orphaned = duplicates = 0)
+  P2 burst       a scripted burst of text updates, non-text updates and deletes; the index converges within the
+                 freshness SLO (design S3, 120 s); updated entities hold exactly the new version, deleted ones nothing
+  P3 rerun       restart the worker, then restart it with its state deleted: the index is byte-for-byte unchanged
+  P4 pyiceberg   pyiceberg (what the worker uses) reads silver, which has MoR delete files, exactly as Spark does
+  P5 bronze      compaction of bronze, then expiry of the worker's pointer snapshot: the worker still converges
+Writes a run manifest (kind g6-check).
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+import time
+import urllib.request
+from datetime import datetime, timezone
+from typing import Any
+
+import g2_check as g2
+import g3_check as g3
+from _env import ROOT
+from generate import run_once
+from manifest import write_manifest
+
+sys.path.insert(0, str(ROOT / "src"))
+from adrp.common import chunk_hash, chunk_text
+
+SEED = g2.SEED
+SLO_S = 120  # design S3: freshness to Qdrant
+ZERO = ("stale_chunks", "orphaned_chunks", "duplicate_chunks", "wrong_model_chunks", "ahead_chunks", "missing_entities")
+RESULTS: list[dict[str, Any]] = []
+
+
+def check(name: str, ok: bool, detail: str = "") -> bool:
+    print(f"  {'PASS' if ok else 'FAIL'}  {name}{('  ' + detail) if detail else ''}", flush=True)
+    RESULTS.append({"check": name, "ok": bool(ok), "detail": detail})
+    return bool(ok)
+
+
+def embedder(*args: str) -> str:
+    return g3.compose("exec", "-T", "embedder", "python", "-m", *args, timeout=300)
+
+
+def tagged(out: str, tag: str) -> Any:
+    line = next(ln for ln in out.splitlines() if ln.startswith(tag + " "))
+    return json.loads(line[len(tag) + 1 :])
+
+
+def index_checks() -> dict[str, int]:
+    return tagged(embedder("adrp.embed.checks"), "CHECKS")
+
+
+def consistent(r: dict[str, int]) -> bool:
+    return r["points"] > 0 and all(r[k] == 0 for k in ZERO)
+
+
+def wait_consistent(timeout: float) -> tuple[bool, float, dict[str, int]]:
+    t0 = time.monotonic()
+    last: dict[str, int] = {}
+    while time.monotonic() - t0 < timeout:
+        try:
+            last = index_checks()
+        except SystemExit:
+            last = {}
+        if last and consistent(last):
+            return True, time.monotonic() - t0, last
+        time.sleep(3)
+    return False, time.monotonic() - t0, last
+
+
+def qdrant_points(eid: str) -> list[dict[str, Any]]:
+    body = {"filter": {"must": [{"key": "entity_id", "match": {"value": eid}}]}, "limit": 500, "with_payload": True}
+    req = urllib.request.Request(
+        "http://127.0.0.1:6333/collections/text_chunks/points/scroll",
+        data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}, method="POST",
+    )  # fmt: skip
+    with urllib.request.urlopen(req, timeout=15) as r:
+        return json.load(r)["result"]["points"]
+
+
+def pg_json(sql: str) -> list[dict[str, Any]]:
+    out = g2.psql(f"SELECT row_to_json(t) FROM ({sql}) t")
+    return [json.loads(ln) for ln in out.splitlines() if ln.strip()]
+
+
+def actions_since(n_lines: int) -> list[dict[str, Any]]:
+    p = ROOT / "runs/data/eventlog/embedder/actions.jsonl"
+    return [json.loads(ln) for ln in p.read_text().splitlines()[n_lines:]] if p.exists() else []
+
+
+def n_actions() -> int:
+    p = ROOT / "runs/data/eventlog/embedder/actions.jsonl"
+    return len(p.read_text().splitlines()) if p.exists() else 0
+
+
+def points_snapshot() -> dict[str, Any]:
+    return tagged(embedder("adrp.embed.checks", "points"), "POINTS")
+
+
+def drain_silver(drain: g3.Drain) -> None:
+    drain.wait_silver(420)
+
+
+# ---- phases ---------------------------------------------------------------------------------------------
+
+
+def phase_bootstrap(drain: g3.Drain) -> int:
+    print("P1 bootstrap")
+    s = run_once(SEED, duration=1e9, rate=0, warmup=0, max_txns=1500)
+    drain_silver(drain)
+    ok, _, r = wait_consistent(300)
+    check(
+        "bootstrap: the index is consistent (stale, orphaned, duplicate, wrong-model, missing all 0)", ok, json.dumps(r)
+    )
+    check(
+        "bootstrap: both text tables are indexed",
+        r.get("entities_in_index", 0) > 50,
+        f"entities={r.get('entities_in_index')}",
+    )
+    return int(s["txn_range"][1])
+
+
+def phase_burst(drain: g3.Drain) -> dict[str, Any]:
+    print("P2 scripted burst")
+    arts = [r["id"] for r in pg_json("SELECT id FROM help_articles WHERE id < 1000000000000 ORDER BY id LIMIT 60")]
+    text_upd, view_upd, art_del = arts[:15], arts[15:35], arts[35:40]
+    tickets = [r["id"] for r in pg_json("SELECT id FROM support_tickets WHERE id < 1000000000000 ORDER BY id LIMIT 60")]
+    tk_upd, tk_del = tickets[:30], tickets[30:45]
+    n0 = n_actions()
+    g2.psql(
+        f"UPDATE help_articles SET body = body || E'\\n\\nAddendum from the G6 burst.' WHERE id IN ({','.join(map(str, text_upd))})"
+    )
+    g2.psql(f"UPDATE help_articles SET view_count = view_count + 100 WHERE id IN ({','.join(map(str, view_upd))})")
+    g2.psql(
+        f"UPDATE support_tickets SET body = body || E'\\n\\nG6 burst follow-up.' WHERE id IN ({','.join(map(str, tk_upd))})"
+    )
+    g2.psql(f"DELETE FROM support_tickets WHERE id IN ({','.join(map(str, tk_del))})")
+    g2.psql(f"DELETE FROM help_articles WHERE id IN ({','.join(map(str, art_del))})")
+    s = run_once(SEED, duration=1e9, rate=0, warmup=0, max_txns=600)  # plus a generator burst of every kind of change
+    t_end = time.monotonic()
+    ok, _, r = wait_consistent(SLO_S + 60)
+    total = time.monotonic() - t_end
+    check(f"burst: the index is consistent again within the freshness SLO ({SLO_S} s) of the burst ending",
+          ok and total <= SLO_S, f"{total:.0f} s; {json.dumps(r)}")  # fmt: skip
+    # specifics, checked against Postgres and Qdrant directly (not against silver)
+    now = {
+        r["id"]: r
+        for r in pg_json(
+            f"SELECT id, title, body FROM help_articles WHERE id IN ({','.join(map(str, text_upd + view_upd))})"
+        )
+    }
+    wrong = 0
+    versions: dict[str, set[int]] = {}
+    for aid, row in now.items():
+        pts = qdrant_points(f"help_articles:{aid}")
+        want = sorted(chunk_hash(c) for c in chunk_text(f"{row['title']}\n\n{row['body']}"))
+        versions[str(aid)] = {p["payload"]["source_version"] for p in pts}
+        if sorted(p["payload"]["chunk_hash"] for p in pts) != want or len(versions[str(aid)]) != 1:
+            wrong += 1
+    check("burst: updated articles hold exactly the chunks of their current Postgres text, at a single version", wrong == 0, f"wrong={wrong} of {len(now)}")  # fmt: skip
+    gone = sum(len(qdrant_points(f"help_articles:{a}")) for a in art_del) + sum(
+        len(qdrant_points(f"support_tickets:{t}")) for t in tk_del
+    )
+    check("burst: deleted articles and tickets have no points left", gone == 0, f"points left={gone}")
+    acts = actions_since(n0)
+    view_set = {f"help_articles:{a}" for a in view_upd}
+    reuse = [a for a in acts if a["entity"] in view_set and a["kind"] == "upsert"]
+    check("burst: non-text updates re-versioned the points without calling the model (embedded=0, reused>0)",
+          bool(reuse) and all(a["embedded"] == 0 and a["reused"] > 0 for a in reuse), f"{len(reuse)} upserts for {len(view_set)} entities")  # fmt: skip
+    return {"seconds_to_consistent": total, "txn_end": s["txn_range"][1], "final": r}
+
+
+def phase_rerun() -> dict[str, Any]:
+    print("P3 rerun is a no-op")
+    before = points_snapshot()
+    n0 = n_actions()
+    g3.compose("restart", "embedder")
+    time.sleep(45)
+    mid = points_snapshot()
+    check(
+        "rerun: restarting the worker (state kept) leaves every point and payload unchanged",
+        mid == before,
+        f"{len(before)} points",
+    )
+    g3.compose("exec", "-T", "embedder", "rm", "-f", "/state/embedder.json")
+    g3.compose("restart", "embedder")
+    time.sleep(90)  # full bronze rescan + model load
+    after = points_snapshot()
+    acts = actions_since(n0)
+    changed = [a for a in acts if a["kind"] == "upsert"]
+    check("rerun: restarting with its state deleted (full bronze rescan) leaves every point and payload unchanged",
+          after == before, f"{len(acts)} entities re-examined, {len(changed)} rewritten")  # fmt: skip
+    check("rerun: the rescan wrote nothing and embedded nothing", not changed and sum(a["embedded"] for a in acts) == 0)
+    return {"points": len(before), "rescanned_entities": len(acts)}
+
+
+def phase_pyiceberg() -> dict[str, Any]:
+    print("P4 pyiceberg reads silver with delete files")
+    py = tagged(embedder("adrp.embed.checks", "silver"), "SILVER")
+    rows, _ = g3.probe("dump", "--tables", "help_articles,support_tickets")
+    spark = {}
+    for table, js in rows:
+        r = json.loads(js)
+        spark[f"{table}:{r['id']}"] = [r["lsn"], r["is_deleted"]]
+    _, files = g3.probe("files", "--tables", "help_articles,support_tickets")
+    deletes = sum(v["delete_files"] for v in files.values())
+    check(
+        "pyiceberg: silver has merge-on-read delete files (so the next check is not vacuous)",
+        deletes > 0,
+        f"delete files={deletes}",
+    )
+    check("pyiceberg: pyiceberg and Spark read the same entities, versions and tombstones from silver",
+          py == spark, f"{len(spark)} entities")  # fmt: skip
+    return {"delete_files": deletes, "entities": len(spark)}
+
+
+def run_bronze_maintenance(steps: list[str], **cfg: Any) -> None:
+    g3.run_dagster_maintenance({"tables": ["lake.bronze.cdc_events"], "steps": steps, **cfg})
+
+
+def phase_bronze(drain: g3.Drain) -> None:
+    print("P5 bronze compaction and expiry")
+    run_once(SEED, duration=1e9, rate=0, warmup=0, max_txns=300)
+    drain_silver(drain)
+    wait_consistent(180)
+    run_bronze_maintenance(["compact"])  # a `replace` snapshot: no new data
+    run_once(SEED, duration=1e9, rate=0, warmup=0, max_txns=300)
+    drain_silver(drain)
+    ok, secs, r = wait_consistent(SLO_S + 60)
+    check("bronze: after compaction (a replace snapshot) the worker still picks up new changes", ok, f"{secs:.0f} s")
+    # stop the worker, let bronze move on, then expire the snapshot its pointer refers to
+    g3.compose("stop", "embedder")
+    run_once(SEED, duration=1e9, rate=0, warmup=0, max_txns=300)
+    drain_silver(drain)
+    run_bronze_maintenance(["compact", "expire_snapshots"], retain_hours=0, retain_last=1)
+    g3.compose("--profile", "core", "--profile", "apps", "up", "-d", "embedder")
+    ok, secs, r = wait_consistent(300)
+    logs = g3.sh("docker", "logs", "adrp-embedder-1", check_rc=False)
+    check("bronze: with the pointer's snapshot expired the worker falls back to a full scan and converges",
+          ok and "pointer snapshot expired" in logs, f"{secs:.0f} s; {json.dumps(r)}")  # fmt: skip
+
+
+def main() -> int:
+    started = datetime.now(timezone.utc).isoformat()
+    os.environ.setdefault("ADRP_FAULT_HOOKS", "0")
+    c = g2.consumer()
+    drain = g3.Drain(c)
+    details: dict[str, Any] = {}
+    phase_bootstrap(drain)
+    details["burst"] = phase_burst(drain)
+    details["pyiceberg"] = phase_pyiceberg()
+    details["rerun"] = phase_rerun()
+    phase_bronze(drain)
+    final = index_checks()
+    check("final: the index is consistent", consistent(final), json.dumps(final))
+    details["final"] = final
+    c.close()
+    passed = all(r["ok"] for r in RESULTS)
+    path = write_manifest(
+        "g6-check", "core", SEED, {"started_at": started, "passed": passed, "checks": RESULTS, **details}
+    )
+    print(
+        f"{'PASSED' if passed else 'FAILED'} ({sum(r['ok'] for r in RESULTS)}/{len(RESULTS)}); manifest: {path.relative_to(ROOT)}"
+    )
+    return 0 if passed else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

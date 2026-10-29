@@ -59,7 +59,7 @@ def qdrant_points(entity_id: str, version: int) -> list[dict[str, Any]]:
     body = {
         "filter": {
             "must": [
-                {"key": "entity_id", "match": {"value": entity_id}},
+                {"key": "entity_id", "match": {"value": f"help_articles:{entity_id}"}},
                 {"key": "source_version", "match": {"value": version}},
             ]
         },
@@ -67,7 +67,7 @@ def qdrant_points(entity_id: str, version: int) -> list[dict[str, Any]]:
         "with_payload": True,
     }
     req = urllib.request.Request(
-        "http://localhost:6333/collections/help_articles/points/scroll",
+        "http://localhost:6333/collections/text_chunks/points/scroll",
         data=json.dumps(body).encode(),
         headers={"Content-Type": "application/json"},
         method="POST",

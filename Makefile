@@ -7,7 +7,7 @@ REDPANDA_IMAGE_REF := $(shell sed -n 's/^REDPANDA_IMAGE=//p' versions.env)
 VENV := .venv
 PY := $(VENV)/bin/python
 
-.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs gen gen-determinism gen-max-rate test-spark g3-check g2-check contracts-export contracts-check contracts-ci
+.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs gen gen-determinism gen-max-rate test-spark g3-check g6-check g2-check contracts-export contracts-check contracts-ci
 
 .run/compose.env: versions.env $(wildcard .env) .env.example infra/seaweedfs/s3.json.tmpl
 	python3 scripts/render.py
@@ -116,3 +116,12 @@ g3-check: .run/compose.env $(VENV)/.installed
 	ADRP_FAULT_HOOKS=1 $(COMPOSE) --profile core --profile apps up -d
 	$(PY) scripts/g3_check.py
 	$(COMPOSE) --profile core --profile apps up -d
+
+# DESTRUCTIVE for this project's volumes and event logs.
+g6-check: .run/compose.env $(VENV)/.installed
+	$(MAKE) clean-volumes
+	rm -rf runs/data/eventlog && mkdir -p runs/data/eventlog
+	$(COMPOSE) --profile core up -d --wait $(INFRA)
+	python3 scripts/bootstrap.py
+	$(COMPOSE) --profile core --profile apps up -d
+	$(PY) scripts/g6_check.py

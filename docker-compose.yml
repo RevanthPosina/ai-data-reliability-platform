@@ -208,7 +208,10 @@ services:
       <<: *lake-env
       QDRANT_URL: http://qdrant:6333
       STATE_DIR: /state
-    volumes: [embedder-state:/state]
+      EVENT_LOG_DIR: /eventlog
+    volumes:
+      - embedder-state:/state
+      - ./runs/data/eventlog:/eventlog
     restart: on-failure
     mem_limit: 1536m
 

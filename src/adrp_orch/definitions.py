@@ -23,11 +23,11 @@ def qdrant_point_count(context: OpExecutionContext) -> int:
     from qdrant_client import QdrantClient
 
     client = QdrantClient(url=os.environ["QDRANT_URL"])
-    if not client.collection_exists("help_articles"):
-        context.log.info("collection help_articles not created yet")
+    if not client.collection_exists("text_chunks"):
+        context.log.info("collection text_chunks not created yet")
         return 0
-    count = client.count("help_articles", exact=True).count
-    context.log.info(f"help_articles points={count}")
+    count = client.count("text_chunks", exact=True).count
+    context.log.info(f"text_chunks points={count}")
     return count
 
 

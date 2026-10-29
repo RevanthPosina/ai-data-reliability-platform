@@ -13,7 +13,8 @@ extend-exclude = ["dbt_fixture/target", "dbt_fixture/dbt_packages", ".run", "run
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
-"scripts/g3_check.py" = ["E501"]  # long human-readable check descriptions
+"scripts/g3_check.py" = ["E501"]
+"scripts/g6_check.py" = ["E501"]  # long human-readable check descriptions
 
 [tool.mypy]
 python_version = "3.10"  # code that runs in the Spark image must be 3.10-safe
