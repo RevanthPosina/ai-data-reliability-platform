@@ -110,11 +110,12 @@ All latencies are measured at a stated **achieved** change rate. Each measuremen
 | 17 | foreachBatch event log | pks + LSNs | pseudonymize pk | file rewrite | Parquet scan | A |
 | 18 | Spark checkpoints / state | offsets only (no stateful ops) | — | — | inspect | A |
 | 19 | Spark local spill dirs | ephemeral shuffle data | n/a | container restart (bound stated) | — | A |
-| 20 | Embedding worker state | last snapshot id only | — | — | — | A |
+| 20 | Embedding worker state (`embedder.json`) | bronze snapshot pointer + ids of changes waiting for silver (`pending`) | pseudonymize / rewrite | file rewrite | file scan | A |
 | 21 | Dagster run logs / event storage | must never contain raw ids (enforced by code review + grep check) | — | — | grep | A |
 | 22 | Prometheus TSDB | no customer labels by rule | — | — | label audit | B |
 | 23 | Marquez | dataset/job metadata only | — | — | — | B |
 | 24 | Forget audit table | `hmac(customer_id)` only | — | — | — | A |
+| 25 | Embedder action log (`actions.jsonl`) | entity ids (`help_articles:<id>`, `support_tickets:<id>`) and LSNs per upsert / delete | pseudonymize ids | file rewrite | file scan | A |
 
 ## 4. Timestamp capture points (drives G11)
 

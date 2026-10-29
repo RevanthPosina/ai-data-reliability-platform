@@ -55,3 +55,12 @@ Host disk after G0: ~11 GiB free.
 | changed | Compose: `dagster` now uses the Spark image (2.5 GB limit); new services `spark-test` (tools profile); `spark-streams` gets the event-log mount and OpenLineage settings | |
 | wiped + recreated | this project's Docker volumes and `runs/data/eventlog` (`make g3-check` does this on purpose) | fresh state for a ground-truth comparison |
 | created | `runs/data/eventlog/` (git-ignored): `silver_batches/` (Parquet), `openlineage/events.ndjson`, `maintenance/runs.jsonl` | inventory rows 17 and 23: contain primary keys / table names, no row values |
+
+## 2026-10-29 (G6)
+
+| Action | What | Notes |
+|---|---|---|
+| rebuilt | `adrp/app:dev`, `adrp/spark:4.1.3-iceberg1.12.0` | code only; no new packages |
+| wiped + recreated | this project's Docker volumes and `runs/data/eventlog` (`make g6-check` does this on purpose) | fresh state so the index can be compared with Postgres |
+| changed | Compose: `embedder` mounts `./runs/data/eventlog` | writes `embedder/actions.jsonl` |
+| created | Qdrant collection `text_chunks` (the G0 collection `help_articles` is no longer used) | |
