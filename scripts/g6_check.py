@@ -128,8 +128,9 @@ def phase_bootstrap(drain: g3.Drain) -> int:
 def phase_burst(drain: g3.Drain) -> dict[str, Any]:
     print("P2 scripted burst")
     arts = [r["id"] for r in pg_json("SELECT id FROM help_articles WHERE id < 1000000000000 ORDER BY id LIMIT 60")]
-    text_upd, view_upd, art_del = arts[:15], arts[15:35], arts[35:40]
     tickets = [r["id"] for r in pg_json("SELECT id FROM support_tickets WHERE id < 1000000000000 ORDER BY id LIMIT 60")]
+    assert len(arts) >= 17 and len(tickets) >= 45, f"corpus too small: {len(arts)} articles, {len(tickets)} tickets"
+    text_upd, view_upd, art_del = arts[:6], arts[6:14], arts[14:17]
     tk_upd, tk_del = tickets[:30], tickets[30:45]
     n0 = n_actions()
     g2.psql(
