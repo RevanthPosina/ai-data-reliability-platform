@@ -102,6 +102,45 @@ CREATE TABLE gen.state (
     updated_at  timestamptz NOT NULL DEFAULT now()
 );
 
+-- Deletion-propagation bookkeeping (PLAN G8). Outside schema public, so outside the publication (dbz_pub is
+-- FOR TABLES IN SCHEMA public) and never captured by CDC. The debezium role gets no grant here.
+-- Dagster run config carries request_id only; the raw customer id is never copied anywhere else.
+CREATE SCHEMA privacy;
+
+CREATE TABLE privacy.forget_requests (
+    request_id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    raw_customer_id   bigint,               -- the only copy of the raw id; NULLed on completion, then VACUUMed
+    subject_scratch   jsonb,                -- footprint pks and PII tokens the physical phase searches for; NULLed with raw_customer_id
+    status            text NOT NULL DEFAULT 'requested'
+                      CHECK (status IN ('requested', 'logical_done', 'physical_done', 'failed')),
+    requested_at      timestamptz NOT NULL DEFAULT now(),
+    logical_done_at   timestamptz,
+    physical_done_at  timestamptz,
+    error             text
+);
+
+-- Kept after completion: HMAC of the subject, never the id.
+CREATE TABLE privacy.forget_audit (
+    subject_hmac  text NOT NULL,
+    request_id    uuid NOT NULL REFERENCES privacy.forget_requests (request_id),
+    requested_at  timestamptz NOT NULL,
+    forget_xid32  bigint,                   -- 32-bit xid of the re-key/delete transaction (Debezium source.txId)
+    forget_lsn    pg_lsn,                   -- its commit LSN: silver tombstones must carry an lsn >= this
+    footprint     jsonb,                    -- counts per table, no ids
+    PRIMARY KEY (subject_hmac, request_id)
+);
+
+-- One row per (request, sink): when the subject was logically / physically absent, or the bound on removal.
+CREATE TABLE privacy.forget_sink_status (
+    request_id          uuid NOT NULL REFERENCES privacy.forget_requests (request_id),
+    sink                text NOT NULL,
+    logical_absent_at   timestamptz,
+    physical_absent_at  timestamptz,
+    bound               text,               -- set when physical removal is bounded, not verified (WAL, spill, ...)
+    evidence            jsonb,              -- counts and sizes only, never matched text
+    PRIMARY KEY (request_id, sink)
+);
+
 -- Seed articles for the initial snapshot (op='r'); ids from the identity range, outside generator ids.
 INSERT INTO help_articles (title, body, category) VALUES
   ('Resetting your password', 'Open Settings, choose Security, then Reset password. A link is emailed to you.', 'account'),

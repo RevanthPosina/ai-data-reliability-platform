@@ -14,6 +14,6 @@ With a hard delete, a replayed or late older insert/update of the same key would
 ## What this buys, and the proof
 The result is independent of arrival order, duplication, replay and batch boundaries: for every key the highest-LSN event wins. This is tested (a) on a pure-Python model with Hypothesis, 1,000 random deliveries (shuffles, duplicates, replays, crash re-application, delete then re-insert); (b) on the production Spark MERGE with 50 random deliveries; (c) with a SIGKILL inside a batch at three points against the ground truth (`make g3-check`). Both property tests were mutation-checked: removing the LSN guard makes them fail.
 ## Limits
-- A tombstone must outlive the longest possible replay of older events for that key (topic retention plus the reader replay window). Purging earlier would allow resurrection. Purge policy: G8.
+- A tombstone must outlive the longest possible replay of older events for that key (topic retention plus the reader replay window). Purging earlier would allow resurrection. Purge policy: [ADR-0017](0017-forget-policy.md) (kept until broker physical absence is verified, then hard-deleted).
 - Two changes to one key with the same LSN would need the `kafka_offset` tie-break across batches, which silver does not store. Not observed (see above); the dedupe step does use the offset within a batch.
 - Quarantined events are not applied. Silver can lag Postgres for those rows until a later compatible event for the same key arrives.

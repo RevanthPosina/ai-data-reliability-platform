@@ -78,9 +78,9 @@ All latencies are measured at a stated **achieved** change rate. Each measuremen
 | S3 | Freshness to Qdrant p99 ≤ 120 s | `t_qdrant − t0`. t_qdrant = `wait=true` ack time of the point batch containing the entity version. The black-box prober reports alongside: sentinel rows inserted at a fixed low rate, polled with a filtered scroll every ≤ 6 s (SLO/20). | A |
 | S4 | Freshness to gold ≤ 15 min | `t_gold − t0`. t_gold = completion of the first dbt run whose max source LSN ≥ the change's LSN. | B |
 | S5 | Training data staleness at build ≤ 24 h | `build_time − max(t0)` in the dataset's source snapshot. This is staleness at build time, not per-change freshness. | B |
-| S6 | Logical deletion ≤ 15 min, all sinks | From `forget()` request time to the verifier first observing absence by query in each sink (Postgres row, silver `is_deleted`, bronze rows, quarantine, Qdrant filter, gold/dataset in B). Reported per sink. | A |
-| S7 | Physical deletion ≤ 24 h, Iceberg + Qdrant | From the request to the verifier finding no bytes of the entity id. Iceberg: object-store listing + Parquet scan of every remaining file. Qdrant: segment vacuum observed (or bound reported). | A |
-| S8 | Physical deletion bounds, broker and WAL | Redpanda: time until no segment contains the key (bounded by `segment.ms` + compaction/`retention.ms`). Postgres: dead tuple gone after `VACUUM`; WAL gone after the slot advances and segments recycle. **Reported as measured bounds, not targets we tune to.** | A |
+| S6 | Logical deletion ≤ 15 min, all sinks | From `forget()` request time to the verifier first observing absence by query in each sink (Postgres row, silver tombstone with non-key columns NULL and no `transactions`/`accounts` row carrying the raw id, bronze and quarantine rows, Qdrant filtered scroll, gold/dataset in B), polled every 5 s. Reported per sink as median/min/max; the broker has no logical state and is measured under S8. [ADR-0017](adr/0017-forget-policy.md). | A |
+| S7 | Physical deletion ≤ 24 h, Iceberg + Qdrant | From the request to the verifier finding no bytes of the entity id or canary. Iceberg (maintenance window, [ADR-0018](adr/0018-iceberg-physical-removal-and-reader-drain.md)): lag = window verified-at minus request time; the whole `s3://lake/` bucket is listed and every Parquet file decoded (string/binary columns and footer bounds), every Avro manifest decoded, every `*.gz.metadata.json` unzipped. SeaweedFS: garbage ratio before and after `volume.vacuum`, not a grep. Qdrant: optimizer settings lowered, segment directory change plus file scan, or the bound (§3.1). | A |
+| S8 | Physical deletion bounds, broker and Postgres | Redpanda ([ADR-0019](adr/0019-redpanda-topic-config-for-deletion.md)): time until no file under `kafka/cdc.public.*` contains the canary or the framed key bytes, after a nudge write; bounded by `segment.ms` + compaction lag + ~10 s housekeeping, with `retention.ms` as backstop for never-superseded values. Postgres: heap bytes gone after `VACUUM FULL` (plain `VACUUM` leaves them); `pg_statistic` copies gone only after `ANALYZE` + `VACUUM` once the slot's `catalog_xmin` has advanced; WAL: bounded (§3.1). Pass = absent within the deadline **or** a bound recorded. **Reported as measured bounds, not targets we tune to.** | A |
 | S9 | Idempotency: 0 duplicates, 0 losses, 0 resurrections | After each replay/crash fault, silver is compared with the ground-truth oracle at a consistent cut. Hypothesis property test over 1,000 cases (pure-Python merge model) + ~50 local-Spark cases. | A |
 | S10 | Reconciliation: 0 mismatches after recovery | Consistent-cut reconciler: pause the generator; `cut = pg_current_wal_lsn()`; wait for `confirmed_flush_lsn ≥ cut`; record topic end offsets; wait for silver's committed offsets ≥ those offsets; compare counts and `Σ xxhash64(canonical row) mod 2^64` per table and per pk bucket. | A |
 | S11 | DQ: every "expected: caught" fault in §5 is caught by its named check | Fault runs scored against §5 (pre-registered). Reported caught / self-healed / silent. Blind faults are reported separately. | A (6) / B (all) |
@@ -91,31 +91,47 @@ All latencies are measured at a stated **achieved** change rate. Each measuremen
 
 | # | Location | What of the customer it holds | Logical removal | Physical removal | Verification | Milestone |
 |---|---|---|---|---|---|---|
-| 1 | Postgres `customers` + FK rows (accounts, transactions, refunds, support_tickets) | PII + ids | `DELETE` / pseudonymize per policy | dead tuples until `VACUUM`; measure | query + `pageinspect`/raw scan after VACUUM | A |
-| 2 | Postgres WAL | before/after images (REPLICA IDENTITY FULL) | n/a | after the slot advances past the LSN and segments recycle; measure | `pg_walfile_name` vs files in `pg_wal` | A |
+| 1 | Postgres `customers` + FK rows (accounts, transactions, refunds, support_tickets) | PII + ids | re-key accounts/transactions to a placeholder customer, delete tickets and customer, one transaction (ADR-0017) | dead tuple bytes persist after plain `VACUUM`; `VACUUM FULL` needed (record it) | query + raw scan of `base/ global/` | A |
+| 2 | Postgres WAL, including recycled segments | before/after images (REPLICA IDENTITY FULL) | n/a | slot `restart_lsn` must pass the segment, then checkpoint; a recycled segment keeps its old bytes until WAL writing overwrites it. **Bounded**, see §3.1 | grep `pg_wal/`; `pg_walfile_name` vs files | A |
 | 3 | Postgres backups | none taken (stated) | — | — | — | — |
-| 4 | Redpanda `cdc.public.customers` | key + full images | tombstone | `compact,delete`, short `segment.ms` / `retention.ms`; active segment never compacted | `rpk topic consume` raw scan for key bytes | A |
-| 5 | Redpanda topics of other tables | `customer_id` in values | n/a | `retention.ms` only (bound stated) | raw scan | A |
+| 4 | Redpanda `cdc.public.customers` | key + full images | tombstone | `compact,delete` (ADR-0019), short `segment.ms`, cluster `log_segment_ms_min` lowered, nudge write so the tombstone itself is compacted | decoding consumer scan + raw grep of the topic directory for the canary and framed key bytes | A |
+| 5 | Redpanda topics of other tables | `customer_id` in values | n/a | re-key writes a newer record per pk so compaction drops the old value; `retention.ms` 24 h is the backstop (bound stated) | raw scan | A |
 | 6 | Schema Registry | schemas only, no data | — | — | — | — |
 | 7 | Kafka Connect offsets/config/status topics | LSNs, no PII | — | — | — | — |
-| 8 | Iceberg `bronze.*` | raw `value_bytes` + before/after PII | `DELETE WHERE` | rewrite → drop refs → drain readers → expire → orphan removal | object-store listing + Parquet scan for the id | A |
+| 8 | Iceberg `bronze.*` | raw `value_bytes` + before/after PII | `DELETE WHERE (source_table, pk) IN footprint`; re-sweep after the broker is clean | rewrite → drop refs → drain readers → rewrite manifests → expire → expire again → orphan removal via Action API (ADR-0018) | whole-bucket listing + decode of Parquet, Avro manifests and gz metadata | A |
 | 9 | Iceberg `silver.*` | current PII | soft tombstone (non-key columns NULL) | same Iceberg procedure (older files still hold PII) | same | A |
 | 10 | Iceberg `quarantine_*` | raw rows with PII | `DELETE WHERE` | same Iceberg procedure | same | A |
-| 11 | Iceberg orphan files from killed writes | possibly PII | n/a | `remove_orphan_files` (older_than ≥ max write duration) | listing | A |
+| 11 | Iceberg orphan files from killed writes | possibly PII | n/a | `remove_orphan_files` (Action API, `older_than = now` inside the maintenance window with writers stopped; elsewhere ≥ max write duration) | listing | A |
 | 12 | Iceberg `gold.*` | dims (PII), ledger/transactions (customer_id) | dims delete/pseudonymize; ledger **pseudonymize** (never delete entries) | same Iceberg procedure | same | B |
 | 13 | Iceberg `ml.dataset_v*` + Parquet exports | training rows | invalidate → rebuild v{n}.1 → drop v{n} | Iceberg procedure + delete exports | same | B |
-| 14 | Qdrant collection | chunk text + vectors | delete-by-filter `entity_id` | marked until the vacuum optimizer runs; trigger it or report the bound | filtered scroll + segment stats | A |
-| 15 | Qdrant WAL / snapshots | points | n/a | `wal_capacity_mb` rollover; no snapshots taken (stated) | file scan of the storage volume | A |
-| 16 | Generator ground-truth log + run log (Parquet) | PII payloads, txids | rewrite / pseudonymize | file rewrite | Parquet scan | A |
+| 14 | Qdrant collection (`payload_storage/page_0.dat`, plain bytes) | chunk text + vectors | delete-by-filter `entity_id`, only after silver shows the tombstone | still in `page_0.dat` after delete; vacuum optimizer with `deleted_threshold` lowered and `vacuum_min_vector_number=100` (1 is rejected); segments under 100 vectors never vacuumed, **bounded** (§3.1) | filtered scroll + segment dir change + file scan | A |
+| 15 | Qdrant WAL / snapshots | points (the payload also sits in `0/wal/`) | n/a | rollover after about 2 x `wal_capacity_mb` of later writes; `wal_capacity_mb` is not changeable by PATCH; **bounded** (§3.1); no snapshots taken (stated, directory asserted empty) | file scan of the storage volume | A |
+| 16 | Generator ground-truth log + run log (Parquet) | PII payloads, txids | pseudonymize: pk → negative int63 from HMAC, `row_json` nulled (ADR-0017) | atomic rewrite of every `runs/data/*/ground_truth` | Parquet scan | A |
 | 17 | foreachBatch event log | pks + LSNs | pseudonymize pk | file rewrite | Parquet scan | A |
 | 18 | Spark checkpoints / state | offsets only (no stateful ops) | — | — | inspect | A |
 | 19 | Spark local spill dirs | ephemeral shuffle data | n/a | container restart (bound stated) | — | A |
 | 20 | Embedding worker state (`embedder.json`) | bronze snapshot pointer + ids of changes waiting for silver (`pending`) | pseudonymize / rewrite | file rewrite | file scan | A |
-| 21 | Dagster run logs / event storage | must never contain raw ids (enforced by code review + grep check) | — | — | grep | A |
+| 21 | Dagster run logs / event storage; OpenLineage and maintenance run records | must never contain raw ids (run config carries `request_id` only; code review + grep check) | — | — | grep | A |
 | 22 | Prometheus TSDB | no customer labels by rule | — | — | label audit | B |
 | 23 | Marquez | dataset/job metadata only | — | — | — | B |
-| 24 | Forget audit table | `hmac(customer_id)` only | — | — | — | A |
+| 24 | Forget audit tables (`privacy.forget_audit`, `forget_sink_status`) | `hmac(customer_id)` only; HMAC key secrecy caveat in ADR-0017 | — | — | grep for raw ids | A |
 | 25 | Embedder action log (`actions.jsonl`) | entity ids (`help_articles:<id>`, `support_tickets:<id>`) and LSNs per upsert / delete | pseudonymize ids | file rewrite | file scan | A |
+| 26 | Postgres `pg_statistic` | most-common values / histogram bounds copied from user columns | `ANALYZE` after the delete | `VACUUM pg_statistic` removes the copies only after the slot's `catalog_xmin` passes the delete (about 2-3 min with 10 s heartbeats in the spike); poll, do not assume | grep `base/` and `global/` | A |
+| 27 | Postgres server log and container logs (and every other container's log) | statement text, ids in messages | n/a (code must not log raw ids) | log rotation / container recreate | grep of `docker logs` for 13-digit subject ids and canaries | A |
+| 28 | SeaweedFS volume `.dat` garbage | deleted needles keep their bytes | object delete | `volume.vacuum` (needs `lock`; collection `lake`) | garbage ratio from `volume.list` before and after; not a grep (gzip'd needles) | A |
+| 29 | Redpanda compaction index and other segment-adjacent files | keys | compaction | rewritten with the segment | included in the raw grep of `kafka/cdc.public.*` (to be measured in g8-check) | A |
+| 30 | Committed run manifests (`runs/manifests/*.json`) and the manifest being written | must hold no raw ids or canaries (HMAC/counts only) | rewrite | file rewrite | self-scan before and after commit | A |
+| 31 | Generator seed | can regenerate the synthetic values of a forgotten generator-owned customer | n/a | not removable; stated | — | A |
+| 32 | `privacy.forget_requests.raw_customer_id` and `subject_scratch` (footprint ids + customer email, needed to resume a phase) | the only copies of the raw id | both NULLed together at the end, only when every physical sink passed | `VACUUM` of the `privacy` tables | query + raw scan | A |
+
+### 3.1 Documented bounds (locations G8 reports as bounded, not removed)
+Pass for these = bytes absent within the deadline **or** the bound recorded; nothing here is tuned to look better. All figures below are from the G8 spike (one machine); g8-check records the run values.
+- **Qdrant segments under 100 vectors are never vacuumed.** `vacuum_min_vector_number` must be at least 100 (1 is rejected); a 29-point collection kept the canary in `page_0.dat` for 20+ s with the lowest settings and was not touched when a larger segment appeared. If `text_chunks` has small segments, deleted payload stays in them.
+- **Qdrant WAL.** The deleted payload also sits in `0/wal/`. It was gone only after about 2 x `wal_capacity_mb` (32 MiB each) of later writes; no API forces it and `wal_capacity_mb` is not applied by PATCH.
+- **Postgres heap.** Plain `VACUUM` does not scrub deleted tuple bytes; `VACUUM FULL` is needed and is recorded when used.
+- **Postgres `pg_statistic`.** The logical slot's `catalog_xmin` holds back catalog vacuum; the copies went only after `catalog_xmin` advanced (2-3 min in the spike), so the procedure polls `pg_replication_slots.catalog_xmin` before concluding.
+- **Postgres WAL.** The slot's `restart_lsn` must pass the segment, then a checkpoint recycles it, and a recycled segment keeps its bytes until overwritten. In the spike this took 13 forced `pg_switch_wal()` rounds (8 + 5), each needing a fresh write; scale is about `min_wal_size` / 16 MiB (5) segments plus slot lag. Stale tail bytes beyond a short switched segment are not guaranteed zero, so the result is "bounded, verified by grep".
+- **Spark local spill** is ephemeral and bounded by container restart; **SeaweedFS** bytes persist until vacuum (row 28).
 
 ## 4. Timestamp capture points (drives G11)
 
@@ -193,6 +209,6 @@ Why Spark 4.1.3 and not 4.2.0: Iceberg 1.12.0 publishes no `iceberg-spark-runtim
 - **Clock skew:** mitigated by timestamping inside one VM plus the host–VM offset check. Commit timestamps are Postgres's own clock.
 - **Generator fidelity:** synthetic skew does not match a real workload. The achieved rate is reported, not the target.
 - **Checks tuned to faults:** mitigated by this pre-registered matrix and two blind faults. Undetected faults may still exist; zero detections ≠ zero faults.
-- **Small collections:** Qdrant may never reach `deleted_threshold`, so the physical-deletion bound may be "until forced optimization."
+- **Small collections:** Qdrant segments under 100 vectors are never vacuumed (§3.1), so the physical-deletion bound there is reported as a bound, not a time.
 - **Compaction conflicts:** `rewrite_data_files` can fail validation against concurrent MERGE delete files; the conflict rate is recorded rather than hidden.
 - **Repetitions:** ≥ 5 per point; small-sample medians, not distributions.

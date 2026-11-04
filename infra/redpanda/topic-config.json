@@ -1,0 +1,15 @@
+{
+  "_status": "SPIKE-VERIFIED on Redpanda v26.2.4 (G8 spike, section 2), except min.compaction.lag.ms, whose value is a chosen trade-off. Applied only by `bootstrap.py --forget-ready-topics` (make g8-check); g2/g3/g6 run on the Debezium defaults (no compaction), because they read topics from offset 0. Verified: the cluster override log_segment_ms_min is REQUIRED (the broker default 600000 silently clamps segment.ms, so the active segment never rolls); compaction needs min.cleanable.dirty.ratio far below its 0.5 default on small topics; a deleted key's record bytes leave the segment files ~10 s after the roll once the compaction lag has passed; a tombstone stays until a LATER write rolls and compacts another segment (so the nudge in adrp.forget.broker is required); topic-level delete.retention.ms is enough. min.compaction.lag.ms: the spike used 0 (idle topics) and 45000 (with segment.ms 10000); 0 gives the fastest broker removal (about segment.ms + 20 s after the last write) but lets compaction merge versions of non-subject keys that a stopped consumer has not read yet (Spark's Kafka source does not fail on such gaps, failOnDataLoss=true was tested, but bronze loses those intermediate versions). The value here, 300000 (5 min), keeps every record readable for at least 5 min, so a physical maintenance window with spark-streams stopped should stay under 5 min per stream pause or accept gaps; the price is that broker physical absence takes about 5 min + segment.ms + housekeeping (~10 s tick) after the nudge write. max.compaction.lag.ms must be >= min.compaction.lag.ms (Redpanda rejects the topic otherwise). Raise both together for a longer window. Bronze offsets WILL have gaps on these topics.",
+  "cluster": {
+    "log_segment_ms_min": "10000"
+  },
+  "topic": {
+    "cleanup.policy": "compact,delete",
+    "segment.ms": "30000",
+    "min.cleanable.dirty.ratio": "0.01",
+    "min.compaction.lag.ms": "300000",
+    "max.compaction.lag.ms": "600000",
+    "delete.retention.ms": "10000",
+    "retention.ms": "86400000"
+  }
+}

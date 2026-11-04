@@ -3,6 +3,8 @@
 Jobs:
   skeleton_health      Qdrant point count (G0)
   iceberg_maintenance  compaction, manifest rewrite, snapshot expiry, orphan removal (G3)
+  forget_logical       enqueue the logical phase of deletion requests (G8); config: request_ids only
+  forget_physical      enqueue the physical phase of deletion requests (G8); config: request_ids only
 NOTE: no `from __future__ import annotations` here: Dagster inspects the real annotation objects.
 Streaming services are observed as assets and checks in later goals. Rule (inventory row 21): never log raw
 entity or customer ids, only counts.
@@ -88,4 +90,44 @@ daily_maintenance = dg.ScheduleDefinition(
     job=iceberg_maintenance, cron_schedule="0 3 * * *", default_status=dg.DefaultScheduleStatus.STOPPED
 )
 
-defs = dg.Definitions(jobs=[skeleton_health, iceberg_maintenance], schedules=[daily_maintenance])
+
+class ForgetConfig(dg.Config):  # type: ignore[misc]
+    request_ids: list[str]  # uuids of privacy.forget_requests rows; anything else is refused (never a customer id)
+
+
+def _enqueue_forget(context: OpExecutionContext, config: ForgetConfig, phase: str) -> int:
+    """HONEST LIMIT: this container has no Postgres client, no docker access and no pyarrow, so it cannot run the
+    forget workflow. These jobs only enqueue: they write a queue file into the shared event-log mount, and the host
+    executor (`scripts/forget.py run`) reads it and runs adrp.forget.workflow. Dagster therefore records that a
+    phase was requested and by which request ids, never what was forgotten, and nothing here touches data."""
+    from adrp.forget import queue
+
+    ids = queue.clean_ids(config.request_ids)
+    path = queue.write_entry(Path(os.environ.get("EVENT_LOG_DIR", "/eventlog")) / queue.QUEUE_SUBDIR, phase, ids)
+    context.log.info(f"queued {phase} phase for {len(ids)} request(s): {path.name}")
+    return len(ids)
+
+
+@dg.op
+def enqueue_forget_logical(context: OpExecutionContext, config: ForgetConfig) -> int:
+    return _enqueue_forget(context, config, "logical")
+
+
+@dg.op
+def enqueue_forget_physical(context: OpExecutionContext, config: ForgetConfig) -> int:
+    return _enqueue_forget(context, config, "physical")
+
+
+@dg.job
+def forget_logical() -> None:
+    enqueue_forget_logical()
+
+
+@dg.job
+def forget_physical() -> None:
+    enqueue_forget_physical()
+
+
+defs = dg.Definitions(
+    jobs=[skeleton_health, iceberg_maintenance, forget_logical, forget_physical], schedules=[daily_maintenance]
+)

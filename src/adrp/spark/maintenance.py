@@ -40,15 +40,28 @@ def ts_literal(older_than: datetime) -> str:
     return older_than.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 
-def compact(spark: SparkSession, fq: str, attempts: int = 3) -> dict[str, Any]:
+def compact(
+    spark: SparkSession,
+    fq: str,
+    attempts: int = 3,
+    options: dict[str, str] | None = None,
+    where: str | None = None,
+) -> dict[str, Any]:
+    """rewrite_data_files with the default options; `options` overrides them key by key (G8 passes
+    delete-file-threshold=1, min-input-files=1, ...), `where` is a Spark SQL filter selecting the files to rewrite."""
     before = file_stats(spark, fq)
-    options = ", ".join(f"'{k}', '{v}'" for k, v in COMPACTION_OPTIONS.items())
+    merged = {**COMPACTION_OPTIONS, **(options or {})}
+    opts = ", ".join(f"'{k}', '{v}'" for k, v in merged.items())
+    where_arg = ""
+    if where:
+        escaped = where.replace("\\", "\\\\").replace("'", "\\'")
+        where_arg = f", where => '{escaped}'"
     failures: list[str] = []
     result: dict[str, Any] = {}
     for attempt in range(1, attempts + 1):
         try:
             row = spark.sql(
-                f"CALL lake.system.rewrite_data_files(table => '{short(fq)}', options => map({options}))"
+                f"CALL lake.system.rewrite_data_files(table => '{short(fq)}'{where_arg}, options => map({opts}))"
             ).first()
             result = row.asDict() if row else {}
             break

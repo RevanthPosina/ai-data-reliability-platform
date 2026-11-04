@@ -1,0 +1,25 @@
+# ADR-0017: Forget policy (what "removed" means in each sink)
+- Status: accepted (G8); procedure checked in the G8 spike, end-to-end lags to be measured in g8-check
+## Decision
+`forget(customer_id)` is **re-key, then delete**, in one Postgres transaction: create a placeholder customer (id >= 1e12, PII set to a fixed redacted constant); `UPDATE accounts, transactions SET customer_id = placeholder`; `DELETE` the subject's `support_tickets`; `DELETE` the `customers` row. `transactions.customer_id` is `NOT NULL` with an FK, and ledger-like rows are never deleted (PLAN G8 gold policy), so they are re-attached to the placeholder rather than removed. The re-key also writes a newer version of each row, which is what lets silver overwrite and the broker compact away the old value.
+## Logical vs physical, per sink
+| Sink | Logical absence (S6, by query) | Physical absence (S7/S8) |
+|---|---|---|
+| Postgres | no `customers`/`support_tickets` row; no row in any table carries the raw id | no bytes in `base/ global/ pg_wal/ pg_replslot/ pg_logical/` after `VACUUM FULL` + `pg_statistic` refresh + WAL cycling; WAL is **bounded** (ADR-0019 and design §3.1) |
+| Redpanda | none (a tombstone is not a query result) | no segment or index file under `/var/lib/redpanda/data/kafka/cdc.public.*` contains the id, the canary, or the Confluent-framed key bytes (ADR-0019) |
+| Bronze, `quarantine_*` | `DELETE WHERE (source_table, pk) IN footprint` returns 0 rows | ADR-0018 |
+| Silver | tombstone for the subject's keys with every non-key column NULL; no `transactions`/`accounts` row carries the raw id | ADR-0018 |
+| Qdrant | filtered scroll on the subject's ticket entities returns 0 | segment vacuum observed and file scan clean, or the bound (design §3.1) |
+| Files (event logs, embedder state, ground truth) | n/a | atomic rewrite, then file scan |
+The footprint is the union of Postgres and bronze history (customer id -> ticket, account and transaction ids), so rows already deleted in Postgres are still found. Qdrant is deleted only **after** silver shows the tombstone, otherwise the embedder could re-create the points from a not-yet-applied update.
+## Tombstone and ADR-0013
+The silver tombstone keeps the raw `customers.id` (it is the key; non-key columns are NULL) until the verifier has seen the broker physically clean. A purge sweep then hard-deletes the tombstone and the Iceberg procedure runs again. Purging earlier could let a replayed older event resurrect the row (ADR-0013). Both times (tombstone written, tombstone purged) are reported; until the purge the raw id is still present in silver and this is stated, not hidden.
+## Audit schema and HMAC key
+Schema `privacy` lives in the shop database **outside `dbz_pub`** (the publication is `FOR TABLES IN SCHEMA public`), so it is never captured by CDC, and the `debezium` role has no grant on it. `forget_requests` holds the only copy of the raw id in `raw_customer_id`; it is set to NULL on completion and the table vacuumed. `forget_audit` keeps `hmac(customer_id)`, request id, the transaction's 32-bit xid and commit LSN, and per-table counts. `forget_sink_status` keeps per-sink logical/physical times, the bound, and counts/sizes only. Dagster run config carries the request id, never the id.
+Customer ids are sequential, so an HMAC is only as private as its key: with the key (`FORGET_HMAC_KEY`, in `.env`, never logged or put in a manifest) anyone can enumerate ids and match them. Without it the pseudonyms do not resolve. These are **pseudonyms, not anonymization**; rotating the key breaks every join that depends on them.
+## Pseudonyms in files
+Logs and event files use `p:<hmac[:16]>`. In the generator's ground truth the int64 pk is replaced by a negative int63 derived from the HMAC and `row_json` is nulled; every `runs/data/*/ground_truth` directory is rewritten. Consequences: (1) the G1 Parquet content digest no longer holds for a rewritten run, by design (deletion wins over verifiability, as in ADR-0010); (2) the generator never reads the database, so rerunning it for a customer it created, after that customer was forgotten, would insert FK-violating rows. A generator-owned customer is therefore forgotten only after the generator has stopped. The generator seed can still regenerate synthetic values and is listed in the inventory; it is not removable.
+## Bounded locations
+Postgres WAL and recycled segments, Spark local spill, SeaweedFS needles before volume vacuum, Qdrant WAL and Qdrant segments under 100 vectors cannot be forced clean on demand. For these a sink passes if the bytes are absent **or** a bound is recorded (privacy.forget_sink_status.bound); the report says "bounded, not removed".
+## Wording
+Every result names logical or physical and the sink. The claim is "deletion propagation verified in this system", never compliance, and never "deleted" alone. "Physically gone" is not claimed from a raw-byte scan of compressed data (Avro manifests, gz metadata, SeaweedFS-compressed needles): those are decoded, or reported as bounds. No raw id or canary appears in a manifest or a check detail string.

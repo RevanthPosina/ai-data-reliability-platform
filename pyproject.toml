@@ -15,6 +15,7 @@ select = ["E", "F", "W", "I", "B", "UP", "BLE", "RUF"]
 [tool.ruff.lint.per-file-ignores]
 "scripts/g3_check.py" = ["E501"]
 "scripts/g6_check.py" = ["E501"]  # long human-readable check descriptions
+"scripts/g8_check.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.10"  # code that runs in the Spark image must be 3.10-safe

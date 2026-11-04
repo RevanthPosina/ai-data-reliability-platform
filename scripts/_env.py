@@ -18,4 +18,5 @@ def read_env(path: Path) -> dict[str, str]:
 
 
 def all_env() -> dict[str, str]:
-    return {**read_env(ROOT / "versions.env"), **read_env(ROOT / ".env")}
+    # .env.example is the floor: a .env copied before a variable existed (FORGET_HMAC_KEY) still renders.
+    return {**read_env(ROOT / "versions.env"), **read_env(ROOT / ".env.example"), **read_env(ROOT / ".env")}

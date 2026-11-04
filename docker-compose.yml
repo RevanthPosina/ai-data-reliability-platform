@@ -182,6 +182,7 @@ services:
       <<: *lake-env
       SCHEMA_REGISTRY_URL: http://redpanda:8081
       EVENT_LOG_DIR: /eventlog
+      FORGET_HMAC_KEY: ${FORGET_HMAC_KEY}
     volumes: [./runs/data/eventlog:/eventlog]
     mem_limit: 1536m
 
@@ -229,7 +230,11 @@ services:
       QDRANT_URL: http://qdrant:6333
       SCHEMA_REGISTRY_URL: http://redpanda:8081
       EVENT_LOG_DIR: /eventlog
-    volumes: [./runs/data/eventlog:/eventlog]
+      STATE_DIR: /state
+      FORGET_HMAC_KEY: ${FORGET_HMAC_KEY}
+    volumes:
+      - ./runs/data/eventlog:/eventlog
+      - embedder-state:/state:ro  # G8 reads the embedder's pointer and pending set to know when it has drained
     ports: ["127.0.0.1:3000:3000"]
     mem_limit: 2560m
 
