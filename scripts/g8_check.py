@@ -321,6 +321,8 @@ def presence_pass_for(
     required_physical: set[str],
     quarantine_subject: str | None = None,
 ) -> bool:
+    # Recent inserts may still sit in shared buffers; the raw-byte scan of base/ only sees flushed pages.
+    postgres.checkpoint()
     pr = workflow.presence(probes, ctx.cfg, allow_missing=("quarantine", "ground_truth"))
     ok = True
     for s in probes:
