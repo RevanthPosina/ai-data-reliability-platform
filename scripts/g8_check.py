@@ -546,7 +546,8 @@ def phase_forget_generator(ctx: Ctx) -> None:
     presence_pass_for(
         ctx, "generator", [probe],
         required_logical={"postgres", "silver", "bronze", "qdrant"},
-        required_physical={"postgres", "bronze", "silver", "qdrant", "qdrant_wal", "broker", "pg_wal", "event_logs", "embedder_files", "ground_truth"},
+        # Qdrant's WAL only holds recent writes: the Zipf-head customer's points rotated out of it long before the forget.
+        required_physical={"postgres", "bronze", "silver", "qdrant", "broker", "pg_wal", "event_logs", "embedder_files", "ground_truth"},
     )  # fmt: skip
     ctx.gen_rid = workflow.register(cid)
     forget_generator_subject(ctx)
