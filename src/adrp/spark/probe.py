@@ -7,6 +7,13 @@ columns --tables a,b                    RESULT {...}            current silver c
 files --tables a,b                      RESULT {...}            data/delete file counts and bytes, snapshot counts
 rebuild-check --tables a,b --pick k     RESULT {...}            rebuild-from-bronze vs time-travelled silver snapshots
 checksum --tables a,b                   RESULT {...}            count + checksum of the current silver tables
+recon --tables a,b                      ROW <table> <json>      every silver row (as dump), then one RESULT
+                                        RESULT {bronze_offsets: {topic: {partition: {rows, distinct, ranges}}},
+                                                rebuild: {table: {rows, checksum, rebuilt_rows, rebuilt_checksum,
+                                                                  equal}},
+                                                quarantine: {table: [[pk, lsn], ...]}}
+bronze-txids --tables a,b               TXID <table> <json>     {pk, lsn, op, txid} of the bronze change that
+                                                                produced each current silver row (raw pks)
 """
 
 from __future__ import annotations
@@ -16,7 +23,7 @@ import json
 import os
 from typing import Any
 
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, Window
 from pyspark.sql import functions as F
 
 from adrp.spark import rebuild, silver
@@ -45,7 +52,7 @@ def cmd_dump(spark: SparkSession, tables: list[str]) -> None:
         fmt = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"  # microseconds: to_json defaults to milliseconds
         for r in spark.sql(
             f"SELECT to_json(struct(*), map('timestampFormat', \"{fmt}\")) AS j FROM lake.silver.{t}"
-        ).collect():
+        ).toLocalIterator():  # one partition at a time: the driver of spark-query is small
             print(f"ROW\t{t}\t{r['j']}", flush=True)
 
 
@@ -165,11 +172,102 @@ def cmd_rebuild_check(spark: SparkSession, tables: list[str], picks: int) -> Non
     out("RESULT", res)
 
 
+def bronze_offsets(spark: SparkSession, tables: list[str]) -> dict[str, Any]:
+    """Per topic and partition: bronze rows, distinct kafka offsets and those offsets as inclusive [lo, hi] ranges
+    (gaps and islands), so the result stays small however many records there are. Rows and distinct offsets differ
+    exactly by the duplicates bronze holds by design."""
+    bronze = spark.table("lake.bronze.cdc_events").where(F.col("source_table").isin([f"public.{t}" for t in tables]))
+    counts = bronze.groupBy("topic", "kafka_partition").agg(F.count("*").alias("rows")).collect()
+    ordered = Window.partitionBy("topic", "kafka_partition").orderBy("kafka_offset")
+    islands = (
+        bronze.select("topic", "kafka_partition", "kafka_offset")
+        .distinct()
+        .withColumn("island", F.col("kafka_offset") - F.row_number().over(ordered))
+        .groupBy("topic", "kafka_partition", "island")
+        .agg(F.min("kafka_offset").alias("lo"), F.max("kafka_offset").alias("hi"))
+        .collect()
+    )
+    res: dict[str, Any] = {}
+    for r in counts:
+        res.setdefault(r["topic"], {})[str(r["kafka_partition"])] = {
+            "rows": int(r["rows"]),
+            "distinct": 0,
+            "ranges": [],
+        }
+    for r in sorted(islands, key=lambda r: (r["topic"], r["kafka_partition"], r["lo"])):
+        part = res[r["topic"]][str(r["kafka_partition"])]
+        part["ranges"].append([int(r["lo"]), int(r["hi"])])
+        part["distinct"] += int(r["hi"]) - int(r["lo"]) + 1
+    return res
+
+
+def rebuild_vs_current(spark: SparkSession, t: str) -> dict[str, Any]:
+    """The silver table as it is now against rebuild(bronze, every LSN), same columns, same checksum."""
+    fq = f"lake.silver.{t}"
+    cols = data_columns(spark, fq)
+    n_s, h_s = rebuild.checksum(spark.table(fq), cols)
+    try:
+        rebuilt = rebuild.rebuild(spark, table_obj(spark, t), (1 << 63) - 1).select(*[F.col(f"`{c}`") for c in cols])
+        n_r, h_r = rebuild.checksum(rebuilt, cols)
+    except Exception as e:  # noqa: BLE001 - reported as a failed comparison, not a crashed probe
+        return {"rows": n_s, "checksum": h_s, "error": type(e).__name__, "equal": False}
+    return {
+        "rows": n_s, "checksum": h_s, "rebuilt_rows": n_r, "rebuilt_checksum": h_r,
+        "equal": (n_s, h_s) == (n_r, h_r),
+    }  # fmt: skip
+
+
+def quarantined_keys(spark: SparkSession, t: str) -> list[list[Any]]:
+    """(pk, lsn) of every row parked in quarantine_<t>; [] when the table does not exist."""
+    fq = f"lake.silver.quarantine_{t}"
+    if not spark.catalog.tableExists(fq):
+        return []
+    rows = spark.table(fq).select("pk", "lsn").distinct().collect()
+    return sorted([r["pk"], int(r["lsn"])] for r in rows)
+
+
+def cmd_recon(spark: SparkSession, tables: list[str]) -> None:
+    """Everything one reconcile needs from the lake, in one JVM: the silver rows, bronze's offsets, the
+    silver-vs-rebuild comparison and the quarantined keys. Counts and checksums only besides the ROW lines."""
+    cmd_dump(spark, tables)
+    out(
+        "RESULT",
+        {
+            "bronze_offsets": bronze_offsets(spark, tables),
+            "rebuild": {t: rebuild_vs_current(spark, t) for t in tables},
+            "quarantine": {t: quarantined_keys(spark, t) for t in tables},
+        },
+    )
+
+
+def cmd_bronze_txids(spark: SparkSession, tables: list[str]) -> None:
+    """For each current silver row, the bronze change that carries its (key, lsn): its pk string, op and Postgres
+    txid. The host maps txid to a generator transaction (continuous reconciliation)."""
+    bronze = spark.table("lake.bronze.cdc_events")
+    for t in tables:
+        table = table_obj(spark, t)
+        changes = bronze.where((F.col("source_table") == f"public.{t}") & F.col("value_bytes").isNotNull()).select(
+            F.from_json("pk", table.key_ddl(spark)).alias("k"), "pk", "op", "lsn", "txid"
+        )
+        current = spark.table(table.name).select(
+            *[F.col(f"`{k}`").alias(f"_s_{k}") for k in table.keys], F.col("lsn").alias("_s_lsn")
+        )
+        on = F.col("lsn") == F.col("_s_lsn")
+        for k in table.keys:
+            on = on & (F.col(f"k.{k}") == F.col(f"_s_{k}"))
+        for r in changes.join(current, on, "left_semi").select("pk", "lsn", "op", "txid").distinct().toLocalIterator():
+            print(f"TXID\t{t}\t{json.dumps(r.asDict(), default=str)}", flush=True)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        "cmd", choices=["dump", "bronze-stats", "quarantine", "columns", "props", "files", "checksum", "rebuild-check"]
-    )
+        "cmd",
+        choices=[
+            "dump", "bronze-stats", "quarantine", "columns", "props", "files", "checksum", "rebuild-check",
+            "recon", "bronze-txids",
+        ],
+    )  # fmt: skip
     ap.add_argument("--tables", default="")
     ap.add_argument("--pick", type=int, default=3)
     a = ap.parse_args()
@@ -190,6 +288,10 @@ def main() -> None:
         cmd_files(spark, tables)
     elif a.cmd == "checksum":
         cmd_checksum(spark, tables)
+    elif a.cmd == "recon":
+        cmd_recon(spark, tables)
+    elif a.cmd == "bronze-txids":
+        cmd_bronze_txids(spark, tables)
     else:
         cmd_rebuild_check(spark, tables, a.pick)
 

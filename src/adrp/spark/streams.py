@@ -110,21 +110,33 @@ def ensure_bronze(spark: SparkSession) -> None:
     )
 
 
+def fault_requested(point: str) -> bool:
+    """Test-only: True when ADRP_FAULT_HOOKS=1 and the file CHECKPOINT_ROOT/fault names this point."""
+    if os.environ.get("ADRP_FAULT_HOOKS") != "1":
+        return False
+    try:
+        with open(os.path.join(os.environ["CHECKPOINT_ROOT"], "fault")) as fh:
+            return fh.read().strip() == point
+    except FileNotFoundError:
+        return False
+
+
 def fault_point(point: str, batch_id: int) -> None:
     """Test-only: park the driver at a named point so a test can SIGKILL the container mid-batch.
 
     Enabled only with ADRP_FAULT_HOOKS=1 and a file CHECKPOINT_ROOT/fault naming the point.
     """
-    if os.environ.get("ADRP_FAULT_HOOKS") != "1":
-        return
-    try:
-        with open(os.path.join(os.environ["CHECKPOINT_ROOT"], "fault")) as fh:
-            wanted = fh.read().strip()
-    except FileNotFoundError:
-        return
-    if wanted == point:
+    if fault_requested(point):
         print(f"FAULT_HOOK point={point} batch={batch_id}", flush=True)
         time.sleep(600)
+
+
+def fault_marker(point: str, batch_id: int) -> None:
+    """Test-only, same switch as fault_point but it does not park: it prints the marker line and continues, so a
+    host that follows the log can SIGKILL the container while the batch is already inside the write. Prints the
+    batch id only (never a table, key or value)."""
+    if fault_requested(point):
+        print(f"FAULT_HOOK point={point} batch={batch_id}", flush=True)
 
 
 def wait_for_subject(subject: str, poll_s: float = 5.0) -> dict[str, Any]:
@@ -181,6 +193,7 @@ def process_table(spark: SparkSession, batch_id: int, topic: str, part: DataFram
     before_id, _ = silver.current_snapshot(spark, table.name)
     carried: list[tuple[str, int]] = []
     if good.take(1):
+        fault_marker("merge_start", batch_id)
         carried = silver.merge_changes(spark, table, good)
     after_id, committed_at = silver.current_snapshot(spark, table.name)
     return {

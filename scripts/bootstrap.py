@@ -155,11 +155,16 @@ def forget_ready_topics() -> None:
             rpk("topic", "alter-config", topic, *[x for kv in sets for x in ("--set", kv)])
 
 
-def ensure_connector(env: dict[str, str], timeout: float = 120) -> None:
-    """Create or update the Debezium connector and wait until connector and task are RUNNING."""
+def ensure_connector(env: dict[str, str], timeout: float = 120, overrides: dict[str, str] | None = None) -> None:
+    """Create or update the Debezium connector and wait until connector and task are RUNNING.
+
+    `overrides` are merged over the rendered pg-shop.json (test-only knobs, e.g. snapshot throttling). PUT replaces the
+    whole config, so a later call without overrides restores the unmodified file."""
     step("Debezium connector pg-shop")
     wait_http("http://localhost:8083/connectors")
     cfg = json.loads(string.Template((ROOT / "infra/connect/pg-shop.json").read_text()).substitute(env))
+    if overrides:
+        cfg.update(overrides)
     http("PUT", "http://localhost:8083/connectors/pg-shop/config", cfg)
 
     deadline = time.monotonic() + timeout

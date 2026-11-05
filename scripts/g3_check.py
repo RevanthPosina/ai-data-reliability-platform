@@ -247,21 +247,33 @@ class LoadGenerator:
         self.thread.join(timeout=600)
 
 
+def kill_at_point(point: str) -> bool:
+    """Arm the parked fault `point`, SIGKILL the streaming container when its driver reaches it, restart it.
+
+    Assumes spark-streams is up and processing batches (the caller keeps load flowing) and ADRP_FAULT_HOOKS=1 is set in
+    the container. Returns False, after clearing the fault file and without killing, if the hook is not reached in
+    240 s. On True the fault file is cleared and spark-streams has been re-created with `up -d` (not yet waited on:
+    callers sleep for driver start-up and catch-up)."""
+    before = log_text().count(f"FAULT_HOOK point={point}")
+    compose("exec", "-T", "spark-streams", "sh", "-c", f"echo {point} > /checkpoints/fault")
+    hit = g2.wait_for(lambda: log_text().count(f"FAULT_HOOK point={point}") > before, 240, 1.0)
+    if not hit:
+        check(f"kill: driver reached fault point {point}", False)
+        clear_fault_file()
+        return False
+    sh("docker", "kill", "adrp-spark-streams-1")
+    clear_fault_file()
+    compose("--profile", "core", "--profile", "apps", "up", "-d", "spark-streams")
+    return True
+
+
 def phase_kill(c: Any, drain: Drain, start_txn: int) -> tuple[int, dict[str, Any]]:
     print("P2 kill and restart under load")
     kills = []
     with LoadGenerator() as gen:
         for point in ("before_merge", "mid_merge", "after_merge"):
-            before = log_text().count(f"FAULT_HOOK point={point}")
-            compose("exec", "-T", "spark-streams", "sh", "-c", f"echo {point} > /checkpoints/fault")
-            hit = g2.wait_for(lambda p=point, b=before: log_text().count(f"FAULT_HOOK point={p}") > b, 240, 1.0)
-            if not hit:
-                check(f"kill: driver reached fault point {point}", False)
-                clear_fault_file()
+            if not kill_at_point(point):
                 continue
-            sh("docker", "kill", "adrp-spark-streams-1")
-            clear_fault_file()
-            compose("--profile", "core", "--profile", "apps", "up", "-d", "spark-streams")
             kills.append(point)
             time.sleep(45)  # driver start-up and catch-up before the next hook is armed
     end = gen.end_txn or start_txn
