@@ -6,8 +6,10 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+import g3_check
 import pytest
 import reconcile as rc
+from _env import ROOT
 
 from adrp.forget import ids as fids
 from adrp.recon.canonical import hex64
@@ -154,6 +156,59 @@ def test_cut_paused_needs_the_closing_sample() -> None:
     cut.pause_end = start
     cut.pause_settled = False
     assert not cut.paused
+
+
+def test_cut_reached_does_not_need_the_closing_sample_but_ok_does() -> None:
+    start = rc.PauseState(False, 10, {"customers": 1})
+    cut = rc.Cut("0/10", 16, start, pause_settled=True, flush_reached=True, checkpoints_reached=True)
+    assert cut.reached and not cut.ok  # pause_end is only taken after the last read
+    cut.pause_end = start
+    assert cut.reached and cut.ok
+    for name in ("flush_reached", "checkpoints_reached", "pause_settled"):
+        broken = rc.Cut("0/10", 16, start, pause_settled=True, flush_reached=True, checkpoints_reached=True)
+        setattr(broken, name, False)
+        assert not broken.reached
+
+
+def _stub_reconcile(monkeypatch: pytest.MonkeyPatch, cut: "rc.Cut") -> list[str]:
+    """Everything reconcile() touches outside the cut, stubbed; returns the list `_qdrant_checks` appends to."""
+    qdrant_runs: list[str] = []
+    monkeypatch.setattr(rc, "consistent_cut", lambda consumer: cut)
+    monkeypatch.setattr(rc, "detect_compacting", lambda: dict.fromkeys(rc.TABLES, False))
+    monkeypatch.setattr(rc, "pg_rows", lambda t: ([], COLS))
+    monkeypatch.setattr(g3_check, "probe", lambda *a: ([], {"bronze_offsets": {}, "rebuild": {}, "quarantine": {}}))
+    monkeypatch.setattr(rc, "generator_deleted_ever", lambda n: {})
+    monkeypatch.setattr(rc, "pause_state", lambda: cut.pause_start)
+    monkeypatch.setattr(rc, "write_diff", lambda report: ROOT / ".run" / "g10a-diff-test.json")
+
+    def fake_qdrant() -> dict[str, Any]:
+        qdrant_runs.append("ran")
+        return {"consistent": {"ok": True}, "matches_postgres": {"ok": True}}
+
+    monkeypatch.setattr(rc, "_qdrant_checks", fake_qdrant)
+    return qdrant_runs
+
+
+def test_reconcile_runs_qdrant_when_the_cut_was_reached_before_the_closing_sample(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: the Qdrant read was gated on Cut.ok, which needs the closing pause sample taken after that read, so
+    it was skipped ("the cut was not reached") on every run even though every cut check passed."""
+    start = rc.PauseState(False, 10, {"customers": 1})
+    cut = rc.Cut("0/10", 16, start, pause_settled=True, flush_reached=True, checkpoints_reached=True)
+    runs = _stub_reconcile(monkeypatch, cut)
+    report = rc.reconcile(None, "T", 0, False)
+    assert runs == ["ran"]
+    assert "skipped" not in report.qdrant
+    assert cut.paused and cut.pause_end is not None  # the closing sample was still taken, after Qdrant
+
+
+def test_reconcile_skips_qdrant_when_the_waits_failed(monkeypatch: pytest.MonkeyPatch) -> None:
+    start = rc.PauseState(False, 10, {"customers": 1})
+    cut = rc.Cut("0/10", 16, start, pause_settled=True, flush_reached=False, checkpoints_reached=True)
+    runs = _stub_reconcile(monkeypatch, cut)
+    report = rc.reconcile(None, "T", 0, False)
+    assert runs == [] and report.qdrant == {"skipped": "the cut was not reached"}
 
 
 # ---- report -------------------------------------------------------------------------------------------------------

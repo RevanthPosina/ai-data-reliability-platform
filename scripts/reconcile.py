@@ -338,8 +338,15 @@ class Cut:
         return self.pause_settled and self.pause_end is not None and pause_stable(self.pause_start, self.pause_end)
 
     @property
+    def reached(self) -> bool:
+        """The waits succeeded: the generator was settled before the cut, the slot flushed it, and both queries cover the
+        end offsets. Unlike `ok` it does not need the closing pause sample, which is taken after the last read (the
+        Qdrant check is one of those reads), so anything that runs before `verify_paused` must ask this, not `ok`."""
+        return self.pause_settled and self.flush_reached and self.checkpoints_reached
+
+    @property
     def ok(self) -> bool:
-        return self.paused and self.flush_reached and self.checkpoints_reached
+        return self.paused and self.reached
 
     def lagging(self) -> dict[str, int]:
         """Partitions behind the end offsets, per streaming query."""
@@ -692,7 +699,7 @@ def reconcile(
     against the broker's topic configs (broker.compaction_enabled), and the offsets gate fails if they differ,
     because a topic that does not compact must have no offset gap. `deleted_ever`: {table: ids}; default, derived from
     the generator stream. Qdrant is skipped (and its gate check fails) when `check_qdrant` is False or the cut was not
-    reached."""
+    reached (`Cut.reached`: the waits; the closing pause sample is judged by the paused gate check)."""
     t0 = time.monotonic()
     dur: dict[str, float] = {}
     cut = consistent_cut(consumer)
@@ -749,7 +756,7 @@ def reconcile(
     rebuild = {t: rebuild_summary(result.get("rebuild", {}).get(t)) for t in TABLES}
 
     t1 = time.monotonic()
-    if check_qdrant and cut.ok:
+    if check_qdrant and cut.reached:  # not cut.ok: the closing pause sample comes after this read (verify_paused below)
         qdrant = _qdrant_checks()
     else:
         qdrant = {"skipped": "check_qdrant is False" if not check_qdrant else "the cut was not reached"}
