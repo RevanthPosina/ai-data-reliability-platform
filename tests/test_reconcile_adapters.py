@@ -6,17 +6,20 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+import g2_check
 import g3_check
 import pytest
 import reconcile as rc
 from _env import ROOT
 
+from adrp.forget import broker
 from adrp.forget import ids as fids
 from adrp.recon.canonical import hex64
 from adrp.recon.classify import wording_violations
 from adrp.recon.compare import FAILING, TableResult, compare_table
 from adrp.recon.offsets import compare_offsets
 
+TOPICS = [broker.topic_for(t) for t in rc.TABLES]
 COLS = [("id", "bigint"), ("name", "text"), ("amount", "numeric")]
 
 
@@ -168,6 +171,48 @@ def test_cut_reached_does_not_need_the_closing_sample_but_ok_does() -> None:
         broken = rc.Cut("0/10", 16, start, pause_settled=True, flush_reached=True, checkpoints_reached=True)
         setattr(broken, name, False)
         assert not broken.reached
+
+
+def _stub_cut(monkeypatch: pytest.MonkeyPatch, flush: str, ends: dict[str, int], committed: dict[str, int]) -> None:
+    start = rc.PauseState(False, 10, {"customers": 1})
+    monkeypatch.setattr(rc, "settle_pause_state", lambda: (start, True))
+    monkeypatch.setattr(g2_check, "psql", lambda sql: "0/10")
+    monkeypatch.setattr(rc, "confirmed_flush_text", lambda: flush)
+    monkeypatch.setattr(g2_check, "end_offsets", lambda c, topic: {int(p): e for p, e in ends.items()})
+    monkeypatch.setattr(
+        rc, "checkpoint_offsets", lambda q: {t: {int(p): o for p, o in committed.items()} for t in TOPICS}
+    )
+
+
+def test_consistent_cut_still_reads_end_offsets_and_checkpoints_when_the_slot_did_not_flush(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: a missed flush returned before any read, so the report showed no end offsets (every bronze offset
+    "beyond end") and "lagging partitions {}" for a stall the broker and Spark knew nothing about."""
+    _stub_cut(monkeypatch, flush="0/5", ends={"0": 7}, committed={"0": 7})
+    cut = rc.consistent_cut(None, timeout=0.0, checkpoint_timeout=60.0)
+    assert not cut.flush_reached and not cut.ok and not cut.reached
+    assert cut.end and all(v == {0: 7} for v in cut.end.values())
+    assert cut.checkpoints_reached and cut.checkpoint_wait_s < 5  # one sample, no wait of 60 s
+    assert any("diagnosis only" in n for n in cut.notes)
+    _stub_cut(monkeypatch, flush="0/5", ends={"0": 7}, committed={"0": 3})
+    lagging = rc.consistent_cut(None, timeout=0.0, checkpoint_timeout=60.0)
+    assert not lagging.checkpoints_reached and lagging.lagging() == {"silver": 7, "bronze": 7}
+    assert lagging.lag["silver"]["cdc.public.customers"] == {0: 4}
+
+
+def test_consistent_cut_with_a_flushed_slot_waits_for_the_checkpoints(monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_cut(monkeypatch, flush="0/10", ends={"0": 7}, committed={"0": 7})
+    cut = rc.consistent_cut(None, timeout=0.0, checkpoint_timeout=0.0)
+    assert cut.flush_reached and cut.checkpoints_reached and cut.reached and not cut.ok
+
+
+def test_gate_detail_says_when_the_checkpoints_were_not_read() -> None:
+    report = _report()
+    report.cut.committed = {}
+    assert "checkpoints NOT read" in report.gate_checks[2][2]
+    report.cut.committed = {"silver": {}}
+    assert "checkpoints read" in report.gate_checks[2][2]
 
 
 def _stub_reconcile(monkeypatch: pytest.MonkeyPatch, cut: "rc.Cut") -> list[str]:

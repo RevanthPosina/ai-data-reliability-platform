@@ -397,8 +397,12 @@ def consistent_cut(consumer: Any, timeout: float = 300.0, checkpoint_timeout: fl
 
     cut.flush_reached, cut.flush_wait_s = wait_until(flushed, timeout, 3.0)
     if not cut.flush_reached:
+        # The cut is already failed, but keep measuring (read-only, one sample, no waiting) so the report says what the
+        # broker and the queries hold. Returning here left `end` empty, which made every bronze offset read "beyond
+        # end" and the checkpoint check read "lagging partitions {}", both false.
         cut.notes.append(f"confirmed_flush_lsn did not reach the cut within {timeout:.0f} s")
-        return cut
+        cut.notes.append("end offsets and checkpoint coverage were sampled once, for diagnosis only")
+        checkpoint_timeout = 0.0
 
     for t in TABLES:
         topic = broker.topic_for(t)
@@ -422,7 +426,11 @@ def consistent_cut(consumer: Any, timeout: float = 300.0, checkpoint_timeout: fl
 
     cut.checkpoints_reached, cut.checkpoint_wait_s = wait_until(covered, checkpoint_timeout, 5.0)
     if not cut.checkpoints_reached:
-        cut.notes.append(f"streaming checkpoints did not cover the end offsets within {checkpoint_timeout:.0f} s")
+        cut.notes.append(
+            f"streaming checkpoints did not cover the end offsets within {checkpoint_timeout:.0f} s"
+            if checkpoint_timeout
+            else "streaming checkpoints did not cover the end offsets at the single sample"
+        )
     return cut
 
 
@@ -550,7 +558,8 @@ class ReconReport:
             (
                 f"{L} cut: silver and bronze committed offsets reached the topic end offsets",
                 c.checkpoints_reached,
-                f"lagging partitions {json.dumps(c.lagging(), sort_keys=True)} waited {c.checkpoint_wait_s:.0f} s",
+                f"lagging partitions {json.dumps(c.lagging(), sort_keys=True)} waited {c.checkpoint_wait_s:.0f} s; "
+                + ("checkpoints read" if c.committed else "checkpoints NOT read"),
             ),
             (
                 f"{L} reconcile: per-table counts equal Postgres",
