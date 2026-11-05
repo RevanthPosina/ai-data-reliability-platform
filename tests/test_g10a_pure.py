@@ -9,6 +9,7 @@ from typing import Any
 
 import g10a_check as g
 import pytest
+import reconcile
 
 from adrp.forget import ids as fids
 from adrp.recon.classify import wording_violations
@@ -315,3 +316,28 @@ def test_a_thirteen_digit_run_is_found_and_a_hex64_checksum_is_not() -> None:
 @pytest.mark.parametrize("fid", g.FAULTS)
 def test_injection_and_recovery_texts_name_no_identifier(fid: str) -> None:
     assert not fids.ID13.search(g.INJECTION_AS_RUN[fid] + g.RECOVERY[fid])
+
+
+# ---- F5 liveness ---------------------------------------------------------------------------------
+
+
+def test_wait_flush_advanced_needs_the_slot_to_move_not_the_connector_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Regression: F5 only checked that the connector and task read RUNNING. A Connect worker whose offset-store
+    consumer spun after the broker restart stayed RUNNING while confirmed_flush_lsn sat frozen."""
+    seen = iter(["0/3440C30", "0/3440C30", "0/3440C31"])
+    monkeypatch.setattr(reconcile, "confirmed_flush_text", lambda: next(seen))
+    monkeypatch.setattr(g, "wait_until", lambda fn, timeout, every: (_poll(fn, 3), 0.0))
+    ok, last, _ = g.wait_flush_advanced("0/3440C30", 150.0)
+    assert ok and last == "0/3440C31"
+
+    frozen = iter(["0/3440C30"] * 5)
+    monkeypatch.setattr(reconcile, "confirmed_flush_text", lambda: next(frozen))
+    ok, last, _ = g.wait_flush_advanced("0/3440C30", 150.0)
+    assert not ok and last == "0/3440C30"
+
+    monkeypatch.setattr(reconcile, "confirmed_flush_text", lambda: None)  # no slot row: not a pass
+    assert not g.wait_flush_advanced(None, 150.0)[0]
+
+
+def _poll(fn: Any, tries: int) -> bool:
+    return any(fn() for _ in range(tries))

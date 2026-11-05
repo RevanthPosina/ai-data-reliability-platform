@@ -63,7 +63,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from adrp.forget import ids as fids
 from adrp.forget import sparkcli
 from adrp.forget.rawscan import run as run_proc
-from adrp.forget.rawscan import service_running
+from adrp.forget.rawscan import service_running, wait_until
+from adrp.forget.sparkcli import lsn_to_int
 from adrp.recon import continuous
 from adrp.recon.classify import Outcome, classify, wording_violations
 from adrp.recon.cut import latest_committed, parse_offsets_file, uncovered
@@ -1290,8 +1291,25 @@ def fault_f3(ctx: Ctx, fr: dict[str, Any]) -> Post | None:
 # ---- F5: Redpanda restart ----------------------------------------------------------------------------------------------------
 
 
+def wait_flush_advanced(before: str | None, timeout: float) -> tuple[bool, str | None, float]:
+    """Poll the slot until confirmed_flush_lsn is above `before`. (reached, last value read, seconds). Debezium flushes
+    it from its offset commit (every 60 s here), so a connector that is alive and has changes to forward moves it at
+    least once per commit; RUNNING in the Connect status says nothing about that."""
+    base = lsn_to_int(before) if before else -1
+    last: list[str | None] = [before]
+
+    def moved() -> bool:
+        last[0] = rc.confirmed_flush_text()
+        return last[0] is not None and lsn_to_int(last[0]) > base
+
+    ok, waited = wait_until(moved, timeout, 3.0)
+    return ok, last[0], waited
+
+
 def fault_f5(ctx: Ctx, fr: dict[str, Any]) -> Post | None:
     manual_up = False
+    flush0: str | None = None
+    advanced, flush1, flush_wait = False, None, 0.0
     with Load(ctx, "F5", 60, 300):
         time.sleep(30)
         n0 = next_txn()
@@ -1311,7 +1329,9 @@ def fault_f5(ctx: Ctx, fr: dict[str, Any]) -> Post | None:
             cmp("up", "-d", "spark-streams")
             time.sleep(20)
             st = g3.container_state()
+        flush0 = rc.confirmed_flush_text()
         time.sleep(60)  # load continues after the broker is healthy
+        advanced, flush1, flush_wait = wait_flush_advanced(flush0, 150.0)  # two offset-commit intervals more at most
     win = ctx.sampler.window(t_inj, t_conn)
     check(
         "F5: Redpanda restarted while the generator kept writing",
@@ -1319,6 +1339,11 @@ def fault_f5(ctx: Ctx, fr: dict[str, Any]) -> Post | None:
         f"transactions committed during the outage {n1 - n0}",
     )
     check("F5: connector RUNNING after recovery", running, f"task restarted by this check: {restarted}")
+    check(
+        "F5: the connector forwarded changes after recovery (RUNNING is not proof: confirmed_flush_lsn must advance while the generator writes)",
+        advanced,
+        f"confirmed_flush_lsn {flush0} -> {flush1} after {60 + flush_wait:.0f} s of load past recovery",
+    )
     check(
         "F5: spark-streams running after recovery",
         bool(st.get("running")),
@@ -1328,8 +1353,16 @@ def fault_f5(ctx: Ctx, fr: dict[str, Any]) -> Post | None:
           json.dumps({**win, "slot_lag_threshold_bytes": 2**30, "breach_claimed": False}))  # fmt: skip
     if win["connector_status_fired"]:
         fr["detections_fired"].append("connector_status")
-    fr["notes"]["f5"] = {**win, "task_restarted": restarted, "spark_started_by_check": manual_up}
-    fr["residual"] = "none observed after recovery" if running else "connector not RUNNING after recovery"
+    fr["notes"]["f5"] = {
+        **win, "task_restarted": restarted, "spark_started_by_check": manual_up, "flush_advanced_after_recovery": advanced,
+    }  # fmt: skip
+    fr["residual"] = (
+        "connector not RUNNING after recovery"
+        if not running
+        else "none observed after recovery"
+        if advanced
+        else "connector RUNNING but not forwarding changes after recovery (confirmed_flush_lsn frozen)"
+    )
     return None
 
 
