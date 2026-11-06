@@ -41,6 +41,7 @@ import sys
 import threading
 import time
 import traceback
+import urllib.request
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -239,10 +240,38 @@ def window_summary(samples: Iterable[Sample], t0: float, t1: float) -> dict[str,
     }
 
 
-class CdcSampler(threading.Thread):
-    """Polls the exporter every 2 s (design S13 note: the Milestone A stand-in for the connector-status alert)."""
+# F5's window (injection to the first RUNNING read) is about 4 to 6 s and needs >= 3 answered samples
+SAMPLE_EVERY_S = 0.5
+SCRAPE_TIMEOUT_S = 1.0  # one exporter scrape takes 15 to 70 ms; a longer wait only costs samples
 
-    def __init__(self, every_s: float = 2.0) -> None:
+
+def parse_metrics(text: str) -> dict[str, float]:
+    """Prometheus text exposition to {series: value} (the same reading as g2.metrics)."""
+    out: dict[str, float] = {}
+    for line in text.splitlines():
+        if line and not line.startswith("#"):
+            k, v = line.rsplit(" ", 1)
+            out[k] = float(v)
+    return out
+
+
+def scrape_exporter() -> dict[str, float]:
+    with urllib.request.urlopen("http://localhost:9108/metrics", timeout=SCRAPE_TIMEOUT_S) as resp:
+        return parse_metrics(resp.read().decode())
+
+
+def next_wait(every_s: float, started: float, finished: float) -> float:
+    """Seconds to sleep after a scrape that began at `started` and ended at `finished`: the poll stays on a fixed cadence
+    (a 40 ms scrape sleeps 460 ms), and a scrape slower than the interval does not sleep, so scrapes never overlap."""
+    return max(0.0, every_s - (finished - started))
+
+
+class CdcSampler(threading.Thread):
+    """Polls the exporter every 0.5 s (design S13 note: the Milestone A stand-in for the connector-status alert). One
+    thread scrapes serially with a 1 s timeout: a scrape that blocks during an outage costs at most that second and
+    nothing queues behind it."""
+
+    def __init__(self, every_s: float = SAMPLE_EVERY_S) -> None:
         super().__init__(daemon=True)
         self.every_s = every_s
         self.samples: list[Sample] = []
@@ -250,16 +279,37 @@ class CdcSampler(threading.Thread):
 
     def run(self) -> None:
         while not self.halt.is_set():
-            m = g2._try(g2.metrics)
+            started = time.monotonic()
+            m = g2._try(scrape_exporter)
             t = time.monotonic()
             if isinstance(m, dict):
                 self.samples.append(Sample(t, True, connector_down(m), m.get(SLOT_LAG)))
             else:
                 self.samples.append(Sample(t, False, False, None))
-            self.halt.wait(self.every_s)
+            self.halt.wait(next_wait(self.every_s, started, t))
 
     def window(self, t0: float, t1: float) -> dict[str, Any]:
         return window_summary(list(self.samples), t0, t1)
+
+
+def compaction_effect(topics: Mapping[str, Any], ends: Mapping[str, Mapping[int, int]]) -> dict[str, tuple[int, int]]:
+    """{topic: (records Kafka still holds below the end offset, end offset total)}, counts only. `topics` is
+    ReconReport.topics (OffsetResult per topic: `distinct` is bronze's count, so only `kafka_present` is read) and `ends`
+    the cut's real end offsets {topic: {partition: end}}."""
+    return {t: (int(r.kafka_present), sum(ends.get(t, {}).values())) for t, r in topics.items()}
+
+
+def compaction_removed(effect: Mapping[str, tuple[int, int]]) -> bool:
+    """True when Kafka holds fewer records than its end offsets on at least one topic: compaction removed records."""
+    return any(present < end for present, end in effect.values())
+
+
+def compaction_detail(effect: Mapping[str, tuple[int, int]]) -> str:
+    if not effect:
+        return "no END gate report"
+    return "records present in Kafka of end offsets, per topic " + json.dumps(
+        {t: f"{p} of {e}" for t, (p, e) in sorted(effect.items())}
+    )
 
 
 def expected_events(ops: Iterable[Any]) -> dict[str, int]:
@@ -1492,6 +1542,11 @@ def phase_end(ctx: Ctx, write: bool) -> bool:
         gate = run_gate(ctx, "END")
         if not gate.ok and ctx.first_dirty is None:
             ctx.first_dirty = "END"
+        if ctx.mode == "compact":
+            effect = compaction_effect(gate.report.topics, gate.report.cut.end) if gate.report is not None else {}
+            check("END: compaction physically removed records from Kafka (the offset-gap path was exercised)",
+                  compaction_removed(effect),
+                  compaction_detail(effect))  # fmt: skip
     ran = [f for f in FAULTS if ctx.faults.get(f, {}).get("outcome") not in (None, "not_run", "skipped")]
     table = render_table([("(this run)", {"result": manifest_result(ctx, False), "git_sha": None})])
     scored = len(ran) == len(FAULTS) and not wording_violations(table)

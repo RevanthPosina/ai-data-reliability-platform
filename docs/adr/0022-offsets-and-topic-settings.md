@@ -25,3 +25,6 @@ Spark's Kafka source with `failOnDataLoss=true` did not fail on compaction gaps 
 - Compacting topics keep records for at least the minimum compaction lag, so F2's raw read depends on the records being younger than that lag.
 - Running G10a on both settings adds a second full run. Whether both runs are kept as committed manifests of record is open decision D3; the default is both.
 - One machine; no claim about other brokers or settings.
+
+## Dated notes
+- **2026-11-05, what the compacting run exercises.** Kafka-side compaction gaps are exercised live: on `--topics compact` the END check "compaction physically removed records from Kafka (the offset-gap path was exercised)" requires at least one topic to hold fewer records than its end offset total, so the present-record reader and the subset check are shown to cope with a topic that has lost records. Bronze-side offset gaps (`gaps` in `compare_offsets`, which arise when forget DELETEs remove bronze rows, as in g8) are **not** exercised by `g10a-check`: bronze consumed every offset before compaction ran, and g10a runs no forget. That path is covered by unit tests only.

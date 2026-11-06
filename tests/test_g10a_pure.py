@@ -117,6 +117,55 @@ def test_window_summary() -> None:
     assert quiet["connector_status_fired"] is False and quiet["peak_slot_lag_bytes"] is None
 
 
+def test_parse_metrics_skips_comments_and_reads_labelled_series() -> None:
+    up, src = 'adrp_connector_up{connector="pg-shop"}', 'adrp_exporter_source_up{source="connect"}'
+    text = f"# HELP x y\n# TYPE x gauge\n{up} 1.0\n\n{src} 0\n"
+    assert g.parse_metrics(text) == {up: 1.0, src: 0.0}
+
+
+def test_sampler_polls_at_half_a_second_and_never_overlaps_scrapes() -> None:
+    assert g.SAMPLE_EVERY_S == 0.5 and g.CdcSampler().every_s == 0.5
+    assert g.SCRAPE_TIMEOUT_S <= g.SAMPLE_EVERY_S * 2  # a blocked scrape costs at most two intervals
+    assert g.next_wait(0.5, 10.0, 10.04) == pytest.approx(0.46)  # fixed cadence
+    assert g.next_wait(0.5, 10.0, 11.0) == 0.0  # a slow scrape: no extra sleep, and the next starts only after it ended
+
+
+def test_a_four_second_window_holds_at_least_three_samples_at_the_polling_interval() -> None:
+    every = g.SAMPLE_EVERY_S
+    # next_wait subtracts the scrape time, so cycles start `every` apart
+    samples = [g.Sample(i * every, True, False, 1.0) for i in range(40)]
+    assert g.window_summary(samples, 3.1, 7.1)["exporter_answered"] >= 3
+
+
+# ---- END: compaction ---------------------------------------------------------------------------
+
+
+def _offset_result(present: int, distinct: int) -> Any:
+    return SimpleNamespace(kafka_present=present, distinct=distinct)
+
+
+def test_compaction_effect_uses_real_end_offsets_not_bronze_distinct() -> None:
+    topics = {"t.accounts": _offset_result(633, 14259), "t.refunds": _offset_result(10, 10)}
+    ends = {"t.accounts": {0: 7000, 1: 7259}, "t.refunds": {0: 10}}
+    effect = g.compaction_effect(topics, ends)
+    assert effect == {"t.accounts": (633, 14259), "t.refunds": (10, 10)}
+    assert g.compaction_removed(effect)
+    # bronze distinct below the end must not be read as the end: present == distinct here, the end is larger
+    assert g.compaction_removed(g.compaction_effect({"t": _offset_result(5, 5)}, {"t": {0: 8}}))
+
+
+def test_compaction_removed_is_false_when_nothing_was_removed_or_nothing_was_read() -> None:
+    assert not g.compaction_removed({"a": (10, 10), "b": (0, 0)})
+    assert not g.compaction_removed({})
+    assert g.compaction_effect({"t": _offset_result(3, 3)}, {}) == {"t": (3, 0)}  # missing end: not a removal
+
+
+def test_compaction_detail_is_counts_only_and_clean() -> None:
+    d = g.compaction_detail({"t.accounts": (633, 14259)})
+    assert "633 of 14259" in d and not wording_violations(d)
+    assert g.compaction_detail({}) == "no END gate report"
+
+
 # ---- F1: checkpoint rewind and bronze ranges -----------------------------------------------------
 
 
