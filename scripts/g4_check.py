@@ -972,9 +972,9 @@ def phase_p5(drain: Drain, keep: bool) -> None:
         d_le = row_diff_columns(le_inc, le_new, "entry_id")
         check(
             "rebuild: the re-keyed transaction differs from-scratch only where the incremental run carries values "
-            "forward (customer_sk and first_lsn in fct_transactions; source_lsn and src_source_ts of its payment legs "
-            "in the ledger)",
-            d_ft <= {"customer_sk", "first_lsn"} and d_le <= {"source_lsn", "src_source_ts"},
+            "forward (customer_sk, merchant_sk and first_lsn in fct_transactions; source_lsn and src_source_ts of its "
+            "payment legs in the ledger)",
+            d_ft <= {"customer_sk", "merchant_sk", "first_lsn"} and d_le <= {"source_lsn", "src_source_ts"},
             f"fct_transactions differing columns={sorted(d_ft)} ledger differing columns={sorted(d_le)}",
         )
         ST.details["rebuild"] = {
