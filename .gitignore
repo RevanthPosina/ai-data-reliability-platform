@@ -13,3 +13,8 @@ dbt_fixture/dbt_packages/
 .DS_Store
 dbt_fixture/.user.yml
 runs/data/
+
+dbt_gold/target/
+dbt_gold/logs/
+dbt_gold/dbt_packages/
+dbt_gold/.user.yml

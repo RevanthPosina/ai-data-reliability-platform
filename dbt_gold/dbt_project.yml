@@ -1,0 +1,41 @@
+# Gold layer (G4): SCD2 dimensions, facts and the double-entry ledger on Trino over the Iceberg lake.
+# See docs/adr/0025..0030. No dbt packages are used (no `dbt deps`, no network).
+name: adrp_gold
+version: "0.1.0"
+profile: adrp_gold
+config-version: 2
+
+model-paths: [models]
+macro-paths: [macros]
+snapshot-paths: [snapshots]
+test-paths: [tests]
+clean-targets: [target, dbt_packages]
+
+flags:
+  send_anonymous_usage_stats: false
+
+vars:
+  gold_lookback_minutes: 60          # late-arrival lookback for incremental cursors (ADR-0027)
+  strict_reconcile: false            # true only at a quiescent cut: balance reconciliation becomes an error
+  backfill_day: ""                   # 'YYYY-MM-DD': fct_transactions and fct_ledger_entries reselect that business_date only
+  contract_break_test: false         # fixture negative test: dim_date casts date_key to varchar
+  dim_date_start: "2025-12-01"
+  dim_date_end: "2027-12-31"
+
+models:
+  adrp_gold:
+    # format_version is an integer Trino/Iceberg table property, so it is not quoted. No partitioning (G12).
+    +properties:
+      format_version: 2
+    staging:
+      +materialized: ephemeral      # no Trino views in Lakekeeper, no extra inventory locations
+    marts:
+      +materialized: table
+
+snapshots:
+  adrp_gold:
+    +schema: snapshots              # <target schema>_snapshots, e.g. gold_snapshots
+
+# Future t_gold capture point for S4 (not measured in G4).
+on-run-end:
+  - "{{ gold_build_log(results) }}"

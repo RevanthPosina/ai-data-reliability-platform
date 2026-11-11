@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 [tool.ruff]
 line-length = 120
 target-version = "py310"  # the Spark image runs Python 3.10
-extend-exclude = ["dbt_fixture/target", "dbt_fixture/dbt_packages", ".run", "runs"]
+extend-exclude = ["dbt_fixture/target", "dbt_fixture/dbt_packages", "dbt_gold/target", ".run", "runs"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "RUF"]

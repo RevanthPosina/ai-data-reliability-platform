@@ -1,0 +1,19 @@
+version: 2
+
+# Live: lake.bronze / lake.silver. Fixture (target fx): fx.src_bronze / fx.src_silver, created by scripts/g4_fixture.py.
+sources:
+  - name: bronze
+    database: "{{ target.database }}"
+    schema: "{{ 'src_bronze' if target.name == 'fx' else 'bronze' }}"
+    tables:
+      - name: cdc_events
+        description: Append-only CDC change log; duplicates by design (F1 replay, F2 re-produce).
+  - name: silver
+    database: "{{ target.database }}"
+    schema: "{{ 'src_silver' if target.name == 'fx' else 'silver' }}"
+    tables:
+      - name: customers
+      - name: merchants
+      - name: accounts
+      - name: transactions
+      - name: refunds

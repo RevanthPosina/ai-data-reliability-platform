@@ -1,0 +1,31 @@
+# Targets match the Trino catalogs in infra/trino: `lake` (live, Lakekeeper REST) and `fx` (throwaway fixture on :28080).
+adrp_gold:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      method: none
+      user: dbt
+      host: "{{ env_var('TRINO_HOST', 'localhost') }}"
+      port: "{{ env_var('TRINO_PORT', '8080') | int }}"
+      database: lake
+      schema: gold
+      threads: 2
+    rebuild:
+      type: trino
+      method: none
+      user: dbt
+      host: "{{ env_var('TRINO_HOST', 'localhost') }}"
+      port: "{{ env_var('TRINO_PORT', '8080') | int }}"
+      database: lake
+      schema: gold_rebuild
+      threads: 2
+    fx:
+      type: trino
+      method: none
+      user: dbt
+      host: "{{ env_var('TRINO_HOST', 'localhost') }}"
+      port: "{{ env_var('TRINO_FX_PORT', '28080') | int }}"
+      database: fx
+      schema: g4fx_gold
+      threads: 2

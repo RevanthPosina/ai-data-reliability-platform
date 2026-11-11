@@ -265,8 +265,20 @@ services:
   trino:
     image: ${TRINO_IMAGE}
     profiles: [transform]
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+    volumes:
+      # Single catalog file, so the image's default memory catalog stays.
+      - ./infra/trino/catalog/lake.properties:/etc/trino/catalog/lake.properties:ro
+      - ./infra/trino/config.properties:/etc/trino/config.properties:ro
+      - ./infra/trino/jvm.config:/etc/trino/jvm.config:ro
     ports: ["127.0.0.1:8080:8080"]
-    mem_limit: 3g
+    healthcheck:
+      test: ["CMD", "/usr/lib/trino/bin/health-check"]
+      interval: 3s
+      retries: 40
+    mem_limit: 2g
 
 volumes:
   pg-data:

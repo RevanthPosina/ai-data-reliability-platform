@@ -6,10 +6,6 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-24.04
-    services:
-      trino:
-        image: trinodb/trino:483
-        ports: ["8080:8080"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,9 +17,7 @@ jobs:
       - run: pytest -q
       - run: python scripts/check_versions.py
       - run: python scripts/render.py && docker compose --env-file .run/compose.env --profile core --profile apps --profile tools --profile transform config -q
-      - name: wait for trino
-        run: for i in $(seq 1 60); do curl -fs localhost:8080/v1/info | grep -q '"starting":false' && break; sleep 2; done
-      - run: cd dbt_fixture && dbt build --profiles-dir . --target ci
+      - run: make dbt-fixture
 
   # Fails on an Avro schema change the registry would reject (BACKWARD), judged against committed contracts.
   contracts:

@@ -1,0 +1,116 @@
+version: 2
+
+# Unit tests run on the fixture target only (they are a Trino adapter check): live builds use
+# `--exclude "test_type:unit"`. Inputs that are ephemeral models must use `format: sql`.
+unit_tests:
+  - name: ut_dim_customer_full_build
+    description: "SCD2: update opens a version, a no-op change is merged, a delete closes without opening."
+    model: dim_customer
+    given:
+      - input: ref('stg_bronze__customer_changes')
+        format: sql
+        rows: |
+          select
+              cast(customer_id as bigint) as customer_id, cast(lsn as bigint) as lsn, cast(txid as bigint) as txid,
+              op, cast(from_iso8601_timestamp(ts) as timestamp(6) with time zone) as source_ts,
+              cast(from_iso8601_timestamp(ts) as timestamp(6) with time zone) as kafka_ts,
+              is_delete, full_name, email, phone, address, date_of_birth,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:00Z') as timestamp(6) with time zone) as created_at
+          from (values
+              (1, 100, 1001, 'c', '2026-01-01T00:00:01Z', false, 'Ann', 'a1@x.test', '1', 'addr', date '2000-01-01'),
+              (1, 200, 1002, 'u', '2026-01-01T00:00:02Z', false, 'Ann', 'a2@x.test', '1', 'addr', date '2000-01-01'),
+              (1, 300, 1003, 'u', '2026-01-01T00:00:03Z', false, 'Ann', 'a2@x.test', '1', 'addr', date '2000-01-01'),
+              (2, 150, 1004, 'c', '2026-01-01T00:00:04Z', false, 'Bob', 'b1@x.test', '2', 'addr', date '1999-01-01'),
+              (2, 250, 1005, 'd', '2026-01-01T00:00:05Z', true, cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as date))
+          ) as t(customer_id, lsn, txid, op, ts, is_delete, full_name, email, phone, address, date_of_birth)
+    expect:
+      rows:
+        - {customer_id: 1, email: a1@x.test, valid_from_lsn: 100, valid_to_lsn: 200, is_current: false, closed_by_delete: false}
+        - {customer_id: 1, email: a2@x.test, valid_from_lsn: 200, valid_to_lsn: null, is_current: true, closed_by_delete: false}
+        - {customer_id: 2, email: b1@x.test, valid_from_lsn: 150, valid_to_lsn: 250, is_current: false, closed_by_delete: true}
+
+  - name: ut_dim_customer_incremental
+    description: "Only keys with a change newer than max(src_kafka_ts) - lookback are rebuilt, from their whole history."
+    model: dim_customer
+    overrides:
+      macros:
+        is_incremental: true
+    given:
+      - input: ref('stg_bronze__customer_changes')
+        format: sql
+        rows: |
+          select
+              cast(customer_id as bigint) as customer_id, cast(lsn as bigint) as lsn, cast(txid as bigint) as txid,
+              op, cast(from_iso8601_timestamp(ts) as timestamp(6) with time zone) as source_ts,
+              cast(from_iso8601_timestamp(kts) as timestamp(6) with time zone) as kafka_ts,
+              is_delete, full_name, email, phone, address, date_of_birth,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:00Z') as timestamp(6) with time zone) as created_at
+          from (values
+              (1, 100, 1001, 'c', '2026-01-01T00:00:01Z', '2026-01-01T00:00:01Z', false, 'Ann', 'a1@x.test', '1', 'addr', date '2000-01-01'),
+              (3, 400, 1006, 'c', '2026-01-01T05:00:00Z', '2026-01-01T05:00:00Z', false, 'Cy', 'c1@x.test', '3', 'addr', date '1990-01-01'),
+              (3, 500, 1007, 'u', '2026-01-01T05:01:00Z', '2026-01-01T05:01:00Z', false, 'Cy', 'c2@x.test', '3', 'addr', date '1990-01-01')
+          ) as t(customer_id, lsn, txid, op, ts, kts, is_delete, full_name, email, phone, address, date_of_birth)
+      - input: this
+        format: sql
+        rows: |
+          select
+              cast(1 as bigint) as customer_id,
+              cast(from_iso8601_timestamp('2026-01-01T05:00:00Z') as timestamp(6) with time zone) as src_kafka_ts
+    expect:
+      rows:
+        - {customer_id: 3, email: c1@x.test, valid_from_lsn: 400, valid_to_lsn: 500, is_current: false}
+        - {customer_id: 3, email: c2@x.test, valid_from_lsn: 500, valid_to_lsn: null, is_current: true}
+
+  - name: ut_fct_ledger_entries_legs
+    description: "Legs and signs of opening, payment, refund (reversal) and topup journals; zero opening balance emits nothing."
+    model: fct_ledger_entries
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('stg_bronze__account_openings')
+        format: sql
+        rows: |
+          select
+              cast(account_id as bigint) as account_id, op, cast(lsn as bigint) as lsn,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:00Z') as timestamp(6) with time zone) as source_ts,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:00Z') as timestamp(6) with time zone) as kafka_ts,
+              cast(opening_balance as decimal(14, 2)) as opening_balance, currency,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:00Z') as timestamp(6) with time zone) as created_at
+          from (values
+              (10, 'c', 5, '100.00', 'USD'),
+              (20, 'c', 6, '0.00', 'USD')
+          ) as t(account_id, op, lsn, opening_balance, currency)
+      - input: ref('stg_silver__transactions')
+        format: sql
+        rows: |
+          select
+              cast(transaction_id as bigint) as transaction_id, txn_type, cast(1 as bigint) as customer_id,
+              cast(merchant_id as bigint) as merchant_id, cast(payer_account_id as bigint) as payer_account_id,
+              cast(payee_account_id as bigint) as payee_account_id, cast(amount as decimal(12, 2)) as amount,
+              'USD' as currency, 'ok' as status,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:10Z') as timestamp(6) with time zone) as created_at,
+              cast(lsn as bigint) as lsn,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:10Z') as timestamp(6) with time zone) as source_ts
+          from (values
+              (1, 'payment', 7, 10, 20, '30.00', 10),
+              (2, 'topup', cast(null as integer), cast(null as integer), 10, '50.00', 30)
+          ) as t(transaction_id, txn_type, merchant_id, payer_account_id, payee_account_id, amount, lsn)
+      - input: ref('stg_silver__refunds')
+        format: sql
+        rows: |
+          select
+              cast(1 as bigint) as refund_id, cast(1 as bigint) as transaction_id, cast('15.00' as decimal(12, 2)) as amount,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:20Z') as timestamp(6) with time zone) as created_at,
+              cast(20 as bigint) as lsn,
+              cast(from_iso8601_timestamp('2026-01-01T00:00:20Z') as timestamp(6) with time zone) as source_ts
+    expect:
+      rows:
+        - {entry_id: "opening:10:account", journal_id: "opening:10", account_id: 10, amount: 100.00}
+        - {entry_id: "opening:10:equity", journal_id: "opening:10", account_id: -2, amount: -100.00}
+        - {entry_id: "payment:1:payer", journal_id: "payment:1", account_id: 10, amount: -30.00}
+        - {entry_id: "payment:1:payee", journal_id: "payment:1", account_id: 20, amount: 30.00}
+        - {entry_id: "refund:1:payee", journal_id: "refund:1", account_id: 20, amount: -15.00}
+        - {entry_id: "refund:1:payer", journal_id: "refund:1", account_id: 10, amount: 15.00}
+        - {entry_id: "topup:2:payee", journal_id: "topup:2", account_id: 10, amount: 50.00}
+        - {entry_id: "topup:2:funding", journal_id: "topup:2", account_id: -1, amount: -50.00}

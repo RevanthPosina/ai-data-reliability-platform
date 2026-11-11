@@ -1,0 +1,18 @@
+# The dbt snapshot exists only as the comparison with SCD2 (it loses changes between runs). It holds the customer
+# key and an attribute hash, never plain PII. Target schema: <target schema>_snapshots (gold_snapshots live).
+snapshots:
+  - name: snap_customer_attrs
+    relation: ref('stg_silver__customer_attrs')
+    config:
+      unique_key: customer_id
+      strategy: check
+      check_cols: [attr_hash]
+      contract: {enforced: true}
+    columns:
+      - {name: customer_id, data_type: bigint, constraints: [{type: not_null}]}
+      - {name: attr_hash, data_type: varchar}
+      - {name: updated_at, data_type: "timestamp(6) with time zone"}
+      - {name: dbt_scd_id, data_type: varchar}
+      - {name: dbt_updated_at, data_type: "timestamp(3) with time zone"}
+      - {name: dbt_valid_from, data_type: "timestamp(3) with time zone"}
+      - {name: dbt_valid_to, data_type: "timestamp(3) with time zone"}

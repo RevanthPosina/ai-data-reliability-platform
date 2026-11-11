@@ -4,10 +4,11 @@ COMPOSE := docker compose --env-file .run/compose.env
 PROFILE_FLAGS := $(foreach p,$(PROFILE),--profile $(p))
 INFRA := postgres redpanda connect seaweedfs lakekeeper-migrate lakekeeper qdrant
 REDPANDA_IMAGE_REF := $(shell sed -n 's/^REDPANDA_IMAGE=//p' versions.env)
+TRINO_IMAGE_REF := $(shell sed -n 's/^TRINO_IMAGE=//p' versions.env)
 VENV := .venv
 PY := $(VENV)/bin/python
 
-.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs gen gen-determinism gen-max-rate test-spark g3-check g6-check g8-check g10a-check g11a-results g2-check contracts-export contracts-check contracts-ci
+.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture dbt-parse gold-build gold-backfill compose-config clean-volumes logs gen gen-determinism gen-max-rate test-spark g3-check g6-check g8-check g10a-check g11a-results g2-check g4-check contracts-export contracts-check contracts-ci
 
 .run/compose.env: versions.env $(wildcard .env) .env.example infra/seaweedfs/s3.json.tmpl
 	python3 scripts/render.py
@@ -47,7 +48,7 @@ $(VENV)/.installed: requirements-dev.txt requirements-dev.constraints.txt
 	touch $@
 
 lint: $(VENV)/.installed
-	$(VENV)/bin/ruff check . && $(VENV)/bin/ruff format --check .
+	$(VENV)/bin/ruff check . && $(VENV)/bin/ruff format --check . && $(MAKE) dbt-parse
 
 typecheck: $(VENV)/.installed
 	$(VENV)/bin/mypy
@@ -61,11 +62,36 @@ versions:
 compose-config: .run/compose.env
 	$(COMPOSE) --profile core --profile apps --profile tools --profile transform config -q
 
-# Needs a Trino at localhost:8080 (CI uses a service container; locally: make up PROFILE=transform).
+# Parses dbt_gold without a connection.
+dbt-parse: $(VENV)/.installed
+	$(VENV)/bin/dbt parse --project-dir dbt_gold --profiles-dir dbt_gold
+
+# Throwaway Trino on :28080 with the CI catalogs (memory + file-metastore Iceberg "fx"), then the dbt_fixture
+# adapter smoke test and the G4 FX scenarios. Same steps as the CI job; the container is always removed.
 dbt-fixture: $(VENV)/.installed
-	cd dbt_fixture && ../$(VENV)/bin/dbt build --profiles-dir . --target ci
+	-docker rm -f adrp-ci-trino >/dev/null 2>&1
+	docker run -d --name adrp-ci-trino --memory 2g -p 28080:8080 \
+	  -v $(CURDIR)/infra/trino/jvm.config:/etc/trino/jvm.config:ro \
+	  -v $(CURDIR)/infra/trino/config.properties:/etc/trino/config.properties:ro \
+	  -v $(CURDIR)/infra/trino/ci/catalog/memory.properties:/etc/trino/catalog/memory.properties:ro \
+	  -v $(CURDIR)/infra/trino/ci/catalog/fx.properties:/etc/trino/catalog/fx.properties:ro \
+	  $(TRINO_IMAGE_REF) >/dev/null
+	@for i in $$(seq 1 120); do curl -fs localhost:28080/v1/info | grep -q '"starting":false' && break; sleep 1; done
+	(cd dbt_fixture && TRINO_PORT=28080 ../$(VENV)/bin/dbt build --profiles-dir . --target ci); rc=$$?; \
+	  if [ $$rc -eq 0 ]; then TRINO_PORT=28080 $(PY) scripts/g4_fixture.py; rc=$$?; fi; \
+	  docker rm -f adrp-ci-trino >/dev/null; exit $$rc
 
 ci: lint typecheck test versions compose-config dbt-fixture contracts-ci
+
+# ---- G4 gold (dbt_gold on Trino; needs the transform profile running on :8080) ----
+gold-build: $(VENV)/.installed
+	$(VENV)/bin/dbt build --project-dir dbt_gold --profiles-dir dbt_gold --target dev --exclude test_type:unit
+
+# One-day backfill: make gold-backfill DAY=2026-01-01 (ADR-0027). Literal date only.
+gold-backfill: $(VENV)/.installed
+	@echo "$(DAY)" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$$' || { echo "usage: make gold-backfill DAY=YYYY-MM-DD" >&2; exit 2; }
+	$(VENV)/bin/dbt build --project-dir dbt_gold --profiles-dir dbt_gold --target dev --exclude test_type:unit --vars '{backfill_day: "$(DAY)"}'
+
 
 # ---- G1 generator ----
 SEED ?= 42
@@ -150,3 +176,15 @@ g10a-check: .run/compose.env $(VENV)/.installed
 # ---- G11a (reduced): R2 and R4 from committed manifests; no Docker, nothing is run or measured ----
 g11a-results: $(VENV)/.installed
 	$(PY) notebooks/g11a_results.py --inputs docs/results/g11a-inputs.json --out docs/results --check-readme
+
+# ---- G4 gold ----
+# DESTRUCTIVE for this project's volumes and event logs. Core infra, spark-streams and trino; no embedder, dagster or exporter.
+g4-check: .run/compose.env $(VENV)/.installed
+	$(MAKE) clean-volumes
+	rm -rf runs/data/eventlog && mkdir -p runs/data/eventlog
+	$(COMPOSE) --profile core up -d --wait $(INFRA)
+	python3 scripts/bootstrap.py
+	$(COMPOSE) --profile core --profile apps --profile transform up -d spark-streams trino
+	$(PY) scripts/g4_check.py
+	$(COMPOSE) --profile transform stop trino
+	$(COMPOSE) --profile core --profile apps up -d
