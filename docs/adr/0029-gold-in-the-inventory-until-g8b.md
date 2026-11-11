@@ -28,3 +28,11 @@ The fixture `fx` catalog holds synthetic data in a throwaway container and gets 
 - Until G8b, no claim is made that a forgotten customer is gone from gold, logically or physically. `dim_customer` holds PII for every version (ADR-0025, D1).
 - G8b must decide how a backfill or rebuild after a forget treats the opening entries of footprint accounts (ADR-0026).
 - The ADR-0017 policy is "re-key, then remove"; G4 only checks that a re-key flows into `fct_transactions` and leaves the ledger unchanged. It does not run a forget.
+
+## Measured (G4 run of record, code commit `b3202eb`, clean tree, one machine)
+Manifest: `runs/manifests/20261111T072440Z-g4-check.json`, 37 of 37 checks. Rows 35 to 44 are now in design §3. G4 ran no forget, so nothing here measures deletion.
+- **Re-key flows to gold.** After a psql `UPDATE` re-keying one transaction from A to B and build 2, `fct_transactions` showed the placeholder customer, the row's other columns were unchanged, and the 4 ledger entries of that transaction were unchanged (row 36 and row 37, logical re-key only; no physical removal is claimed).
+- **Artifact hygiene (row 42).** 113 files under `dbt_gold/target` and `dbt_gold/logs` were scanned for the canary email and the scripted raw ids: 0 files with a hit.
+- **`gold_rebuild` (row 44).** Dropped at the end of P5 (8 tables). That is a logical removal in the catalog; physical removal follows maintenance (ADR-0018) and was not measured.
+- **Smoke on a used stack (Step D, ADR-0030).** The one warning there (1 account whose bronze opening event was physically removed by an earlier forget) is the limit above in action, not a model defect.
+- **Open limit.** Gold is not covered by the forget workflow until G8b. `dim_customer` holds PII for every version, and no claim is made that a forgotten customer is gone from gold, logically or physically.

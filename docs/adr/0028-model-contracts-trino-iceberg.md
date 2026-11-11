@@ -12,3 +12,6 @@ Every mart sets `contract: {enforced: true}`, and every column declares a `data_
 - "Contracts enforce only `not_null`" is the wording wherever contracts are mentioned. A contract does not make a primary key unique or a foreign key valid; the tests do that for the data present at build time.
 - A passing test shows the property for the rows at that run. It is not a guard against later writes.
 - Whether dbt-trino 1.10.6 supports contracts on incremental models on Iceberg as designed is **unverified** until the fixture runs (ADR-0030).
+
+## Measured (G4 run of record, code commit `b3202eb`, clean tree, one machine)
+Manifest: `runs/manifests/20261111T072440Z-g4-check.json`, 37 of 37 checks. In the five live builds every one of the 6 contracted models built and its 36 tests passed with 0 non-passing nodes (the snapshot has no contract, per the amendment above). The contract-break negative test (`contract_break_test`, a `varchar` cast of `date_key`) is a fixture check (FX7, ADR-0030: 70 FX checks passed); it was not run live. The wording stays: only `not_null` is enforced by Trino and Iceberg, and `unique`, `primary_key` and `relationships` hold only as far as the tests passed on the rows of that run.

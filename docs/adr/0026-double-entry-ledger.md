@@ -21,3 +21,11 @@ A refund is a separate journal of reversing entries. The original payment's entr
 - "Balances reconcile" is scoped: all n accounts matched Postgres `accounts.balance` at a quiescent cut, in one run on one machine. It is not an always-true claim, and the test is `warn` outside the cut.
 - After a forget, a ledger rebuild from bronze would lose opening entries of footprint accounts (ADR-0017 removes the footprint's bronze rows). `full_refresh: false` guards this, and a backfill after a forget would also drop opening entries of affected accounts. Whether to guard or repair this is a G8b decision (ADR-0029).
 - The ledger does not model fees, currencies other than the row's `currency`, or concurrent writers.
+
+## Measured (G4 run of record, code commit `b3202eb`, clean tree, one machine)
+Manifest: `runs/manifests/20261111T072440Z-g4-check.json`, 37 of 37 checks. One run on one machine; values are counts in that run.
+- **Nets to zero.** Build 1: 761 journals and 507 transactions (a payment plus its refund reversal, grouped by `transaction_id`), 0 not netting in either grouping. Build 2: 1,129 journals and 827 transactions, 0 not netting.
+- **Balances at a quiescent cut** (generator finished, scripted writes done, silver drained, then a build). Every Postgres `accounts.balance` was compared with the ledger sum of `account_id > 0`. Build 1: 243 accounts, 0 mismatches, 0 ledger-only accounts, 0 accounts without entries. Build 2: 262 accounts, 0 mismatches, 0 ledger-only accounts, 1 account without entries (compared as a sum of 0.00 and matched). The strict test (`strict_reconcile`) was an error in all five builds, and none failed.
+- **Append-only.** 1,522 entries existed after build 1; after build 2 and again after build 4 (the backfill), 0 of them were changed or missing, and 736 had been added since. Build 3 (no new data) left the `entry_id` set unchanged. At build 3 the ledger held 2,258 entries. "Append-only by construction" is the design; these are the observed counts in this run.
+- **Re-key.** The ledger entries of the re-keyed transaction (4) were unchanged by the re-key, since the ledger carries no `customer_id`.
+- **Not measured.** A ledger rebuild or backfill after a forget (no forget runs in G4; ADR-0029); snapshot-opened accounts (unsupported, and the run starts from empty volumes).

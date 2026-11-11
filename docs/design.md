@@ -36,7 +36,8 @@ flowchart LR
   RP -- Spark query 1: native Iceberg sink --> BR
   RP -- Spark query 2: foreachBatch LSN-conditional MERGE --> SV
   SV -. incompatible schema .-> QT
-  BR -- dbt on Trino --> GD
+  BR -- dbt on Trino: SCD2 dims --> GD
+  SV -- dbt on Trino: facts, ledger --> GD
   BR -- incremental read --> EW
   SV -- current version / is_deleted lookup --> EW
   EW --> QD
@@ -55,13 +56,13 @@ Observability (B): Prometheus + Grafana. Customer IDs are never used as metric l
 4. **Spark query 1 (bronze):** `writeStream.format("iceberg")`. It stores the raw record losslessly (topic, partition, offset, kafka_ts, key_bytes, value_bytes, schema_id) plus decoded envelope columns. It is epoch-idempotent because the sink records query id + epoch in the snapshot summary.
 5. **Spark query 2 (silver):** foreachBatch. Drop tombstones → decode → dedupe to max LSN per key → `MERGE … WHEN MATCHED AND s.lsn > t.lsn THEN UPDATE … WHEN NOT MATCHED THEN INSERT`. Deletes become soft tombstones. The batch's commit is logged to the foreachBatch event log (**t_silver**).
 6. **Embedding worker:** reads bronze incrementally from its last snapshot id. For each touched entity it looks up the current version and `is_deleted` in silver, then chunks, embeds and upserts with `wait=true` (**t_qdrant**). It then deletes older versions by filter.
-7. Dagster runs maintenance, checks and the forget workflow. Milestone B adds dbt gold, dataset builds and lineage.
+7. Dagster runs maintenance, checks and the forget workflow. G4 adds dbt gold on Trino (SCD2 dimensions from the bronze change log, facts and the double-entry ledger from silver, [ADR-0025](adr/0025-gold-model-design.md)); Milestone B also adds dataset builds and lineage.
 
 ### 1.2 Deployment (Compose profiles)
 | Profile | Services | RAM target |
 |---|---|---|
 | core | postgres, redpanda, connect, seaweedfs, lakekeeper, spark-streams (both queries, separate checkpoints), qdrant, app (embedding worker), dagster | ≤ 8 GB as configured today (plan: 10–12 GB) |
-| transform | + trino | +3 GB |
+| transform | + trino (Lakekeeper REST catalog) | +2 GB (`mem_limit` 2g, heap 1.5 GB) |
 | obs | + prometheus, grafana | +0.5 GB |
 | lineage | + marquez (amd64-only image; emulated on Apple Silicon) | +1.5 GB |
 
@@ -86,6 +87,9 @@ All latencies are measured at a stated **achieved** change rate. Each measuremen
 | S11 | DQ: every "expected: caught" fault in §5 is caught by its named check | Fault runs scored against §5 (pre-registered). Reported caught / self-healed / silent. Blind faults are reported separately. | A (6) / B (all) |
 | S12 | DQ false alarms ≤ 1 per 20 clean runs | Count of blocking-check failures over ≥ 20 fault-free runs. | A |
 | S13 | Replication slot health: retained WAL < 1 GiB and connector RUNNING | `pg_replication_slots` (`pg_current_wal_lsn() − confirmed_flush_lsn`) + Connect REST status, exported by `adrp.obs.exporter` on `:9108/metrics` (`adrp_replication_slot_lag_bytes`, `adrp_replication_slot_retained_wal_bytes`, `adrp_connector_up`). Note `confirmed_flush_lsn` advances when Connect flushes offsets (default every 60 s) and on heartbeats, so lag is a sawtooth, not a smooth line. An alert on breach is a named check (G13). G10a note (2026-11-05, [ADR-0023](adr/0023-milestone-a-detection-and-scoring.md)): until G13, a "connector-status" or "slot-lag" check in Milestone A is a sampler polling `:9108/metrics`; connector-status fires on `adrp_connector_up == 0` or `adrp_exporter_source_up{source="connect"} == 0` (the first series is absent while Connect is down). The 1 GiB threshold is not lowered. | A |
+
+### 2.1 Dated notes (G4)
+- **2026-11-10, S4.** G4 adds `gold.build_log` (invocation, completion time, model, max source LSN), the future t_gold capture point. S4 is not measured in G4, because there is no schedule. The row above is unchanged.
 
 ## 3. Data inventory (every place a customer's data can live; drives G8)
 
@@ -125,6 +129,18 @@ All latencies are measured at a stated **achieved** change rate. Each measuremen
 | 32 | `privacy.forget_requests.raw_customer_id` and `subject_scratch` (footprint ids + customer email, needed to resume a phase) | the only copies of the raw id | both NULLed together at the end, only when every physical sink passed | `VACUUM` of the `privacy` tables | query + raw scan | A |
 | 33 | G10a diagnostics: `.run/g10a-state.json` and `.run/g10a-diff-*.json` | table names and primary keys of mismatches, run state; no payloads | file rewrite | removed with `.run/` (gitignored) | file scan | A |
 | 34 | Records re-produced by G10a F2 into `cdc.public.*` (accounts, customers, support_tickets, help_articles) | stale full before/after images (PII) at new offsets; they can persist in a compacted topic as the latest record for the key | same as rows 4 and 5 (tombstone, re-key); the bronze copies are covered by row 8 | same as rows 4 and 5 | same raw scan as rows 4 and 5. **Test-run-only location**: exists only when G10a F2 has run | A |
+| 35 | Iceberg `gold.dim_customer` | PII, all versions | logical: G8b deletes the subject's versions | the ADR-0018 procedure extended to gold in G8b; the whole-bucket scan already sees its files | whole-bucket scan (S7) | B |
+| 36 | Iceberg `gold.fct_transactions` | `customer_id`, `customer_sk` | `customer_id` is pseudonymized by the re-key on the next dbt run (fixture- and g4-check-verified); `customer_sk` is re-pointed in G8b | same Iceberg procedure, G8b | same | B |
+| 37 | Iceberg `gold.fct_ledger_entries` | account ids only, no `customer_id` | never removed; accounts survive re-keyed | n/a | same | B |
+| 38 | Iceberg `gold.dim_account` | `customer_id` | re-keyed via silver | same Iceberg procedure | same | B |
+| 39 | Iceberg `gold.dim_merchant` | no customer data | none | none | — | B |
+| 40 | Iceberg `gold_snapshots.snap_customer_attrs` | `customer_id` plus an attribute hash (pseudonymous) | G8b deletes by key | same Iceberg procedure, G8b | same | B |
+| 41 | Iceberg `gold.build_log` | LSNs and times only | none | none | — | B |
+| 42 | `dbt_gold/target`, `dbt_gold/logs` | no row data, by rule | n/a | removed with the directories (gitignored) | canary grep in g4-check | B |
+| 43 | Trino | no persistent storage; query history in memory until restart | n/a | restart; spill is disabled by default | — | B |
+| 44 | Iceberg `gold_rebuild`, `gold_rebuild_snapshots` (test-run only) | copy of gold | dropped at the end of g4-check (logical) | expired by maintenance (ADR-0018) | table listing | B |
+
+Rows 35 to 44 are created by G4 ([ADR-0029](adr/0029-gold-in-the-inventory-until-g8b.md)). **The forget workflow does not cover gold until G8b**: until then no claim is made that a forgotten customer is gone from gold, logically or physically. The fixture catalog `fx` holds synthetic data in a throwaway container and is a note, not a row.
 
 ### 3.1 Documented bounds (locations G8 reports as bounded, not removed)
 Pass for these = bytes absent within the deadline **or** the bound recorded; nothing here is tuned to look better. All figures below are from the G8 spike (one machine); g8-check records the run values.
@@ -168,7 +184,7 @@ Committed **before any check exists** (this commit). G5/G10 score results agains
 | F12 | **Blind:** dropped partition range | Delete one bronze/silver partition's data files (seeded) | none designed; prediction: reconciler count/checksum | unknown; reported honestly | B |
 | F13 | TOAST placeholder leak | Update a non-text column of a 10 KB help article | `__debezium_unavailable_value` count = 0 | must not occur (REPLICA IDENTITY FULL); caught if it does | A |
 
-### 5.1 Dated notes (G10a)
+### 5.1 Dated notes (G10a, G4)
 Rows above are unchanged. Notes only. Decisions: [ADR-0020](adr/0020-fault-injection.md), [ADR-0023](adr/0023-milestone-a-detection-and-scoring.md).
 
 - **2026-11-05, F1 injection.** "Reset the silver/bronze consumer" is implemented as a silver checkpoint rewind plus a bronze batch append of a recorded offset range. Bronze's checkpoint is not rewound because the Iceberg sink skips epochs it already committed (unverified), which could lose later batches. Bronze duplicates are counted against the replay ledger, not assumed.
@@ -177,6 +193,7 @@ Rows above are unchanged. Notes only. Decisions: [ADR-0020](adr/0020-fault-injec
 - **2026-11-05, F4 scope.** The connector crash is tested with test-only snapshot overrides, and writers are stopped before the restart. "Self-healed" for F4 means self-healed in the tested run without concurrent writers (§8).
 - **2026-11-05, F6b registry bypass.** The harness sets the subject's compatibility to `NONE`, so F6b is scored on the quarantine count and `SCHEMA_INCOMPATIBLE` rows, never as caught by the registry. `contracts-ci` covers the registry check separately.
 - **2026-11-05, F13 coverage.** F13 is not a seventh G10a fault. The `__debezium_unavailable_value` count is checked at every reconciliation gate and reported in the F13 row of the fault table; G10a adds no separate injection for it.
+- **2026-11-10, F7 named checks (G4).** The completeness checks F7 will use exist as dbt tests: `assert_gold_complete_vs_silver` and `assert_scd2_complete_vs_bronze` ([ADR-0027](adr/0027-incremental-cursors-lookback-backfill.md)). The original F7 row is not edited. G4 verifies them in the fixture only (a late arrival beyond the lookback makes the test fail as expected, a backfill recovers it); the F7 injection and scoring are G10b.
 - **2026-11-05, counting.** The PLAN's "6 faults" is F1, F2, F3, F4, F5 and F6, with F6a and F6b scored as one fault with two rows.
 
 ## 6. Version matrix (pinned; source of truth `versions.env`)
@@ -227,3 +244,4 @@ Why Spark 4.1.3 and not 4.2.0: Iceberg 1.12.0 publishes no `iceberg-spark-runtim
 - **Repetitions:** ≥ 5 per point; small-sample medians, not distributions.
 - **Retried snapshot under writers (G10a, unverified):** after a connector crash mid-snapshot the retry cannot reuse the exported snapshot and takes a fresh one at a later LSN. A transaction that began earlier but commits after that snapshot could be re-read as an older `r` row, and its later update would then lose to the `s.lsn > t.lsn` guard. G10a stops writers during the retry and does not test this; F4 is idempotent only under the tested fault, without concurrent writers ([ADR-0020](adr/0020-fault-injection.md)).
 - **F5 is a graceful restart:** the broker runs `--mode=dev-container`; a hard broker crash and acknowledged-write durability are not tested and not claimed.
+- **Point-in-time join under concurrent writers (G4).** `fct_transactions.customer_sk` joins the transaction's first change LSN onto `dim_customer` by `valid_from_lsn`. The LSN is not commit order under concurrent writers, and commit times have millisecond precision, so the join is exact for the single-threaded generator and only approximate otherwise ([ADR-0025](adr/0025-gold-model-design.md)). The g4-check ran with one writer and does not test this.
