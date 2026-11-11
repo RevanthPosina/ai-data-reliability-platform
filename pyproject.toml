@@ -18,10 +18,11 @@ select = ["E", "F", "W", "I", "B", "UP", "BLE", "RUF"]
 "scripts/g8_check.py" = ["E501"]
 "scripts/g10a_check.py" = ["E501"]
 "scripts/reconcile.py" = ["E501"]
+"notebooks/g11a_results.py" = ["E501"]  # SQL and table-row strings
 
 [tool.mypy]
 python_version = "3.10"  # code that runs in the Spark image must be 3.10-safe
-files = ["src", "scripts", "tests"]
+files = ["src", "scripts", "tests", "notebooks"]
 mypy_path = ["src", "scripts"]
 explicit_package_bases = true
 strict = true

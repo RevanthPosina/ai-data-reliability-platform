@@ -1,0 +1,17 @@
+{
+  "scope": "reduced G11a: R2 and R4 from existing manifests; R1 deferred (ADR-0024)",
+  "base_pipeline_sha": "58340e0",
+  "rounds": [],
+  "excluded_rounds": [],
+  "g8": [
+    "runs/manifests/20261105T200430Z-g8-check.json",
+    "runs/manifests/20261111T013825Z-g8-check.json"
+  ],
+  "g10a": [
+    "runs/manifests/20261106T013720Z-g10a-check.json",
+    "runs/manifests/20261110T233326Z-g10a-check.json"
+  ],
+  "g3": [
+    "runs/manifests/20261110T234612Z-g3-check.json"
+  ]
+}

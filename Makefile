@@ -7,7 +7,7 @@ REDPANDA_IMAGE_REF := $(shell sed -n 's/^REDPANDA_IMAGE=//p' versions.env)
 VENV := .venv
 PY := $(VENV)/bin/python
 
-.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs gen gen-determinism gen-max-rate test-spark g3-check g6-check g8-check g10a-check g2-check contracts-export contracts-check contracts-ci
+.PHONY: up down demo build bootstrap ci lint typecheck test versions dbt-fixture compose-config clean-volumes logs gen gen-determinism gen-max-rate test-spark g3-check g6-check g8-check g10a-check g11a-results g2-check contracts-export contracts-check contracts-ci
 
 .run/compose.env: versions.env $(wildcard .env) .env.example infra/seaweedfs/s3.json.tmpl
 	python3 scripts/render.py
@@ -146,3 +146,7 @@ g10a-check: .run/compose.env $(VENV)/.installed
 	ADRP_FAULT_HOOKS=1 $(COMPOSE) --profile core --profile apps up -d
 	$(PY) scripts/g10a_check.py --topics $(or $(TOPICS),default)
 	$(COMPOSE) --profile core --profile apps up -d
+
+# ---- G11a (reduced): R2 and R4 from committed manifests; no Docker, nothing is run or measured ----
+g11a-results: $(VENV)/.installed
+	$(PY) notebooks/g11a_results.py --inputs docs/results/g11a-inputs.json --out docs/results --check-readme

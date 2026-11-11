@@ -13,3 +13,4 @@ PyYAML==6.0.3
 psycopg[binary]==3.3.6
 pyarrow==26.0.0
 xxhash==4.0.1
+duckdb==1.5.6
