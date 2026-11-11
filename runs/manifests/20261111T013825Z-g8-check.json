@@ -1,0 +1,1666 @@
+{
+  "kind": "g8-check",
+  "started_at": "2026-11-11T00:53:21.874819+00:00",
+  "written_at": "2026-11-11T01:38:25.164469+00:00",
+  "git_sha": "e0fe4be0f3c7eeb4c5b59b24ad44c76bd7e9c517",
+  "git_dirty": false,
+  "git_dirty_paths": [],
+  "versions": {
+    "POSTGRES_IMAGE": "postgres:17.10-alpine",
+    "DEBEZIUM_VERSION": "3.7.0.Final",
+    "CONFLUENT_CONVERTER_VERSION": "8.3.2",
+    "REDPANDA_IMAGE": "redpandadata/redpanda:v26.2.4",
+    "SPARK_VERSION": "4.1.3",
+    "SPARK_IMAGE": "apache/spark:4.1.3-scala2.13-java17-python3-ubuntu",
+    "SCALA_BINARY": "2.13",
+    "SPARK_KAFKA_CLIENTS_VERSION": "3.9.1",
+    "SPARK_COMMONS_POOL2_VERSION": "2.12.1",
+    "ICEBERG_VERSION": "1.12.0",
+    "LAKEKEEPER_IMAGE": "quay.io/lakekeeper/catalog:v0.13.6",
+    "SEAWEEDFS_IMAGE": "chrislusf/seaweedfs:4.48",
+    "QDRANT_IMAGE": "qdrant/qdrant:v1.19.2",
+    "MAVEN_IMAGE": "maven:3.9.16-eclipse-temurin-17",
+    "PYTHON_IMAGE": "python:3.12.14-slim-bookworm",
+    "TRINO_IMAGE": "trinodb/trino:483",
+    "MARQUEZ_IMAGE": "marquezproject/marquez:0.50.0",
+    "DAGSTER_VERSION": "1.13.26",
+    "DAGSTER_LIB_VERSION": "0.29.26",
+    "DBT_CORE_VERSION": "1.12.5",
+    "DBT_TRINO_VERSION": "1.10.6",
+    "OPENLINEAGE_VERSION": "1.53.0",
+    "PYICEBERG_VERSION": "0.12.0",
+    "QDRANT_CLIENT_VERSION": "1.19.1",
+    "SENTENCE_TRANSFORMERS_VERSION": "6.1.0",
+    "TORCH_VERSION": "2.14.1",
+    "FASTAVRO_VERSION": "1.13.1",
+    "SPARK_FASTAVRO_VERSION": "1.12.2",
+    "SPARK_HYPOTHESIS_VERSION": "6.168.5",
+    "EMBED_MODEL": "sentence-transformers/all-MiniLM-L6-v2",
+    "EMBED_MODEL_REVISION": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "BOTO3_VERSION": "1.43.111",
+    "PSYCOPG_VERSION": "3.3.6",
+    "ICEBERG_FORMAT_VERSION": "2"
+  },
+  "seed": 42,
+  "profile": "core",
+  "hardware": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "release": "27.2.0",
+    "cpu": "Apple M1 Pro",
+    "ncpu": "8",
+    "mem_bytes": "17179869184",
+    "docker": {
+      "ServerVersion": "20.10.22",
+      "NCPU": 4,
+      "MemTotal": 8233013248,
+      "OperatingSystem": "Docker Desktop",
+      "Architecture": "aarch64"
+    }
+  },
+  "images": {
+    "adrp-connect-1": "adrp/connect:3.7.0.Final@sha256:4db88a6f388c4424175b4a40c007ad85bc837d74ba380a37bb879ff06538ae52",
+    "adrp-dagster-1": "adrp/spark:4.1.3-iceberg1.12.0@sha256:ea77ff6356ad69fbb8503d50073d342e911efd8f4d9ba75a0063d55fa0ba181e",
+    "adrp-embedder-1": "adrp/app:dev@sha256:61d714ba6b92f08157efe77fbc8de4fa97fea6fc9d6a0decd4a724128ad57334",
+    "adrp-exporter-1": "adrp/app:dev@sha256:61d714ba6b92f08157efe77fbc8de4fa97fea6fc9d6a0decd4a724128ad57334",
+    "adrp-lakekeeper-1": "quay.io/lakekeeper/catalog:v0.13.6@sha256:3e1ab4b94aabcb06b36e00ac890d6264aaa3980f3b549b3ae6a491c075c1548d",
+    "adrp-lakekeeper-migrate-1": "quay.io/lakekeeper/catalog:v0.13.6@sha256:3e1ab4b94aabcb06b36e00ac890d6264aaa3980f3b549b3ae6a491c075c1548d",
+    "adrp-postgres-1": "postgres:17.10-alpine@sha256:8ee7c900f4de054e8f0a3b42b8f5da38b8fba57c3ccd7c1a02be28cb0b06494f",
+    "adrp-qdrant-1": "qdrant/qdrant:v1.19.2@sha256:2ca0be6b5b2a5c55549ec0c84ce5610ef0c2145b6b36ff6efb515ca971566ba0",
+    "adrp-redpanda-1": "redpandadata/redpanda:v26.2.4@sha256:b2c8b3578d36ba6e00a81627ec9c802add1deea0fdf391b5ac696d16a687c9b7",
+    "adrp-seaweedfs-1": "chrislusf/seaweedfs:4.48@sha256:8f17c8c82e037886f6aaceb3f6282a5c2a1b52bbef5339d323b0067a75bbbc79",
+    "adrp-spark-streams-1": "adrp/spark:4.1.3-iceberg1.12.0@sha256:ea77ff6356ad69fbb8503d50073d342e911efd8f4d9ba75a0063d55fa0ba181e"
+  },
+  "result": {
+    "passed": true,
+    "checks": [
+      {
+        "check": "setup: the generator wrote 1500 transactions",
+        "ok": true,
+        "detail": "txn_range=[0, 1500]"
+      },
+      {
+        "check": "setup: silver caught up to the end of every topic",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "setup: the index is consistent before any subject exists",
+        "ok": true,
+        "detail": "{\"points\": 187, \"entities_in_index\": 129, \"stale_chunks\": 0, \"orphaned_chunks\": 0, \"duplicate_chunks\": 0, \"wrong_model_chunks\": 0, \"ahead_chunks\": 0, \"missing_entities\": 0}"
+      },
+      {
+        "check": "setup: ad-hoc subjects planted, each with a canary in name, email, address and ticket bodies, several ticket versions, a deleted ticket",
+        "ok": true,
+        "detail": "5 subjects, 10 live tickets"
+      },
+      {
+        "check": "setup: one subject ticket's update is parked in quarantine_support_tickets (SCHEMA_INCOMPATIBLE)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "setup: SIGKILLed spark-streams inside mid_merge while changes flowed (and subject tickets were in flight)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "setup after the kill: silver caught up to the end of every topic",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "setup: the embedder indexed the subjects' tickets and the index is consistent",
+        "ok": true,
+        "detail": "2 s; {\"points\": 444, \"entities_in_index\": 303, \"stale_chunks\": 0, \"orphaned_chunks\": 0, \"duplicate_chunks\": 0, \"wrong_model_chunks\": 0, \"ahead_chunks\": 0, \"missing_entities\": 0}"
+      },
+      {
+        "check": "setup: bronze carries a non-main tag pinning the pre-forget snapshot",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "ad-hoc: logical presence, sink by sink, subject 1/5: ['bronze', 'postgres', 'qdrant', 'quarantine', 'silver'] all found",
+        "ok": true,
+        "detail": "missing=[] vacuous=[] errors={}"
+      },
+      {
+        "check": "ad-hoc: logical presence, sink by sink, subject 2/5: ['bronze', 'postgres', 'qdrant', 'silver'] all found",
+        "ok": true,
+        "detail": "missing=[] vacuous=[] errors={}"
+      },
+      {
+        "check": "ad-hoc: logical presence, sink by sink, subject 3/5: ['bronze', 'postgres', 'qdrant', 'silver'] all found",
+        "ok": true,
+        "detail": "missing=[] vacuous=[] errors={}"
+      },
+      {
+        "check": "ad-hoc: logical presence, sink by sink, subject 4/5: ['bronze', 'postgres', 'qdrant', 'silver'] all found",
+        "ok": true,
+        "detail": "missing=[] vacuous=[] errors={}"
+      },
+      {
+        "check": "ad-hoc: logical presence, sink by sink, subject 5/5: ['bronze', 'postgres', 'qdrant', 'silver'] all found",
+        "ok": true,
+        "detail": "missing=[] vacuous=[] errors={}"
+      },
+      {
+        "check": "ad-hoc: physical presence, sink by sink (union of the subjects): ['broker', 'bronze', 'embedder_files', 'event_logs', 'pg_wal', 'postgres', 'qdrant', 'qdrant_wal', 'silver'] all found before any forget",
+        "ok": true,
+        "detail": "present=['broker', 'bronze', 'embedder_files', 'event_logs', 'pg_wal', 'postgres', 'qdrant', 'qdrant_wal', 'quarantine', 'silver'] missing=[] na=['ground_truth'] vacuous=[] errors={}"
+      },
+      {
+        "check": "setup: the footprint is the union of Postgres and bronze history (the deleted ticket is in it)",
+        "ok": true,
+        "detail": "subject 1: {accounts: 1, customers: 1, support_tickets: 3, transactions: 3}"
+      },
+      {
+        "check": "forget: one request per subject",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "forget: the generator kept writing while the subjects were forgotten (logical phase under load)",
+        "ok": true,
+        "detail": "logical phase 304.3 s; txn=4200"
+      },
+      {
+        "check": "forget: the workflow reports every logical sink absent",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "forget: every sink was seen logically absent, within S6 (900 s)",
+        "ok": true,
+        "detail": "unseen=0 worst=303.0 s; per sink max {\"postgres\": 251.9, \"silver\": 252.1, \"bronze\": 302.6, \"quarantine\": 302.8, \"qdrant\": 303.0}"
+      },
+      {
+        "check": "forget: logical, Postgres: no customer, ticket, or row carrying the subject's id remains",
+        "ok": true,
+        "detail": "rows=0"
+      },
+      {
+        "check": "forget: logical, Postgres: the subject's accounts and transactions were re-keyed to a placeholder, not deleted",
+        "ok": true,
+        "detail": "20 rows re-keyed"
+      },
+      {
+        "check": "forget: logical, silver: the subjects' customers and tickets are tombstones with every non-key column NULL (no PII)",
+        "ok": true,
+        "detail": "bad=0 customers without a silver row=0"
+      },
+      {
+        "check": "forget: logical, silver: the subjects' accounts and transactions are live rows re-keyed to a placeholder; no row names the subject",
+        "ok": true,
+        "detail": "rekey_problems=0 rows still naming a subject=0 placeholders=5"
+      },
+      {
+        "check": "forget: logical, Qdrant: a filtered scroll on each of the subjects' ticket entities returns 0 points",
+        "ok": true,
+        "detail": "points=0; deleted proactively=0"
+      },
+      {
+        "check": "forget: logical, bronze and quarantine_*: no event row of the footprint, no row carrying a canary (any lake table)",
+        "ok": true,
+        "detail": "footprint rows=0 canary rows (all tables)=0"
+      },
+      {
+        "check": "forget: silver caught up to the end of every topic",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "forget: the index is consistent with silver",
+        "ok": true,
+        "detail": "{\"points\": 542, \"entities_in_index\": 385, \"stale_chunks\": 0, \"orphaned_chunks\": 0, \"duplicate_chunks\": 0, \"wrong_model_chunks\": 0, \"ahead_chunks\": 0, \"missing_entities\": 0}"
+      },
+      {
+        "check": "forget: the whole index equals Postgres's current text (non-subjects; subjects hold no points)",
+        "ok": true,
+        "detail": "{\"entities_expected\": 385, \"missing\": 0, \"extra\": 0, \"differing\": 0, \"multi_version\": 0}"
+      },
+      {
+        "check": "generator subject: the Zipf-head customer owns transactions and tickets (non-vacuous)",
+        "ok": true,
+        "detail": "767 transactions, 97 tickets"
+      },
+      {
+        "check": "generator subject: silver caught up to the end of every topic",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "generator subject: the index is consistent with silver",
+        "ok": true,
+        "detail": "{\"points\": 542, \"entities_in_index\": 385, \"stale_chunks\": 0, \"orphaned_chunks\": 0, \"duplicate_chunks\": 0, \"wrong_model_chunks\": 0, \"ahead_chunks\": 0, \"missing_entities\": 0}"
+      },
+      {
+        "check": "generator subject: the whole index equals Postgres's current text (non-subjects; subjects hold no points)",
+        "ok": true,
+        "detail": "{\"entities_expected\": 385, \"missing\": 0, \"extra\": 0, \"differing\": 0, \"multi_version\": 0}"
+      },
+      {
+        "check": "generator: logical presence, sink by sink, subject 1/1: ['bronze', 'postgres', 'qdrant', 'silver'] all found",
+        "ok": true,
+        "detail": "missing=[] vacuous=[] errors={}"
+      },
+      {
+        "check": "generator: physical presence, sink by sink (union of the subjects): ['broker', 'bronze', 'embedder_files', 'event_logs', 'ground_truth', 'pg_wal', 'postgres', 'qdrant', 'silver'] all found before any forget",
+        "ok": true,
+        "detail": "present=['broker', 'bronze', 'embedder_files', 'event_logs', 'ground_truth', 'pg_wal', 'postgres', 'qdrant', 'quarantine', 'silver'] missing=[] na=[] vacuous=['qdrant_wal'] errors={}"
+      },
+      {
+        "check": "generator subject: the workflow reports every logical sink absent",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "generator subject: every sink was seen logically absent, within S6 (900 s)",
+        "ok": true,
+        "detail": "unseen=0 worst=118.0 s; per sink max {\"postgres\": 94.1, \"silver\": 117.5, \"bronze\": 117.7, \"quarantine\": 117.8, \"qdrant\": 118.0}"
+      },
+      {
+        "check": "generator subject: logical, Postgres: no customer, ticket, or row carrying the subject's id remains",
+        "ok": true,
+        "detail": "rows=0"
+      },
+      {
+        "check": "generator subject: logical, Postgres: the subject's accounts and transactions were re-keyed to a placeholder, not deleted",
+        "ok": true,
+        "detail": "768 rows re-keyed"
+      },
+      {
+        "check": "generator subject: logical, silver: the subjects' customers and tickets are tombstones with every non-key column NULL (no PII)",
+        "ok": true,
+        "detail": "bad=0 customers without a silver row=0"
+      },
+      {
+        "check": "generator subject: logical, silver: the subjects' accounts and transactions are live rows re-keyed to a placeholder; no row names the subject",
+        "ok": true,
+        "detail": "rekey_problems=0 rows still naming a subject=0 placeholders=1"
+      },
+      {
+        "check": "generator subject: logical, Qdrant: a filtered scroll on each of the subjects' ticket entities returns 0 points",
+        "ok": true,
+        "detail": "points=0; deleted proactively=0"
+      },
+      {
+        "check": "generator subject: logical, bronze and quarantine_*: no event row of the footprint, no row carrying a canary (any lake table)",
+        "ok": true,
+        "detail": "footprint rows=0 canary rows (all tables)=0"
+      },
+      {
+        "check": "generator subject after the forget: silver caught up to the end of every topic",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "generator subject after the forget: the index is consistent with silver",
+        "ok": true,
+        "detail": "{\"points\": 445, \"entities_in_index\": 288, \"stale_chunks\": 0, \"orphaned_chunks\": 0, \"duplicate_chunks\": 0, \"wrong_model_chunks\": 0, \"ahead_chunks\": 0, \"missing_entities\": 0}"
+      },
+      {
+        "check": "generator subject after the forget: the whole index equals Postgres's current text (non-subjects; subjects hold no points)",
+        "ok": true,
+        "detail": "{\"entities_expected\": 288, \"missing\": 0, \"extra\": 0, \"differing\": 0, \"multi_version\": 0}"
+      },
+      {
+        "check": "window: physical, every window sink is absent, or bounded with a recorded bound",
+        "ok": true,
+        "detail": "{\"bronze\": \"absent\", \"embedder_files\": \"absent\", \"event_logs\": \"absent\", \"ground_truth\": \"absent\", \"postgres\": \"absent\", \"quarantine\": \"absent\", \"seaweedfs\": \"absent\", \"silver\": \"absent\", \"spark_checkpoints\": \"absent\", \"spark_spill\": \"bounded\"}"
+      },
+      {
+        "check": "window: the maintenance window (writers stopped) closed and the services were restarted",
+        "ok": true,
+        "detail": "window 345 s"
+      },
+      {
+        "check": "window: physical, Iceberg: the rewrite removed position-delete files from the footprint's partitions (the rest belong to other rows in the same buckets; the whole-bucket scan below is the evidence of absence)",
+        "ok": true,
+        "detail": "delete files in the footprint's partitions 429 -> 33; removed by the rewrite=380"
+      },
+      {
+        "check": "window: physical, Iceberg: the pinned tag was dropped and no non-main ref remains",
+        "ok": true,
+        "detail": "dropped=1 remaining=0"
+      },
+      {
+        "check": "window: physical, Iceberg: each table keeps exactly one snapshot after expire (retain_last=1)",
+        "ok": true,
+        "detail": "extra snapshots=0"
+      },
+      {
+        "check": "window: physical, Iceberg: orphan files (one planted with a canary in bronze's data directory, plus any the SIGKILLed writer left) were removed (>= 1)",
+        "ok": true,
+        "detail": "orphans removed=78 planted=True"
+      },
+      {
+        "check": "window: physical, Iceberg: data files were rewritten",
+        "ok": true,
+        "detail": "rewritten files=867"
+      },
+      {
+        "check": "window: physical, Iceberg: the whole-bucket scan (every Parquet decoded incl. footer stats and value_bytes, every Avro manifest, every gzipped metadata.json) has 0 matches for the canaries and emails (the silver tombstones still hold the raw customer key until the purge, P5)",
+        "ok": true,
+        "detail": "{\"files\": 2113, \"total_hits\": 0, \"errors\": 0, \"undecoded_parquet\": 0}"
+      },
+      {
+        "check": "window: the scan is not vacuous: the same scan found the subjects before the forget",
+        "ok": true,
+        "detail": "present before=['postgres', 'bronze', 'silver', 'quarantine', 'qdrant', 'qdrant_wal', 'broker', 'pg_wal', 'event_logs', 'embedder_files']"
+      },
+      {
+        "check": "window: physical, SeaweedFS: volume vacuum reclaimed the deleted needles of the lake collection",
+        "ok": true,
+        "detail": "garbage permille 648 -> 0 in 5.2 s"
+      },
+      {
+        "check": "window: physical, files: event-log batches, embedder actions/state and ground truth were rewritten with pseudonyms",
+        "ok": true,
+        "detail": "{\"silver_batches\": 2026, \"ground_truth\": 37477, \"embedder_actions\": 394, \"embedder_state\": 0}"
+      },
+      {
+        "check": "window: physical, Postgres: VACUUM FULL ran and pg_statistic was refreshed (or the bound is recorded)",
+        "ok": true,
+        "detail": "{\"vacuum_seconds\": 1.4, \"blocked_dead_rows\": 0, \"statistic_ok\": 1, \"statistic_wait_s\": 71.0}"
+      },
+      {
+        "check": "window: the embedder's pointer equals the retained bronze snapshot",
+        "ok": true,
+        "detail": "pointer is retained snapshot: True"
+      },
+      {
+        "check": "window: the embedder reconverged: a post-window edit was indexed",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "window: the embedder did not fall back to a full bronze rescan",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "window: silver caught up to the end of every topic",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "window: the index is consistent with silver",
+        "ok": true,
+        "detail": "{\"points\": 445, \"entities_in_index\": 288, \"stale_chunks\": 0, \"orphaned_chunks\": 0, \"duplicate_chunks\": 0, \"wrong_model_chunks\": 0, \"ahead_chunks\": 0, \"missing_entities\": 0}"
+      },
+      {
+        "check": "window: the whole index equals Postgres's current text (non-subjects; subjects hold no points)",
+        "ok": true,
+        "detail": "{\"entities_expected\": 288, \"missing\": 0, \"extra\": 0, \"differing\": 0, \"multi_version\": 0}"
+      },
+      {
+        "check": "window: silver equals Postgres for every non-subject row (ids and owners, four tables)",
+        "ok": true,
+        "detail": "{\"missing\": 0, \"extra\": 0, \"differing\": 0, \"rows\": 3692}"
+      },
+      {
+        "check": "physical, Qdrant segments and WAL: absent within the deadline, or the bound is recorded ('bounded, not removed')",
+        "ok": true,
+        "detail": "{\"qdrant\": \"absent\", \"qdrant_wal\": \"bounded\"} {\"segment_files\": 0, \"wal_files\": 1, \"bounds\": 1}"
+      },
+      {
+        "check": "physical, Redpanda segments: absent within the deadline, or the bound is recorded ('bounded, not removed')",
+        "ok": true,
+        "detail": "{\"broker\": \"absent\"} {\"absent\": 1, \"elapsed_s\": 321.4, \"polls\": 24, \"nudges\": 5}"
+      },
+      {
+        "check": "physical, Postgres WAL: absent within the deadline, or the bound is recorded ('bounded, not removed')",
+        "ok": true,
+        "detail": "{\"pg_wal\": \"bounded\"} {\"absent\": 1, \"iterations\": 8, \"seconds\": 133.9, \"files_before\": 2, \"files_after\": 0}"
+      },
+      {
+        "check": "physical, Redpanda: producer compression is off for the CDC topics (a raw-byte scan of the segments is meaningful)",
+        "ok": true,
+        "detail": "{\"topic compression.type\": \"producer\", \"connector producer override\": \"none set\", \"compose producer compression\": \"none set\"}"
+      },
+      {
+        "check": "after the broker nudges: silver caught up to the end of every topic",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "after the broker nudges: the index is consistent with silver",
+        "ok": true,
+        "detail": "{\"points\": 445, \"entities_in_index\": 288, \"stale_chunks\": 0, \"orphaned_chunks\": 0, \"duplicate_chunks\": 0, \"wrong_model_chunks\": 0, \"ahead_chunks\": 0, \"missing_entities\": 0}"
+      },
+      {
+        "check": "after the broker nudges: the whole index equals Postgres's current text (non-subjects; subjects hold no points)",
+        "ok": true,
+        "detail": "{\"entities_expected\": 288, \"missing\": 0, \"extra\": 0, \"differing\": 0, \"multi_version\": 0}"
+      },
+      {
+        "check": "purge: physical, every re-sweep and final sink is absent, or bounded with a recorded bound",
+        "ok": true,
+        "detail": "{\"bronze\": \"absent\", \"container_logs\": \"absent\", \"dagster_storage\": \"absent\", \"embedder_files\": \"absent\", \"event_logs\": \"absent\", \"ground_truth\": \"absent\", \"manifests\": \"absent\", \"metrics\": \"absent\", \"postgres\": \"absent\", \"quarantine\": \"absent\", \"raw_id_store\": \"absent\", \"seaweedfs\": \"absent\", \"silver\": \"absent\", \"spark_checkpoints\": \"absent\", \"spark_spill\": \"bounded\"}"
+      },
+      {
+        "check": "purge: the broker was verified free of the subjects, so the silver tombstones were hard-deleted (not deferred)",
+        "ok": true,
+        "detail": "broker_clean=True deferred=[]"
+      },
+      {
+        "check": "purge: every request reached physical_done",
+        "ok": true,
+        "detail": "6/6"
+      },
+      {
+        "check": "purge: every request's status is physical_done",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "purge: raw_customer_id and the scratch footprint are NULL in privacy.forget_requests for every request",
+        "ok": true,
+        "detail": "rows still holding a raw id=0"
+      },
+      {
+        "check": "purge: physical, logs: no compose service log, the exporter /metrics, Dagster storage, run manifests or event log names a subject",
+        "ok": true,
+        "detail": "sources with hits=[]"
+      },
+      {
+        "check": "purge: physical, files: silver_batches, embedder actions/state and ground truth hold no subject entity",
+        "ok": true,
+        "detail": "{\"silver_batches\": 0, \"ground_truth\": 0, \"embedder\": 0}"
+      },
+      {
+        "check": "purge: pseudonym join, audit: HMAC(subject) finds every request's forget_audit row",
+        "ok": true,
+        "detail": "6/6"
+      },
+      {
+        "check": "purge: pseudonym join, embedder actions: entries of the subjects' tickets carry p:<hmac> and join to the HMAC-derived pseudonyms",
+        "ok": true,
+        "detail": "394 entries"
+      },
+      {
+        "check": "purge: pseudonym join, ground truth: the generator subject's customer row is keyed by its HMAC-derived negative id",
+        "ok": true,
+        "detail": "8664 rows"
+      },
+      {
+        "check": "rerun: re-running the workflow for finished requests skips every phase",
+        "ok": true,
+        "detail": "logical skipped=6"
+      },
+      {
+        "check": "rerun: Iceberg snapshot ids are unchanged (bronze, quarantine, silver)",
+        "ok": true,
+        "detail": "9 tables"
+      },
+      {
+        "check": "rerun: privacy.* audit rows are unchanged",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "rerun: Qdrant points and payloads are unchanged",
+        "ok": true,
+        "detail": "445 points"
+      },
+      {
+        "check": "purge: logical, silver: the tombstones were purged (0 tombstones and 0 customer/ticket rows of the footprint); only re-keyed ledger rows remain",
+        "ok": true,
+        "detail": "tombstones=0 customer/ticket rows=0"
+      },
+      {
+        "check": "rerun: logical, bronze and quarantine_*: still 0 footprint rows; no table has a canary or a row naming a subject",
+        "ok": true,
+        "detail": "footprint rows=0 canary rows=0 rows naming a subject=0"
+      },
+      {
+        "check": "rerun: the index is consistent with silver",
+        "ok": true,
+        "detail": "{\"points\": 445, \"entities_in_index\": 288, \"stale_chunks\": 0, \"orphaned_chunks\": 0, \"duplicate_chunks\": 0, \"wrong_model_chunks\": 0, \"ahead_chunks\": 0, \"missing_entities\": 0}"
+      },
+      {
+        "check": "rerun: the whole index equals Postgres's current text (non-subjects; subjects hold no points)",
+        "ok": true,
+        "detail": "{\"entities_expected\": 288, \"missing\": 0, \"extra\": 0, \"differing\": 0, \"multi_version\": 0}"
+      },
+      {
+        "check": "rerun: silver equals Postgres for every non-subject row",
+        "ok": true,
+        "detail": "{\"missing\": 0, \"extra\": 0, \"differing\": 0, \"rows\": 3554}"
+      },
+      {
+        "check": "final: physical, every sink re-evaluated (whole-bucket scan, Postgres files, Redpanda segments, Qdrant, files, logs) is absent or bounded",
+        "ok": true,
+        "detail": "{\"broker\": \"absent\", \"bronze\": \"absent\", \"container_logs\": \"absent\", \"dagster_storage\": \"absent\", \"embedder_files\": \"absent\", \"event_logs\": \"absent\", \"ground_truth\": \"absent\", \"manifests\": \"absent\", \"metrics\": \"absent\", \"pg_wal\": \"bounded\", \"postgres\": \"absent\", \"qdrant\": \"absent\", \"qdrant_wal\": \"bounded\", \"quarantine\": \"absent\", \"raw_id_store\": \"absent\", \"seaweedfs\": \"absent\", \"silver\": \"absent\", \"spark_checkpoints\": \"absent\", \"spark_spill\": \"bounded\"}"
+      },
+      {
+        "check": "final: physical, Iceberg: the final whole-bucket scan has 0 matches",
+        "ok": true,
+        "detail": "{\"files\": 2628, \"total_hits\": 0, \"matched_files\": 0, \"errors\": 0, \"undecoded_parquet\": 0}"
+      },
+      {
+        "check": "manifest: the payload about to be written holds no canary, email or subject id, and no 13-digit number in a check name or detail",
+        "ok": true,
+        "detail": "{\"canary_or_email\": 0, \"subject_id\": 0, \"digits13_in_checks\": 0, \"bytes\": 37471}"
+      }
+    ],
+    "presence_ad-hoc": {
+      "ok": true,
+      "logical": {
+        "b7fddca0": {
+          "present": [
+            "postgres",
+            "silver",
+            "bronze",
+            "quarantine",
+            "qdrant",
+            "raw_id_store"
+          ],
+          "vacuous": [],
+          "na": [],
+          "skipped": [],
+          "errors": {},
+          "ok": true
+        },
+        "7b51b15d": {
+          "present": [
+            "postgres",
+            "silver",
+            "bronze",
+            "qdrant",
+            "raw_id_store"
+          ],
+          "vacuous": [],
+          "na": [
+            "quarantine"
+          ],
+          "skipped": [],
+          "errors": {},
+          "ok": true
+        },
+        "a11f4177": {
+          "present": [
+            "postgres",
+            "silver",
+            "bronze",
+            "qdrant",
+            "raw_id_store"
+          ],
+          "vacuous": [],
+          "na": [
+            "quarantine"
+          ],
+          "skipped": [],
+          "errors": {},
+          "ok": true
+        },
+        "b2f596e2": {
+          "present": [
+            "postgres",
+            "silver",
+            "bronze",
+            "qdrant",
+            "raw_id_store"
+          ],
+          "vacuous": [],
+          "na": [
+            "quarantine"
+          ],
+          "skipped": [],
+          "errors": {},
+          "ok": true
+        },
+        "cb10825c": {
+          "present": [
+            "postgres",
+            "silver",
+            "bronze",
+            "qdrant",
+            "raw_id_store"
+          ],
+          "vacuous": [],
+          "na": [
+            "quarantine"
+          ],
+          "skipped": [],
+          "errors": {},
+          "ok": true
+        }
+      },
+      "physical": {
+        "present": [
+          "postgres",
+          "bronze",
+          "silver",
+          "quarantine",
+          "qdrant",
+          "qdrant_wal",
+          "broker",
+          "pg_wal",
+          "event_logs",
+          "embedder_files"
+        ],
+        "vacuous": [],
+        "na": [
+          "ground_truth"
+        ],
+        "skipped": [
+          "seaweedfs",
+          "spark_checkpoints",
+          "spark_spill",
+          "container_logs",
+          "dagster_storage",
+          "metrics",
+          "manifests",
+          "raw_id_store"
+        ],
+        "errors": {},
+        "ok": true
+      }
+    },
+    "bronze_offset_gaps_before": {
+      "customers": {
+        "kafka_records": 455,
+        "bronze_rows": 455,
+        "bronze_distinct_offsets": 455,
+        "gap": 0
+      },
+      "merchants": {
+        "kafka_records": 38,
+        "bronze_rows": 38,
+        "bronze_distinct_offsets": 38,
+        "gap": 0
+      },
+      "accounts": {
+        "kafka_records": 4173,
+        "bronze_rows": 4173,
+        "bronze_distinct_offsets": 4173,
+        "gap": 0
+      },
+      "transactions": {
+        "kafka_records": 1958,
+        "bronze_rows": 1958,
+        "bronze_distinct_offsets": 1958,
+        "gap": 0
+      },
+      "refunds": {
+        "kafka_records": 153,
+        "bronze_rows": 153,
+        "bronze_distinct_offsets": 153,
+        "gap": 0
+      },
+      "support_tickets": {
+        "kafka_records": 697,
+        "bronze_rows": 697,
+        "bronze_distinct_offsets": 697,
+        "gap": 0
+      },
+      "help_articles": {
+        "kafka_records": 168,
+        "bronze_rows": 168,
+        "bronze_distinct_offsets": 168,
+        "gap": 0
+      }
+    },
+    "logical_lags_forget": {
+      "postgres": {
+        "n": 5,
+        "median_s": 250.0408639907837,
+        "min_s": 202.9932198524475,
+        "max_s": 251.92559003829956
+      },
+      "silver": {
+        "n": 5,
+        "median_s": 250.332524061203,
+        "min_s": 248.672691822052,
+        "max_s": 252.0986521244049
+      },
+      "bronze": {
+        "n": 5,
+        "median_s": 250.54501700401306,
+        "min_s": 248.88293600082397,
+        "max_s": 302.6374809741974
+      },
+      "quarantine": {
+        "n": 5,
+        "median_s": 250.7583041191101,
+        "min_s": 249.0592098236084,
+        "max_s": 302.8188180923462
+      },
+      "qdrant": {
+        "n": 5,
+        "median_s": 251.01539611816406,
+        "min_s": 249.24464583396912,
+        "max_s": 302.98682713508606
+      }
+    },
+    "delivery_seconds_forget": {
+      "n": 5,
+      "median_s": 142.34874229098205,
+      "min_s": 92.36057466597413,
+      "max_s": 142.7378082079813
+    },
+    "bronze_delete_forget": {
+      "lake.bronze.cdc_events": {
+        "before": 172,
+        "after": 0,
+        "failed_attempts": 0
+      },
+      "lake.silver.quarantine_support_tickets": {
+        "before": 1,
+        "after": 0,
+        "failed_attempts": 0
+      }
+    },
+    "adhoc_footprint_counts": [
+      {
+        "accounts": 1,
+        "customers": 1,
+        "support_tickets": 3,
+        "transactions": 3
+      },
+      {
+        "accounts": 1,
+        "customers": 1,
+        "support_tickets": 3,
+        "transactions": 3
+      },
+      {
+        "accounts": 1,
+        "customers": 1,
+        "support_tickets": 3,
+        "transactions": 3
+      },
+      {
+        "accounts": 1,
+        "customers": 1,
+        "support_tickets": 3,
+        "transactions": 3
+      },
+      {
+        "accounts": 1,
+        "customers": 1,
+        "support_tickets": 3,
+        "transactions": 3
+      }
+    ],
+    "presence_generator": {
+      "ok": false,
+      "logical": {
+        "e7661062": {
+          "present": [
+            "postgres",
+            "silver",
+            "bronze",
+            "qdrant",
+            "raw_id_store"
+          ],
+          "vacuous": [],
+          "na": [
+            "quarantine"
+          ],
+          "skipped": [],
+          "errors": {},
+          "ok": true
+        }
+      },
+      "physical": {
+        "present": [
+          "postgres",
+          "bronze",
+          "silver",
+          "quarantine",
+          "qdrant",
+          "broker",
+          "pg_wal",
+          "event_logs",
+          "embedder_files",
+          "ground_truth"
+        ],
+        "vacuous": [
+          "qdrant_wal"
+        ],
+        "na": [],
+        "skipped": [
+          "seaweedfs",
+          "spark_checkpoints",
+          "spark_spill",
+          "container_logs",
+          "dagster_storage",
+          "metrics",
+          "manifests",
+          "raw_id_store"
+        ],
+        "errors": {},
+        "ok": false
+      }
+    },
+    "logical_lags_generator subject": {
+      "postgres": {
+        "n": 1,
+        "median_s": 94.09204888343811,
+        "min_s": 94.09204888343811,
+        "max_s": 94.09204888343811
+      },
+      "silver": {
+        "n": 1,
+        "median_s": 117.5054829120636,
+        "min_s": 117.5054829120636,
+        "max_s": 117.5054829120636
+      },
+      "bronze": {
+        "n": 1,
+        "median_s": 117.66955399513245,
+        "min_s": 117.66955399513245,
+        "max_s": 117.66955399513245
+      },
+      "quarantine": {
+        "n": 1,
+        "median_s": 117.82630705833435,
+        "min_s": 117.82630705833435,
+        "max_s": 117.82630705833435
+      },
+      "qdrant": {
+        "n": 1,
+        "median_s": 117.99389386177063,
+        "min_s": 117.99389386177063,
+        "max_s": 117.99389386177063
+      }
+    },
+    "delivery_seconds_generator subject": {
+      "n": 1,
+      "median_s": 59.2226727080124,
+      "min_s": 59.2226727080124,
+      "max_s": 59.2226727080124
+    },
+    "bronze_delete_generator subject": {
+      "lake.bronze.cdc_events": {
+        "before": 2982,
+        "after": 0,
+        "failed_attempts": 0
+      },
+      "lake.silver.quarantine_support_tickets": {
+        "before": 0,
+        "after": 0,
+        "failed_attempts": 0
+      }
+    },
+    "window": {
+      "window_seconds": 345.0,
+      "steps": {
+        "iceberg": {
+          "drain": {
+            "embedder_was_running": 1,
+            "drain_s": 0.6,
+            "pending": 0
+          },
+          "rewritten_files": 867,
+          "delete_files_removed": 380,
+          "refs_dropped": 1,
+          "orphans_removed": 78,
+          "residue": {
+            "delete_files_affected": 33,
+            "non_main_refs": 0,
+            "extra_snapshots": 0
+          },
+          "bronze_snapshot": 3951221373668883169
+        },
+        "seaweedfs": {
+          "ok": 1,
+          "garbage_permille_before": 648,
+          "garbage_permille_after": 0,
+          "seconds": 5.2
+        },
+        "files": {
+          "silver_batches": 2026,
+          "ground_truth": 37477,
+          "embedder_actions": 394,
+          "embedder_state": 0
+        },
+        "postgres": {
+          "vacuum_seconds": 1.4,
+          "blocked_dead_rows": 0,
+          "statistic_ok": 1,
+          "statistic_wait_s": 71.0
+        },
+        "bucket_scan": {
+          "files": 2113,
+          "total_hits": 0,
+          "matched_files": 0,
+          "errors": 0,
+          "undecoded_parquet": 0
+        }
+      },
+      "verdicts": {
+        "bronze": "absent",
+        "embedder_files": "absent",
+        "event_logs": "absent",
+        "ground_truth": "absent",
+        "postgres": "absent",
+        "quarantine": "absent",
+        "seaweedfs": "absent",
+        "silver": "absent",
+        "spark_checkpoints": "absent",
+        "spark_spill": "bounded"
+      }
+    },
+    "state_after_window": {
+      "cdc_events": {
+        "snapshots": 1,
+        "delete_files": 0,
+        "non_main_refs": [],
+        "delete_files_affected": 0
+      },
+      "quarantine_support_tickets": {
+        "snapshots": 1,
+        "delete_files": 0,
+        "non_main_refs": [],
+        "delete_files_affected": 0
+      },
+      "accounts": {
+        "snapshots": 1,
+        "delete_files": 188,
+        "non_main_refs": [],
+        "delete_files_affected": 17
+      },
+      "customers": {
+        "snapshots": 1,
+        "delete_files": 35,
+        "non_main_refs": [],
+        "delete_files_affected": 5
+      },
+      "help_articles": {
+        "snapshots": 1,
+        "delete_files": 35,
+        "non_main_refs": [],
+        "delete_files_affected": null
+      },
+      "merchants": {
+        "snapshots": 1,
+        "delete_files": 0,
+        "non_main_refs": [],
+        "delete_files_affected": null
+      },
+      "refunds": {
+        "snapshots": 1,
+        "delete_files": 0,
+        "non_main_refs": [],
+        "delete_files_affected": null
+      },
+      "support_tickets": {
+        "snapshots": 1,
+        "delete_files": 11,
+        "non_main_refs": [],
+        "delete_files_affected": 11
+      },
+      "transactions": {
+        "snapshots": 1,
+        "delete_files": 0,
+        "non_main_refs": [],
+        "delete_files_affected": 0
+      }
+    },
+    "physical_qdrant": {
+      "steps": {
+        "segment_files": 0,
+        "wal_files": 1,
+        "bounds": 1
+      },
+      "verdicts": {
+        "qdrant": "absent",
+        "qdrant_wal": "bounded"
+      },
+      "seconds": 134.4
+    },
+    "physical_broker": {
+      "steps": {
+        "absent": 1,
+        "elapsed_s": 321.4,
+        "polls": 24,
+        "nudges": 5
+      },
+      "verdicts": {
+        "broker": "absent"
+      },
+      "seconds": 325.8
+    },
+    "physical_pg_wal": {
+      "steps": {
+        "absent": 1,
+        "iterations": 8,
+        "seconds": 133.9,
+        "files_before": 2,
+        "files_after": 0
+      },
+      "verdicts": {
+        "pg_wal": "bounded"
+      },
+      "seconds": 186.5
+    },
+    "purge": {
+      "steps": {
+        "bronze_delete": {
+          "lake.bronze.cdc_events": {
+            "after": 0
+          },
+          "lake.silver.quarantine_support_tickets": {
+            "after": 0
+          }
+        },
+        "tombstones_purged": 138,
+        "iceberg": {
+          "drain": {
+            "embedder_was_running": 1,
+            "drain_s": 0.6,
+            "pending": 0
+          },
+          "rewritten_files": 328,
+          "delete_files_removed": 68,
+          "refs_dropped": 0,
+          "orphans_removed": 0,
+          "residue": {
+            "delete_files_affected": 82,
+            "non_main_refs": 0,
+            "extra_snapshots": 0
+          },
+          "bronze_snapshot": 5613282347245989212
+        },
+        "seaweedfs": {
+          "ok": 1,
+          "garbage_permille_before": 342,
+          "garbage_permille_after": 0,
+          "seconds": 4.6
+        },
+        "files": {
+          "silver_batches": 0,
+          "ground_truth": 0,
+          "embedder_actions": 0,
+          "embedder_state": 0
+        },
+        "privacy_vacuum": {
+          "seconds": 0.7,
+          "blocked_dead_rows": 0
+        }
+      },
+      "verdicts": {
+        "bronze": "absent",
+        "container_logs": "absent",
+        "dagster_storage": "absent",
+        "embedder_files": "absent",
+        "event_logs": "absent",
+        "ground_truth": "absent",
+        "manifests": "absent",
+        "metrics": "absent",
+        "postgres": "absent",
+        "quarantine": "absent",
+        "raw_id_store": "absent",
+        "seaweedfs": "absent",
+        "silver": "absent",
+        "spark_checkpoints": "absent",
+        "spark_spill": "bounded"
+      },
+      "deferred": [],
+      "window_seconds": 279.3
+    },
+    "logs_report": {
+      "log:connect": 0,
+      "log:dagster": 0,
+      "log:embedder": 0,
+      "log:exporter": 0,
+      "log:lakekeeper": 0,
+      "log:lakekeeper-migrate": 0,
+      "log:postgres": 0,
+      "log:qdrant": 0,
+      "log:redpanda": 0,
+      "log:seaweedfs": 0,
+      "log:spark-streams": 0,
+      "metrics": 0,
+      "dagster_storage": 0,
+      "manifests": 0,
+      "eventlog": 0
+    },
+    "final_scan": {
+      "broker": "absent",
+      "bronze": "absent",
+      "container_logs": "absent",
+      "dagster_storage": "absent",
+      "embedder_files": "absent",
+      "event_logs": "absent",
+      "ground_truth": "absent",
+      "manifests": "absent",
+      "metrics": "absent",
+      "pg_wal": "bounded",
+      "postgres": "absent",
+      "qdrant": "absent",
+      "qdrant_wal": "bounded",
+      "quarantine": "absent",
+      "raw_id_store": "absent",
+      "seaweedfs": "absent",
+      "silver": "absent",
+      "spark_checkpoints": "absent",
+      "spark_spill": "bounded"
+    },
+    "bronze_offset_gaps_after": {
+      "customers": {
+        "kafka_records": 707,
+        "bronze_rows": 609,
+        "bronze_distinct_offsets": 609,
+        "gap": 98
+      },
+      "merchants": {
+        "kafka_records": 44,
+        "bronze_rows": 44,
+        "bronze_distinct_offsets": 44,
+        "gap": 0
+      },
+      "accounts": {
+        "kafka_records": 5592,
+        "bronze_rows": 4739,
+        "bronze_distinct_offsets": 4739,
+        "gap": 853
+      },
+      "transactions": {
+        "kafka_records": 3520,
+        "bronze_rows": 1956,
+        "bronze_distinct_offsets": 1956,
+        "gap": 1564
+      },
+      "refunds": {
+        "kafka_records": 197,
+        "bronze_rows": 197,
+        "bronze_distinct_offsets": 197,
+        "gap": 0
+      },
+      "support_tickets": {
+        "kafka_records": 1377,
+        "bronze_rows": 738,
+        "bronze_distinct_offsets": 738,
+        "gap": 639
+      },
+      "help_articles": {
+        "kafka_records": 206,
+        "bronze_rows": 206,
+        "bronze_distinct_offsets": 206,
+        "gap": 0
+      }
+    },
+    "lag_report": {
+      "sinks": {
+        "broker": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 1555.655827999115,
+            "min_s": 1063.3200860023499,
+            "max_s": 1556.144093990326
+          },
+          "bounded": 0
+        },
+        "bronze": {
+          "logical": {
+            "n": 6,
+            "median_s": 250.07751607894897,
+            "min_s": 117.66955399513245,
+            "max_s": 302.6374809741974
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 907.155956029892,
+            "min_s": 414.81759095191956,
+            "max_s": 907.6421618461609
+          },
+          "bounded": 0
+        },
+        "container_logs": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 2039.4103300571442,
+            "min_s": 1547.1986129283905,
+            "max_s": 2039.7121279239655
+          },
+          "bounded": 0
+        },
+        "dagster_storage": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 2040.889540553093,
+            "min_s": 1548.614784002304,
+            "max_s": 2041.3403179645538
+          },
+          "bounded": 0
+        },
+        "embedder_files": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 916.2060786485672,
+            "min_s": 423.85459995269775,
+            "max_s": 916.7020649909973
+          },
+          "bounded": 0
+        },
+        "event_logs": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 914.6776140928268,
+            "min_s": 422.3330729007721,
+            "max_s": 915.137598991394
+          },
+          "bounded": 0
+        },
+        "ground_truth": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 917.9790415763855,
+            "min_s": 425.6378619670868,
+            "max_s": 918.4638290405273
+          },
+          "bounded": 0
+        },
+        "manifests": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 2043.1748391389847,
+            "min_s": 1550.8413729667664,
+            "max_s": 2043.64963889122
+          },
+          "bounded": 0
+        },
+        "metrics": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 2042.078641653061,
+            "min_s": 1549.8052580356598,
+            "max_s": 2042.5142710208893
+          },
+          "bounded": 0
+        },
+        "pg_wal": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 1719.3876745700836,
+            "min_s": 1227.0417878627777,
+            "max_s": 1719.8675010204315
+          },
+          "bounded": 6
+        },
+        "postgres": {
+          "logical": {
+            "n": 6,
+            "median_s": 249.6544190645218,
+            "min_s": 94.09204888343811,
+            "max_s": 251.92559003829956
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 895.7369055747986,
+            "min_s": 403.3833360671997,
+            "max_s": 896.2330079078674
+          },
+          "bounded": 0
+        },
+        "qdrant": {
+          "logical": {
+            "n": 6,
+            "median_s": 250.47961461544037,
+            "min_s": 117.99389386177063,
+            "max_s": 302.98682713508606
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 1111.6236196756363,
+            "min_s": 619.2926468849182,
+            "max_s": 1112.0621600151062
+          },
+          "bounded": 0
+        },
+        "qdrant_wal": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "bounded": 6
+        },
+        "quarantine": {
+          "logical": {
+            "n": 6,
+            "median_s": 250.26707458496094,
+            "min_s": 117.82630705833435,
+            "max_s": 302.8188180923462
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 909.0989465713501,
+            "min_s": 416.7704050540924,
+            "max_s": 909.5768029689789
+          },
+          "bounded": 0
+        },
+        "raw_id_store": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 2055.4562360048294,
+            "min_s": 1563.0989179611206,
+            "max_s": 2055.923351049423
+          },
+          "bounded": 0
+        },
+        "seaweedfs": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 911.272164106369,
+            "min_s": 418.94875407218933,
+            "max_s": 911.7685618400574
+          },
+          "bounded": 0
+        },
+        "silver": {
+          "logical": {
+            "n": 6,
+            "median_s": 249.88924205303192,
+            "min_s": 117.5054829120636,
+            "max_s": 252.0986521244049
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 908.1145231723785,
+            "min_s": 415.8021728992462,
+            "max_s": 908.6020638942719
+          },
+          "bounded": 0
+        },
+        "silver_tombstone_purge": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 2035.598963022232,
+            "min_s": 1543.3875789642334,
+            "max_s": 2036.0051319599152
+          },
+          "bounded": 0
+        },
+        "spark_checkpoints": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 913.0053355693817,
+            "min_s": 420.65121507644653,
+            "max_s": 913.5019290447235
+          },
+          "bounded": 0
+        },
+        "spark_spill": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "bounded": 6
+        },
+        "window_verified": {
+          "logical": {
+            "n": 0,
+            "median_s": null,
+            "min_s": null,
+            "max_s": null
+          },
+          "physical": {
+            "n": 6,
+            "median_s": 1032.8858580589294,
+            "min_s": 540.6226360797882,
+            "max_s": 1033.232722043991
+          },
+          "bounded": 0
+        }
+      },
+      "requests": [
+        {
+          "request_id": "be435780-0728-442c-8189-bf93312f58c2",
+          "status": "physical_done",
+          "requested_at": 1794358713.160335,
+          "logical_lag_s": 305.6725308895111,
+          "physical_lag_s": 2064.078367948532,
+          "raw_id_stored": false,
+          "error": null
+        },
+        {
+          "request_id": "d5917a61-c958-4c45-ae74-5b81e39ee4eb",
+          "status": "physical_done",
+          "requested_at": 1794358713.485525,
+          "logical_lag_s": 306.00989413261414,
+          "physical_lag_s": 2064.2326140403748,
+          "raw_id_stored": false,
+          "error": null
+        },
+        {
+          "request_id": "6004581c-aa05-4ae0-a1d5-0a03c913d1f8",
+          "status": "physical_done",
+          "requested_at": 1794358713.878553,
+          "logical_lag_s": 306.2688829898834,
+          "physical_lag_s": 2064.324184179306,
+          "raw_id_stored": false,
+          "error": null
+        },
+        {
+          "request_id": "5759801a-e97a-465d-9889-556e41981d86",
+          "status": "physical_done",
+          "requested_at": 1794358714.206199,
+          "logical_lag_s": 306.4513921737671,
+          "physical_lag_s": 2064.469743013382,
+          "raw_id_stored": false,
+          "error": null
+        },
+        {
+          "request_id": "c1e860f8-9f04-49bc-ba7c-925143c2d5cc",
+          "status": "physical_done",
+          "requested_at": 1794358714.528672,
+          "logical_lag_s": 306.64596796035767,
+          "physical_lag_s": 2064.6163680553436,
+          "raw_id_stored": false,
+          "error": null
+        },
+        {
+          "request_id": "9ff84f47-effb-44ad-93a5-c808ab1136cd",
+          "status": "physical_done",
+          "requested_at": 1794359206.780256,
+          "logical_lag_s": 118.48509907722473,
+          "physical_lag_s": 1572.8312468528748,
+          "raw_id_stored": false,
+          "error": null
+        }
+      ]
+    },
+    "settings": {
+      "redpanda": {
+        "topic_config": {
+          "customers": {
+            "cleanup.policy": "compact,delete",
+            "compression.type": "producer",
+            "delete.retention.ms": "10000",
+            "max.compaction.lag.ms": "600000",
+            "min.cleanable.dirty.ratio": "0.01",
+            "min.compaction.lag.ms": "300000",
+            "retention.ms": "86400000",
+            "segment.ms": "30000"
+          },
+          "support_tickets": {
+            "cleanup.policy": "compact,delete",
+            "compression.type": "producer",
+            "delete.retention.ms": "10000",
+            "max.compaction.lag.ms": "600000",
+            "min.cleanable.dirty.ratio": "0.01",
+            "min.compaction.lag.ms": "300000",
+            "retention.ms": "86400000",
+            "segment.ms": "30000"
+          }
+        },
+        "cluster_log_segment_ms_min": 10000,
+        "applied_from": "infra/redpanda/topic-config.json"
+      },
+      "iceberg": {
+        "rewrite_data_files_options": {
+          "delete-file-threshold": "1",
+          "min-input-files": "1",
+          "remove-dangling-deletes": "true",
+          "partial-progress.enabled": "true"
+        },
+        "expire_snapshots": "older_than=now, retain_last=1 (twice, around rewrite_manifests)",
+        "remove_orphan_files": "Action API, older_than=now, prefix listing",
+        "bronze_and_quarantine": "copy-on-write",
+        "silver": "merge-on-read"
+      },
+      "qdrant": {
+        "optimizer_config": {
+          "deleted_threshold": 0.0001,
+          "vacuum_min_vector_number": 100,
+          "default_segment_number": 0,
+          "max_segment_size": null,
+          "memmap_threshold": null,
+          "indexing_threshold": 10000,
+          "flush_interval_sec": 5,
+          "max_optimization_threads": null,
+          "prevent_unoptimized": null
+        },
+        "applied": {
+          "deleted_threshold": 0.0001,
+          "vacuum_min_vector_number": 100
+        },
+        "segments": 1
+      },
+      "postgres": {
+        "min_wal_size_mib": 80,
+        "wal_segment_mib": 16,
+        "slot_lag_bytes": 33856
+      },
+      "seaweedfs": {
+        "vacuum": "volume.vacuum -collection lake, garbageThreshold small, after the Iceberg procedure"
+      },
+      "bronze_offsets_have_gaps": "yes: the CDC topics compact (cleanup.policy=compact,delete), so superseded versions never reach bronze, and the forget DELETE removes subject rows; kafka offsets in bronze are not contiguous on these topics",
+      "wording": "deletion propagation verified in this system; per sink 'logical' (by query) and 'physical' (by bytes) or 'bounded, not removed'; no compliance claim",
+      "note": "ids, canaries and emails are never printed or stored in this check"
+    },
+    "seconds": {
+      "p1_logical_seconds": 304.3,
+      "p2_logical_seconds": 118.2,
+      "delete_files_before": 429,
+      "snapshots_before": {
+        "cdc_events": 50,
+        "quarantine_support_tickets": 3,
+        "accounts": 21,
+        "customers": 20,
+        "help_articles": 13,
+        "merchants": 8,
+        "refunds": 14,
+        "support_tickets": 21,
+        "transactions": 20
+      },
+      "p3_seconds": 347.4,
+      "p4_qdrant_seconds": 134.4,
+      "p4_broker_seconds": 325.8,
+      "p4_pg_wal_seconds": 186.5,
+      "p5_seconds": 312.1,
+      "P0": 310.7,
+      "P1": 404.1,
+      "P2": 269.0,
+      "P3": 425.4,
+      "P4": 656.6,
+      "P5": 318.1
+    },
+    "manifest_self_scan": {
+      "canary_or_email": 0,
+      "subject_id": 0,
+      "digits13_in_checks": 0,
+      "bytes": 37471
+    }
+  }
+}
