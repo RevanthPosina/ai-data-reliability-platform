@@ -1,5 +1,7 @@
 # The dbt snapshot exists only as the comparison with SCD2 (it loses changes between runs). It holds the customer
-# key and an attribute hash, never plain PII. Target schema: <target schema>_snapshots (gold_snapshots live).
+# key and an attribute hash, never plain PII. No enforced contract: dbt-trino's snapshot staging table carries
+# dbt_change_type and dbt_unique_key, which an enforced contract rejects from the second run on
+# (ADR-0028 amendment). Target schema: <target schema>_snapshots (gold_snapshots live).
 snapshots:
   - name: snap_customer_attrs
     relation: ref('stg_silver__customer_attrs')
@@ -7,7 +9,6 @@ snapshots:
       unique_key: customer_id
       strategy: check
       check_cols: [attr_hash]
-      contract: {enforced: true}
     columns:
       - {name: customer_id, data_type: bigint, constraints: [{type: not_null}]}
       - {name: attr_hash, data_type: varchar}

@@ -6,6 +6,9 @@ unit_tests:
   - name: ut_dim_customer_full_build
     description: "SCD2: update opens a version, a no-op change is merged, a delete closes without opening."
     model: dim_customer
+    overrides:
+      macros:
+        is_incremental: false
     given:
       - input: ref('stg_bronze__customer_changes')
         format: sql
