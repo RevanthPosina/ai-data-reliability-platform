@@ -350,9 +350,10 @@ def wait_trino_ready(timeout: float = 420) -> bool:
         try:
             if not tr().ready():
                 return False
+            # Spark creates each silver table on its first rows, so on fresh volumes only bronze exists here;
+            # silver visibility is waited for after the first drain (wait_caught_up).
             bronze = {r[0] for r in tr().rows("SHOW TABLES FROM lake.bronze")}
-            silver = {r[0] for r in tr().rows("SHOW TABLES FROM lake.silver")}
-            return "cdc_events" in bronze and set(SILVER_T) <= silver
+            return "cdc_events" in bronze
         except Exception:  # noqa: BLE001 - Trino or the catalog is still starting; poll again
             return False
 
@@ -365,6 +366,9 @@ def wait_caught_up(drain: Drain, timeout: float = 300) -> bool:
         return False
 
     def visible() -> bool:
+        silver = {r[0] for r in tr().rows("SHOW TABLES FROM lake.silver")}
+        if not set(SILVER_T) <= silver:
+            return False
         for t in SILVER_T:
             need = drain.topic_lsn[t]
             if not need:
@@ -671,9 +675,9 @@ def after_build(k: int) -> None:
 def phase_p0() -> None:
     print("P0 readiness")
     ok = wait_trino_ready()
-    check("P0: Trino answers, and lake.bronze.cdc_events and the lake.silver tables exist", ok)
+    check("P0: Trino answers, and lake.bronze.cdc_events exists (silver tables appear with their first rows)", ok)
     if not ok:
-        raise Abort("Trino or the lake tables are not ready")
+        raise Abort("Trino or lake.bronze.cdc_events is not ready")
 
 
 def phase_p1(drain: Drain) -> None:
@@ -989,8 +993,12 @@ def phase_p5(drain: Drain, keep: bool) -> None:
 
 def phase_p6() -> None:
     print("P6 artifact hygiene")
-    ensure_ids()
-    needles = [n.encode() for n in (CANARY, str(ST.A), str(ST.B), str(ST.M), str(ST.A_acct), str(ST.M_acct), str(ST.R))]
+    try:
+        ensure_ids()
+    except ValueError:  # scripted rows absent (an earlier phase aborted): the canary is still searched for
+        pass
+    ids = (ST.A, ST.B, ST.M, ST.A_acct, ST.M_acct, ST.R)
+    needles = [n.encode() for n in (CANARY, *(str(i) for i in ids if i))]
     scanned = hits = 0
     for sub in ("dbt_gold/target", "dbt_gold/logs"):
         for f in (ROOT / sub).rglob("*"):
