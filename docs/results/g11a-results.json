@@ -1,0 +1,991 @@
+{
+  "forget_code_diff": {
+    "command": "git diff --stat cc603c2 e0fe4be -- src/adrp/forget scripts/g8_check.py",
+    "output": "",
+    "status": "identical"
+  },
+  "inputs": {
+    "g10a": [
+      "runs/manifests/20261106T013720Z-g10a-check.json",
+      "runs/manifests/20261110T233326Z-g10a-check.json"
+    ],
+    "g3": [
+      "runs/manifests/20261110T234612Z-g3-check.json"
+    ],
+    "g8": [
+      "runs/manifests/20261105T200430Z-g8-check.json",
+      "runs/manifests/20261111T013825Z-g8-check.json"
+    ]
+  },
+  "r1": {
+    "status": "not measured; deferred (ADR-0024)"
+  },
+  "r2": {
+    "bounded_locations": [
+      "pg_wal",
+      "qdrant_wal",
+      "spark_spill"
+    ],
+    "bounded_note": "bounded, not removed",
+    "n_requests": 12,
+    "n_runs": 2,
+    "pooled": {
+      "logical_s": {
+        "max": 503.45,
+        "median": 306.55,
+        "min": 118.49,
+        "n": 12
+      },
+      "physical_s": {
+        "max": 2632.64,
+        "median": 2064.54,
+        "min": 1572.83,
+        "n": 12
+      }
+    },
+    "runs": [
+      {
+        "batch_spread_s": 1.6,
+        "batched_logical_s": {
+          "max": 503.45,
+          "median": 502.91,
+          "min": 502.47,
+          "n": 5
+        },
+        "batched_physical_s": {
+          "max": 2632.64,
+          "median": 2632.23,
+          "min": 2631.84,
+          "n": 5
+        },
+        "code": "cc603c2",
+        "generator_logical_s": {
+          "max": 156.12,
+          "median": 156.12,
+          "min": 156.12,
+          "n": 1
+        },
+        "generator_physical_s": {
+          "max": 1897.66,
+          "median": 1897.66,
+          "min": 1897.66,
+          "n": 1
+        },
+        "label": "run 1",
+        "link": "runs/manifests/20261105T200430Z-g8-check.json",
+        "logical_s": {
+          "max": 503.45,
+          "median": 502.78,
+          "min": 156.12,
+          "n": 6
+        },
+        "manifest": "20261105T200430Z-g8-check.json",
+        "n_batched": 5,
+        "n_generator_owned": 1,
+        "n_requests": 6,
+        "physical_s": {
+          "max": 2632.64,
+          "median": 2632.14,
+          "min": 1897.66,
+          "n": 6
+        },
+        "sinks": {
+          "broker": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1855.32,
+              "median": 1854.86,
+              "min": 1119.23,
+              "n": 6
+            }
+          },
+          "bronze": {
+            "bounded": 0,
+            "logical": {
+              "max": 498.83,
+              "median": 423.25,
+              "min": 155.12,
+              "n": 6
+            },
+            "physical": {
+              "max": 1218.93,
+              "median": 1218.5,
+              "min": 482.86,
+              "n": 6
+            }
+          },
+          "container_logs": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2600.22,
+              "median": 2599.87,
+              "min": 1864.38,
+              "n": 6
+            }
+          },
+          "dagster_storage": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2602.12,
+              "median": 2601.85,
+              "min": 1866.28,
+              "n": 6
+            }
+          },
+          "embedder_files": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1230.32,
+              "median": 1229.84,
+              "min": 494.19,
+              "n": 6
+            }
+          },
+          "event_logs": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1228.46,
+              "median": 1228.0,
+              "min": 492.35,
+              "n": 6
+            }
+          },
+          "ground_truth": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1232.05,
+              "median": 1231.57,
+              "min": 495.96,
+              "n": 6
+            }
+          },
+          "manifests": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2605.3,
+              "median": 2604.88,
+              "min": 1869.26,
+              "n": 6
+            }
+          },
+          "metrics": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2603.78,
+              "median": 2603.39,
+              "min": 1867.94,
+              "n": 6
+            }
+          },
+          "pg_wal": {
+            "bounded": 6,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2228.49,
+              "median": 2228.04,
+              "min": 1492.43,
+              "n": 6
+            }
+          },
+          "postgres": {
+            "bounded": 0,
+            "logical": {
+              "max": 425.21,
+              "median": 422.84,
+              "min": 126.15,
+              "n": 6
+            },
+            "physical": {
+              "max": 1202.1,
+              "median": 1201.61,
+              "min": 465.95,
+              "n": 6
+            }
+          },
+          "qdrant": {
+            "bounded": 0,
+            "logical": {
+              "max": 499.39,
+              "median": 423.69,
+              "min": 155.53,
+              "n": 6
+            },
+            "physical": {
+              "max": 1413.31,
+              "median": 1412.83,
+              "min": 677.18,
+              "n": 6
+            }
+          },
+          "qdrant_wal": {
+            "bounded": 6,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            }
+          },
+          "quarantine": {
+            "bounded": 0,
+            "logical": {
+              "max": 499.11,
+              "median": 423.45,
+              "min": 155.32,
+              "n": 6
+            },
+            "physical": {
+              "max": 1221.22,
+              "median": 1220.74,
+              "min": 485.09,
+              "n": 6
+            }
+          },
+          "raw_id_store": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2621.28,
+              "median": 2620.78,
+              "min": 1885.13,
+              "n": 6
+            }
+          },
+          "seaweedfs": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1224.26,
+              "median": 1223.78,
+              "min": 488.13,
+              "n": 6
+            }
+          },
+          "silver": {
+            "bounded": 0,
+            "logical": {
+              "max": 498.54,
+              "median": 423.04,
+              "min": 154.9,
+              "n": 6
+            },
+            "physical": {
+              "max": 1220.13,
+              "median": 1219.63,
+              "min": 483.96,
+              "n": 6
+            }
+          },
+          "silver_tombstone_purge": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2595.11,
+              "median": 2595.03,
+              "min": 1859.68,
+              "n": 6
+            }
+          },
+          "spark_checkpoints": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1226.32,
+              "median": 1225.86,
+              "min": 490.23,
+              "n": 6
+            }
+          },
+          "spark_spill": {
+            "bounded": 6,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            }
+          },
+          "window_verified": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1345.25,
+              "median": 1344.93,
+              "min": 609.42,
+              "n": 6
+            }
+          }
+        }
+      },
+      {
+        "batch_spread_s": 1.4,
+        "batched_logical_s": {
+          "max": 306.65,
+          "median": 306.27,
+          "min": 305.67,
+          "n": 5
+        },
+        "batched_physical_s": {
+          "max": 2064.62,
+          "median": 2064.32,
+          "min": 2064.08,
+          "n": 5
+        },
+        "code": "e0fe4be",
+        "generator_logical_s": {
+          "max": 118.49,
+          "median": 118.49,
+          "min": 118.49,
+          "n": 1
+        },
+        "generator_physical_s": {
+          "max": 1572.83,
+          "median": 1572.83,
+          "min": 1572.83,
+          "n": 1
+        },
+        "label": "run 2",
+        "link": "runs/manifests/20261111T013825Z-g8-check.json",
+        "logical_s": {
+          "max": 306.65,
+          "median": 306.14,
+          "min": 118.49,
+          "n": 6
+        },
+        "manifest": "20261111T013825Z-g8-check.json",
+        "n_batched": 5,
+        "n_generator_owned": 1,
+        "n_requests": 6,
+        "physical_s": {
+          "max": 2064.62,
+          "median": 2064.28,
+          "min": 1572.83,
+          "n": 6
+        },
+        "sinks": {
+          "broker": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1556.14,
+              "median": 1555.66,
+              "min": 1063.32,
+              "n": 6
+            }
+          },
+          "bronze": {
+            "bounded": 0,
+            "logical": {
+              "max": 302.64,
+              "median": 250.08,
+              "min": 117.67,
+              "n": 6
+            },
+            "physical": {
+              "max": 907.64,
+              "median": 907.16,
+              "min": 414.82,
+              "n": 6
+            }
+          },
+          "container_logs": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2039.71,
+              "median": 2039.41,
+              "min": 1547.2,
+              "n": 6
+            }
+          },
+          "dagster_storage": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2041.34,
+              "median": 2040.89,
+              "min": 1548.61,
+              "n": 6
+            }
+          },
+          "embedder_files": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 916.7,
+              "median": 916.21,
+              "min": 423.85,
+              "n": 6
+            }
+          },
+          "event_logs": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 915.14,
+              "median": 914.68,
+              "min": 422.33,
+              "n": 6
+            }
+          },
+          "ground_truth": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 918.46,
+              "median": 917.98,
+              "min": 425.64,
+              "n": 6
+            }
+          },
+          "manifests": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2043.65,
+              "median": 2043.17,
+              "min": 1550.84,
+              "n": 6
+            }
+          },
+          "metrics": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2042.51,
+              "median": 2042.08,
+              "min": 1549.81,
+              "n": 6
+            }
+          },
+          "pg_wal": {
+            "bounded": 6,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1719.87,
+              "median": 1719.39,
+              "min": 1227.04,
+              "n": 6
+            }
+          },
+          "postgres": {
+            "bounded": 0,
+            "logical": {
+              "max": 251.93,
+              "median": 249.65,
+              "min": 94.09,
+              "n": 6
+            },
+            "physical": {
+              "max": 896.23,
+              "median": 895.74,
+              "min": 403.38,
+              "n": 6
+            }
+          },
+          "qdrant": {
+            "bounded": 0,
+            "logical": {
+              "max": 302.99,
+              "median": 250.48,
+              "min": 117.99,
+              "n": 6
+            },
+            "physical": {
+              "max": 1112.06,
+              "median": 1111.62,
+              "min": 619.29,
+              "n": 6
+            }
+          },
+          "qdrant_wal": {
+            "bounded": 6,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            }
+          },
+          "quarantine": {
+            "bounded": 0,
+            "logical": {
+              "max": 302.82,
+              "median": 250.27,
+              "min": 117.83,
+              "n": 6
+            },
+            "physical": {
+              "max": 909.58,
+              "median": 909.1,
+              "min": 416.77,
+              "n": 6
+            }
+          },
+          "raw_id_store": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2055.92,
+              "median": 2055.46,
+              "min": 1563.1,
+              "n": 6
+            }
+          },
+          "seaweedfs": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 911.77,
+              "median": 911.27,
+              "min": 418.95,
+              "n": 6
+            }
+          },
+          "silver": {
+            "bounded": 0,
+            "logical": {
+              "max": 252.1,
+              "median": 249.89,
+              "min": 117.51,
+              "n": 6
+            },
+            "physical": {
+              "max": 908.6,
+              "median": 908.11,
+              "min": 415.8,
+              "n": 6
+            }
+          },
+          "silver_tombstone_purge": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 2036.01,
+              "median": 2035.6,
+              "min": 1543.39,
+              "n": 6
+            }
+          },
+          "spark_checkpoints": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 913.5,
+              "median": 913.01,
+              "min": 420.65,
+              "n": 6
+            }
+          },
+          "spark_spill": {
+            "bounded": 6,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            }
+          },
+          "window_verified": {
+            "bounded": 0,
+            "logical": {
+              "max": null,
+              "median": null,
+              "min": null,
+              "n": 0
+            },
+            "physical": {
+              "max": 1033.23,
+              "median": 1032.89,
+              "min": 540.62,
+              "n": 6
+            }
+          }
+        }
+      }
+    ],
+    "spread_s": 1.6
+  },
+  "r4": {
+    "g10a": [
+      {
+        "bronze_f1_ledger": 667,
+        "code": "58340e0",
+        "faults": {
+          "F1": {
+            "dupes": 0,
+            "expected_detection_fired": null,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F2": {
+            "dupes": 0,
+            "expected_detection_fired": null,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F3": {
+            "dupes": 0,
+            "expected_detection_fired": null,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F4": {
+            "dupes": 0,
+            "expected_detection_fired": true,
+            "losses": 0,
+            "outcome": "caught",
+            "resurrections": 0
+          },
+          "F5": {
+            "dupes": 0,
+            "expected_detection_fired": true,
+            "losses": 0,
+            "outcome": "caught",
+            "resurrections": 0
+          },
+          "F6a": {
+            "dupes": 0,
+            "expected_detection_fired": null,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F6b": {
+            "dupes": 0,
+            "expected_detection_fired": true,
+            "losses": 0,
+            "outcome": "caught",
+            "resurrections": 0
+          }
+        },
+        "label": "default",
+        "link": "runs/manifests/20261106T013720Z-g10a-check.json",
+        "manifest": "20261106T013720Z-g10a-check.json",
+        "topic_mode": "default"
+      },
+      {
+        "bronze_f1_ledger": 435,
+        "code": "58340e0",
+        "faults": {
+          "F1": {
+            "dupes": 0,
+            "expected_detection_fired": null,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F2": {
+            "dupes": 0,
+            "expected_detection_fired": null,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F3": {
+            "dupes": 0,
+            "expected_detection_fired": null,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F4": {
+            "dupes": 0,
+            "expected_detection_fired": true,
+            "losses": 0,
+            "outcome": "caught",
+            "resurrections": 0
+          },
+          "F5": {
+            "dupes": 0,
+            "expected_detection_fired": false,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F6a": {
+            "dupes": 0,
+            "expected_detection_fired": null,
+            "losses": 0,
+            "outcome": "self_healed",
+            "resurrections": 0
+          },
+          "F6b": {
+            "dupes": 0,
+            "expected_detection_fired": true,
+            "losses": 0,
+            "outcome": "caught",
+            "resurrections": 0
+          }
+        },
+        "label": "compacting",
+        "link": "runs/manifests/20261110T233326Z-g10a-check.json",
+        "manifest": "20261110T233326Z-g10a-check.json",
+        "topic_mode": "compact"
+      }
+    ],
+    "groups": [
+      {
+        "dupes": 0,
+        "executions": 4,
+        "faults": [
+          "F1",
+          "F2"
+        ],
+        "key": "replay",
+        "label": "replay",
+        "losses": 0,
+        "outcomes": {
+          "caught": 0,
+          "gate_failed": 0,
+          "self_healed": 4
+        },
+        "resurrections": 0
+      },
+      {
+        "dupes": 0,
+        "executions": 6,
+        "faults": [
+          "F3",
+          "F4",
+          "F5"
+        ],
+        "key": "crash_restart",
+        "label": "crash and restart",
+        "losses": 0,
+        "outcomes": {
+          "caught": 3,
+          "gate_failed": 0,
+          "self_healed": 3
+        },
+        "resurrections": 0
+      },
+      {
+        "dupes": 0,
+        "executions": 4,
+        "faults": [
+          "F6a",
+          "F6b"
+        ],
+        "key": "schema",
+        "label": "schema",
+        "losses": 0,
+        "outcomes": {
+          "caught": 2,
+          "gate_failed": 0,
+          "self_healed": 2
+        },
+        "resurrections": 0
+      }
+    ],
+    "kill": [
+      {
+        "code": "58340e0",
+        "differing": 0,
+        "dupes": 0,
+        "extra_live": 0,
+        "kills": [
+          "before_merge",
+          "mid_merge",
+          "after_merge"
+        ],
+        "link": "runs/manifests/20261110T234612Z-g3-check.json",
+        "losses": 0,
+        "manifest": "20261110T234612Z-g3-check.json",
+        "n_kills": 3,
+        "resurrections": 0,
+        "tombstone_pii": 0
+      }
+    ],
+    "n_fault_executions": 14,
+    "n_g10a_runs": 2,
+    "n_g3_runs": 1,
+    "n_kills": 3,
+    "n_runs": 3,
+    "runs_with_nonzero": 0,
+    "totals": {
+      "dupes": 0,
+      "losses": 0,
+      "resurrections": 0
+    }
+  },
+  "readme_cells": {
+    "r1": "not measured yet (deferred, ADR-0024)",
+    "r1_manifests": "none (deferred)",
+    "r2": "Logical lag (request to every sink verified absent by query), median over requests: run 1 503 s [min 156, max 503]; run 2 306 s [min 118, max 307]; pooled 307 s [min 118, max 503] over 12 requests. Physical lag (request to the maintenance window's verified-absent time, all sinks): run 1 43.9 min [min 31.6, max 43.9]; run 2 34.4 min [min 26.2, max 34.4]; pooled 34.4 min [min 26.2, max 43.9] over 12 requests. Physical lag is measured in this schedule (set by when the g8 check's maintenance window ran), not a minimum latency. 2 runs (6 requests each) on one machine, compacting topics (the g8 setting); each run has 5 ad-hoc requests submitted within 1.6 s of each other (not independent samples) and 1 generator-owned subject (run 1 156 s logical, 31.6 min physical; run 2 118 s logical, 26.2 min physical). pg_wal, qdrant_wal and spark_spill are bounded, not removed. No claim beyond these runs.",
+    "r2_manifests": "[run 1](runs/manifests/20261105T200430Z-g8-check.json), [run 2](runs/manifests/20261111T013825Z-g8-check.json)",
+    "r4": "Silver, idempotent under the tested faults: 0 duplicates, 0 losses and 0 resurrections in 3 runs (2 full fault runs, one per topic setting (default and compacting), 14 fault executions; 1 g3 kill run, 3 SIGKILLs). By group: replay (F1, F2) 0 / 0 / 0 in 4 executions (self-healed in this run 4); crash and restart (F3, F4, F5) 0 / 0 / 0 in 6 executions (caught 3, self-healed in this run 3); schema (F6a, F6b) 0 / 0 / 0 in 4 executions (caught 2, self-healed in this run 2); g3 kill 0 / 0 / 0 in 3 SIGKILLs (before_merge, mid_merge, after_merge; also 0 differing, 0 extra live rows). Counts are duplicates / losses / resurrections, from the reconciler gate after recovery (g10a) and the ground-truth compare (g3). Silver only: bronze holds duplicate rows by design (F1 replay ledgers 667 and 435). F4's retry ran with no concurrent writers. F5 is a graceful restart of a dev-container broker. One machine, code 58340e0, 1 run per topic setting; a zero here is a count in these runs, not a rate, and undetected faults may exist. Open finding (ADR-0020): Connect stalled silently once after a broker restart in an earlier non-record run; cause unverified, decision open.",
+    "r4_manifests": "[default](runs/manifests/20261106T013720Z-g10a-check.json), [compacting](runs/manifests/20261110T233326Z-g10a-check.json), [g3 kill](runs/manifests/20261110T234612Z-g3-check.json)"
+  },
+  "scope": "reduced G11a: R2 and R4 from existing manifests; R1 deferred (ADR-0024)"
+}
