@@ -1,0 +1,5232 @@
+{
+  "kind": "g10a-check",
+  "started_at": "2026-11-10T22:49:37.421019+00:00",
+  "written_at": "2026-11-10T23:33:26.305505+00:00",
+  "git_sha": "58340e09de3434341321b47bc96b044381436f22",
+  "git_dirty": false,
+  "git_dirty_paths": [],
+  "versions": {
+    "POSTGRES_IMAGE": "postgres:17.10-alpine",
+    "DEBEZIUM_VERSION": "3.7.0.Final",
+    "CONFLUENT_CONVERTER_VERSION": "8.3.2",
+    "REDPANDA_IMAGE": "redpandadata/redpanda:v26.2.4",
+    "SPARK_VERSION": "4.1.3",
+    "SPARK_IMAGE": "apache/spark:4.1.3-scala2.13-java17-python3-ubuntu",
+    "SCALA_BINARY": "2.13",
+    "SPARK_KAFKA_CLIENTS_VERSION": "3.9.1",
+    "SPARK_COMMONS_POOL2_VERSION": "2.12.1",
+    "ICEBERG_VERSION": "1.12.0",
+    "LAKEKEEPER_IMAGE": "quay.io/lakekeeper/catalog:v0.13.6",
+    "SEAWEEDFS_IMAGE": "chrislusf/seaweedfs:4.48",
+    "QDRANT_IMAGE": "qdrant/qdrant:v1.19.2",
+    "MAVEN_IMAGE": "maven:3.9.16-eclipse-temurin-17",
+    "PYTHON_IMAGE": "python:3.12.14-slim-bookworm",
+    "TRINO_IMAGE": "trinodb/trino:483",
+    "MARQUEZ_IMAGE": "marquezproject/marquez:0.50.0",
+    "DAGSTER_VERSION": "1.13.26",
+    "DAGSTER_LIB_VERSION": "0.29.26",
+    "DBT_CORE_VERSION": "1.12.5",
+    "DBT_TRINO_VERSION": "1.10.6",
+    "OPENLINEAGE_VERSION": "1.53.0",
+    "PYICEBERG_VERSION": "0.12.0",
+    "QDRANT_CLIENT_VERSION": "1.19.1",
+    "SENTENCE_TRANSFORMERS_VERSION": "6.1.0",
+    "TORCH_VERSION": "2.14.1",
+    "FASTAVRO_VERSION": "1.13.1",
+    "SPARK_FASTAVRO_VERSION": "1.12.2",
+    "SPARK_HYPOTHESIS_VERSION": "6.168.5",
+    "EMBED_MODEL": "sentence-transformers/all-MiniLM-L6-v2",
+    "EMBED_MODEL_REVISION": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "BOTO3_VERSION": "1.43.111",
+    "PSYCOPG_VERSION": "3.3.6",
+    "ICEBERG_FORMAT_VERSION": "2"
+  },
+  "seed": 42,
+  "profile": "core",
+  "hardware": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "release": "27.2.0",
+    "cpu": "Apple M1 Pro",
+    "ncpu": "8",
+    "mem_bytes": "17179869184",
+    "docker": {
+      "ServerVersion": "20.10.22",
+      "NCPU": 4,
+      "MemTotal": 8233013248,
+      "OperatingSystem": "Docker Desktop",
+      "Architecture": "aarch64"
+    }
+  },
+  "images": {
+    "adrp-connect-1": "adrp/connect:3.7.0.Final@sha256:4db88a6f388c4424175b4a40c007ad85bc837d74ba380a37bb879ff06538ae52",
+    "adrp-dagster-1": "adrp/spark:4.1.3-iceberg1.12.0@sha256:ea77ff6356ad69fbb8503d50073d342e911efd8f4d9ba75a0063d55fa0ba181e",
+    "adrp-embedder-1": "adrp/app:dev@sha256:61d714ba6b92f08157efe77fbc8de4fa97fea6fc9d6a0decd4a724128ad57334",
+    "adrp-exporter-1": "adrp/app:dev@sha256:61d714ba6b92f08157efe77fbc8de4fa97fea6fc9d6a0decd4a724128ad57334",
+    "adrp-lakekeeper-1": "quay.io/lakekeeper/catalog:v0.13.6@sha256:3e1ab4b94aabcb06b36e00ac890d6264aaa3980f3b549b3ae6a491c075c1548d",
+    "adrp-lakekeeper-migrate-1": "quay.io/lakekeeper/catalog:v0.13.6@sha256:3e1ab4b94aabcb06b36e00ac890d6264aaa3980f3b549b3ae6a491c075c1548d",
+    "adrp-postgres-1": "postgres:17.10-alpine@sha256:8ee7c900f4de054e8f0a3b42b8f5da38b8fba57c3ccd7c1a02be28cb0b06494f",
+    "adrp-qdrant-1": "qdrant/qdrant:v1.19.2@sha256:2ca0be6b5b2a5c55549ec0c84ce5610ef0c2145b6b36ff6efb515ca971566ba0",
+    "adrp-redpanda-1": "redpandadata/redpanda:v26.2.4@sha256:b2c8b3578d36ba6e00a81627ec9c802add1deea0fdf391b5ac696d16a687c9b7",
+    "adrp-seaweedfs-1": "chrislusf/seaweedfs:4.48@sha256:8f17c8c82e037886f6aaceb3f6282a5c2a1b52bbef5339d323b0067a75bbbc79",
+    "adrp-spark-streams-1": "adrp/spark:4.1.3-iceberg1.12.0@sha256:ea77ff6356ad69fbb8503d50073d342e911efd8f4d9ba75a0063d55fa0ba181e"
+  },
+  "result": {
+    "passed": true,
+    "scope_note": "Zero mismatches under the 6 tested faults at this cut; undetected faults may exist.",
+    "topic_mode": "compact",
+    "topics_observed": {
+      "customers": true,
+      "merchants": true,
+      "accounts": true,
+      "transactions": true,
+      "refunds": true,
+      "support_tickets": true,
+      "help_articles": true
+    },
+    "resumed": false,
+    "summary": "7 faults tested on one machine, 1 run; 0 silent corruption detected by the reconciler",
+    "run_ids": [
+      "20261110T224942Z",
+      "20261110T224949Z",
+      "20261110T225352Z",
+      "20261110T225954Z",
+      "20261110T230456Z",
+      "20261110T230512Z",
+      "20261110T230526Z",
+      "20261110T230542Z",
+      "20261110T230557Z",
+      "20261110T230612Z",
+      "20261110T230628Z",
+      "20261110T230643Z",
+      "20261110T230658Z",
+      "20261110T230714Z",
+      "20261110T230729Z",
+      "20261110T230744Z",
+      "20261110T230800Z",
+      "20261110T230815Z",
+      "20261110T230830Z",
+      "20261110T230845Z",
+      "20261110T230902Z",
+      "20261110T230917Z",
+      "20261110T230932Z",
+      "20261110T230948Z",
+      "20261110T231005Z",
+      "20261110T231022Z",
+      "20261110T231039Z",
+      "20261110T231056Z",
+      "20261110T231112Z",
+      "20261110T231128Z",
+      "20261110T231434Z",
+      "20261110T231449Z",
+      "20261110T231506Z",
+      "20261110T231522Z",
+      "20261110T231537Z",
+      "20261110T231553Z",
+      "20261110T231610Z",
+      "20261110T231932Z",
+      "20261110T232005Z",
+      "20261110T232041Z"
+    ],
+    "loads": [
+      {
+        "fault": "F4",
+        "target_changes_per_s": 8,
+        "chunks": 1,
+        "achieved_changes_per_s": [
+          8.1
+        ],
+        "fell_behind": false
+      },
+      {
+        "fault": "F3",
+        "target_changes_per_s": 60,
+        "chunks": 26,
+        "achieved_changes_per_s": [
+          60.1,
+          60.2,
+          60.3,
+          60.3,
+          60.1,
+          60.2,
+          60.1,
+          60.1,
+          60.2,
+          60.3,
+          60.2,
+          60.2,
+          60.1,
+          60.1,
+          60.3,
+          60.2,
+          60.1,
+          60.2,
+          60.2,
+          60.2,
+          60.3,
+          60.0,
+          60.1,
+          60.2,
+          60.2,
+          60.1
+        ],
+        "fell_behind": false
+      },
+      {
+        "fault": "F5",
+        "target_changes_per_s": 60,
+        "chunks": 7,
+        "achieved_changes_per_s": [
+          60.3,
+          60.2,
+          60.2,
+          60.1,
+          60.1,
+          60.2,
+          60.1
+        ],
+        "fell_behind": false
+      },
+      {
+        "fault": "F6a",
+        "target_changes_per_s": 8,
+        "chunks": 3,
+        "achieved_changes_per_s": [
+          8.1,
+          8.0,
+          8.0
+        ],
+        "fell_behind": false
+      }
+    ],
+    "faults": {
+      "F4": {
+        "fault": "Connector crash mid-snapshot",
+        "injected_at": "2026-11-10T22:49:47.012614+00:00",
+        "recovered_s": 249.7,
+        "dupes": 0,
+        "losses": 0,
+        "resurrections": 0,
+        "outcome": "caught",
+        "classified": "caught",
+        "gate_ok": true,
+        "expected_detection": "connector-status alert",
+        "expected_detection_fired": true,
+        "detections_fired": [
+          "connector_status"
+        ],
+        "expected_outcome": "self-healed or caught: snapshot restarts; duplicates absorbed by the LSN guard",
+        "injection": "Connect SIGKILLed during the initial snapshot (test-only throttled snapshot query on transactions), writers stopped, Connect restarted",
+        "recovery": "load stopped, Connect restarted, snapshot re-emitted, unmodified pg-shop.json re-applied",
+        "residual": "718 keys hold 2+ snapshot events in the topics (bronze keeps them by design); silver holds one row per key",
+        "contaminated_by": null,
+        "new_mismatches": 0,
+        "notes": {
+          "f4": {
+            "rows_at_start": {
+              "customers": 232,
+              "merchants": 28,
+              "accounts": 260,
+              "transactions": 824,
+              "refunds": 67,
+              "support_tickets": 96,
+              "help_articles": 33
+            },
+            "r_events_at_kill": 198,
+            "keys_with_2plus_r_events": {
+              "customers": 232,
+              "merchants": 28,
+              "accounts": 260,
+              "transactions": 198,
+              "refunds": 0,
+              "support_tickets": 0,
+              "help_articles": 0
+            },
+            "task_restarted": false,
+            "txns_before_kill": 0
+          },
+          "restoration": [
+            "subject compatibility failed: HTTP Error 404: Not Found",
+            "subject compatibility failed: HTTP Error 404: Not Found"
+          ]
+        }
+      },
+      "F1": {
+        "fault": "Duplicate events",
+        "injected_at": "2026-11-10T22:55:26.309798+00:00",
+        "recovered_s": 359.6,
+        "dupes": 0,
+        "losses": 0,
+        "resurrections": 0,
+        "outcome": "self_healed",
+        "classified": "self_healed",
+        "gate_ok": true,
+        "expected_detection": "none needed",
+        "expected_detection_fired": null,
+        "detections_fired": [],
+        "expected_outcome": "self-healed: silver unchanged (LSN guard); bronze holds duplicate rows by design",
+        "injection": "silver checkpoint rewound by 3 batches and restarted; a recorded offset range of customers and support_tickets appended to bronze by a batch read",
+        "recovery": "none: silver re-ran the range, bronze keeps the duplicate rows by design",
+        "residual": "bronze holds 435 duplicate rows by design (replay ledger); silver unchanged",
+        "contaminated_by": null,
+        "new_mismatches": 0,
+        "notes": {
+          "f1": {
+            "silver_replayed_offsets": 973,
+            "batches_removed": [
+              5,
+              7
+            ],
+            "bronze_records_appended": 435,
+            "bronze_ranges_requested": 667
+          },
+          "restoration": [
+            "subject compatibility failed: HTTP Error 404: Not Found",
+            "subject compatibility failed: HTTP Error 404: Not Found"
+          ]
+        }
+      },
+      "F2": {
+        "fault": "Out-of-order updates",
+        "injected_at": "2026-11-10T23:01:42.022511+00:00",
+        "recovered_s": 300.6,
+        "dupes": 0,
+        "losses": 0,
+        "resurrections": 0,
+        "outcome": "self_healed",
+        "classified": "self_healed",
+        "gate_ok": true,
+        "expected_detection": "none needed",
+        "expected_detection_fired": null,
+        "detections_fired": [],
+        "expected_outcome": "self-healed: older LSN ignored by the MERGE condition",
+        "injection": "older versions of 9 seeded keys, and an older insert and update of one ad-hoc article after its logical delete, re-produced with identical bytes to the same partition",
+        "recovery": "none",
+        "residual": "10 stale images re-produced at new offsets in the topics (inventory row 34); silver unchanged",
+        "contaminated_by": null,
+        "new_mismatches": 0,
+        "notes": {
+          "f2": {
+            "older_records_produced": 10,
+            "ad_hoc_records": 2,
+            "tables": [
+              "accounts",
+              "customers",
+              "support_tickets"
+            ]
+          },
+          "restoration": [
+            "subject compatibility failed: HTTP Error 404: Not Found",
+            "subject compatibility failed: HTTP Error 404: Not Found"
+          ]
+        }
+      },
+      "F3": {
+        "fault": "Spark kill mid-MERGE",
+        "injected_at": "2026-11-10T23:04:54.827149+00:00",
+        "recovered_s": 576.8,
+        "dupes": 0,
+        "losses": 0,
+        "resurrections": 0,
+        "outcome": "self_healed",
+        "classified": "self_healed",
+        "gate_ok": true,
+        "expected_detection": "reconciler (if any mismatch)",
+        "expected_detection_fired": null,
+        "detections_fired": [],
+        "expected_outcome": "self-healed on restart: batch re-run is idempotent; orphan files left for G8 cleanup",
+        "injection": "one SIGKILL at the parked mid_merge hook (between two tables' MERGEs), then 3 SIGKILLs after the merge_start marker under load",
+        "recovery": "fault file cleared, spark-streams restarted, load stopped after a 45 s settle",
+        "residual": "orphan files from the killed writers are counted and removed physically at END",
+        "contaminated_by": null,
+        "new_mismatches": 0,
+        "notes": {
+          "f3": {
+            "parked_kill": true,
+            "in_flight_kills": 3,
+            "continuous": {
+              "judged": 1050,
+              "unjudged": 2361,
+              "mismatches": 0
+            }
+          },
+          "restoration": [
+            "subject compatibility failed: HTTP Error 404: Not Found",
+            "subject compatibility failed: HTTP Error 404: Not Found"
+          ]
+        }
+      },
+      "F5": {
+        "fault": "Redpanda restart",
+        "injected_at": "2026-11-10T23:15:03.527751+00:00",
+        "recovered_s": 294.6,
+        "dupes": 0,
+        "losses": 0,
+        "resurrections": 0,
+        "outcome": "self_healed",
+        "classified": "self_healed",
+        "gate_ok": true,
+        "expected_detection": "connector-status / slot-lag alert during downtime",
+        "expected_detection_fired": false,
+        "detections_fired": [],
+        "expected_outcome": "self-healed: no loss after recovery",
+        "injection": "graceful `compose restart redpanda` 30 s into a 60 changes/s load",
+        "recovery": "broker waited for, Connect task restarted if FAILED, spark-streams started if not running",
+        "residual": "none observed after recovery",
+        "contaminated_by": null,
+        "new_mismatches": 0,
+        "notes": {
+          "f5": {
+            "samples": 11,
+            "exporter_answered": 11,
+            "connector_status_fired": false,
+            "peak_slot_lag_bytes": 982136.0,
+            "slot_lag_grew": true,
+            "task_restarted": false,
+            "spark_started_by_check": false,
+            "flush_advanced_after_recovery": true
+          },
+          "restoration": [
+            "subject compatibility failed: HTTP Error 404: Not Found",
+            "subject compatibility failed: HTTP Error 404: Not Found"
+          ]
+        }
+      },
+      "F6a": {
+        "fault": "Schema drift: add column",
+        "injected_at": "2026-11-10T23:19:29.483633+00:00",
+        "recovered_s": 256.3,
+        "dupes": 0,
+        "losses": 0,
+        "resurrections": 0,
+        "outcome": "self_healed",
+        "classified": "self_healed",
+        "gate_ok": true,
+        "expected_detection": "none needed",
+        "expected_detection_fired": null,
+        "detections_fired": [],
+        "expected_outcome": "self-healed: column appears in silver without a restart",
+        "injection": "ALTER TABLE help_articles ADD COLUMN locale under an 8 changes/s load",
+        "recovery": "none",
+        "residual": "silver gained the column `locale`",
+        "contaminated_by": null,
+        "new_mismatches": 0,
+        "notes": {
+          "restoration": [
+            "subject compatibility failed: HTTP Error 404: Not Found",
+            "subject compatibility failed: HTTP Error 404: Not Found"
+          ]
+        }
+      },
+      "F6b": {
+        "fault": "Schema drift: incompatible change",
+        "injected_at": "2026-11-10T23:23:47.407202+00:00",
+        "recovered_s": 396.4,
+        "dupes": 0,
+        "losses": 0,
+        "resurrections": 0,
+        "outcome": "caught",
+        "classified": "caught",
+        "gate_ok": true,
+        "expected_detection": "registry compatibility check (CI) / quarantine count > 0",
+        "expected_detection_fired": true,
+        "detections_fired": [
+          "quarantine_count",
+          "reconciler_before_recovery"
+        ],
+        "expected_outcome": "caught: rows land in `quarantine_<table>` with `SCHEMA_INCOMPATIBLE`",
+        "injection": "help_articles column rename and refunds.amount narrowing with the registry gate bypassed (compatibility NONE)",
+        "recovery": "no-op UPDATE of the parked refund after the schema was restored",
+        "residual": "quarantined rows remain in quarantine_<table> as the record of the incompatible events; the parked refund was repaired by a no-op update",
+        "contaminated_by": null,
+        "new_mismatches": 0,
+        "notes": {
+          "f6b": {
+            "registry_gate": "bypassed (compatibility NONE); silver's gate tested; contracts-ci covers the registry separately"
+          },
+          "restoration": [
+            "subject compatibility failed: HTTP Error 404: Not Found",
+            "subject compatibility failed: HTTP Error 404: Not Found"
+          ]
+        }
+      }
+    },
+    "gates": {
+      "F4": {
+        "label": "F4",
+        "ok": true,
+        "scope_note": "A clean reconcile means no mismatch was found between the compared stores at this cut. It does not show that undetected faults are absent.",
+        "cut": {
+          "lsn": "0/25EB570",
+          "confirmed_flush_lsn": "0/25EB908",
+          "paused": true,
+          "pause_start": {
+            "generator_running": false,
+            "next_txn": 1600,
+            "writes": {
+              "accounts": 2020,
+              "customers": 289,
+              "help_articles": 81,
+              "merchants": 29,
+              "refunds": 74,
+              "support_tickets": 238,
+              "transactions": 891
+            }
+          },
+          "pause_end": {
+            "generator_running": false,
+            "next_txn": 1600,
+            "writes": {
+              "accounts": 2020,
+              "customers": 289,
+              "help_articles": 81,
+              "merchants": 29,
+              "refunds": 74,
+              "support_tickets": 238,
+              "transactions": 891
+            }
+          },
+          "flush_reached": true,
+          "flush_wait_s": 45.3,
+          "checkpoints_reached": true,
+          "checkpoint_wait_s": 1.7,
+          "end_offsets": {
+            "cdc.public.customers": {
+              "0": 141,
+              "1": 149,
+              "2": 179
+            },
+            "cdc.public.merchants": {
+              "0": 23,
+              "1": 16,
+              "2": 18
+            },
+            "cdc.public.accounts": {
+              "0": 147,
+              "1": 200,
+              "2": 179
+            },
+            "cdc.public.transactions": {
+              "0": 368,
+              "1": 338,
+              "2": 383
+            },
+            "cdc.public.refunds": {
+              "0": 23,
+              "1": 26,
+              "2": 25
+            },
+            "cdc.public.support_tickets": {
+              "0": 32,
+              "1": 42,
+              "2": 28
+            },
+            "cdc.public.help_articles": {
+              "0": 9,
+              "1": 13,
+              "2": 12
+            }
+          },
+          "committed_offsets": {
+            "silver": {
+              "cdc.public.refunds": {
+                "0": 23,
+                "1": 26,
+                "2": 25
+              },
+              "cdc.public.merchants": {
+                "0": 23,
+                "1": 16,
+                "2": 18
+              },
+              "cdc.public.accounts": {
+                "0": 147,
+                "1": 200,
+                "2": 179
+              },
+              "cdc.public.customers": {
+                "0": 141,
+                "1": 149,
+                "2": 179
+              },
+              "cdc.public.support_tickets": {
+                "0": 32,
+                "1": 42,
+                "2": 28
+              },
+              "cdc.public.transactions": {
+                "0": 368,
+                "1": 338,
+                "2": 383
+              },
+              "cdc.public.help_articles": {
+                "0": 9,
+                "1": 13,
+                "2": 12
+              }
+            },
+            "bronze": {
+              "cdc.public.refunds": {
+                "0": 23,
+                "1": 26,
+                "2": 25
+              },
+              "cdc.public.merchants": {
+                "0": 23,
+                "1": 16,
+                "2": 18
+              },
+              "cdc.public.accounts": {
+                "0": 147,
+                "1": 200,
+                "2": 179
+              },
+              "cdc.public.customers": {
+                "0": 141,
+                "1": 149,
+                "2": 179
+              },
+              "cdc.public.support_tickets": {
+                "0": 32,
+                "1": 42,
+                "2": 28
+              },
+              "cdc.public.transactions": {
+                "0": 368,
+                "1": 338,
+                "2": 383
+              },
+              "cdc.public.help_articles": {
+                "0": 9,
+                "1": 13,
+                "2": 12
+              }
+            }
+          },
+          "lagging_partitions": {
+            "silver": 0,
+            "bronze": 0
+          },
+          "lag": {
+            "silver": {},
+            "bronze": {}
+          },
+          "missing_topics": [],
+          "notes": []
+        },
+        "tables": {
+          "customers": {
+            "table": "customers",
+            "ok": true,
+            "pg_count": 237,
+            "silver_live": 237,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "ca98d95b_db069f43",
+            "silver_checksum": "ca98d95b_db069f43",
+            "mismatch_buckets": []
+          },
+          "merchants": {
+            "table": "merchants",
+            "ok": true,
+            "pg_count": 29,
+            "silver_live": 29,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "93ada957_7a464ea7",
+            "silver_checksum": "93ada957_7a464ea7",
+            "mismatch_buckets": []
+          },
+          "accounts": {
+            "table": "accounts",
+            "ok": true,
+            "pg_count": 266,
+            "silver_live": 266,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "f413f7c4_9f76b610",
+            "silver_checksum": "f413f7c4_9f76b610",
+            "mismatch_buckets": []
+          },
+          "transactions": {
+            "table": "transactions",
+            "ok": true,
+            "pg_count": 891,
+            "silver_live": 891,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "1bf4daf4_341d008c",
+            "silver_checksum": "1bf4daf4_341d008c",
+            "mismatch_buckets": []
+          },
+          "refunds": {
+            "table": "refunds",
+            "ok": true,
+            "pg_count": 74,
+            "silver_live": 74,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "756362c2_cf905bca",
+            "silver_checksum": "756362c2_cf905bca",
+            "mismatch_buckets": []
+          },
+          "support_tickets": {
+            "table": "support_tickets",
+            "ok": true,
+            "pg_count": 102,
+            "silver_live": 102,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "a716e47f_f012eb22",
+            "silver_checksum": "a716e47f_f012eb22",
+            "mismatch_buckets": []
+          },
+          "help_articles": {
+            "table": "help_articles",
+            "ok": true,
+            "pg_count": 34,
+            "silver_live": 34,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "c78d097b_04b5ebec",
+            "silver_checksum": "c78d097b_04b5ebec",
+            "mismatch_buckets": []
+          }
+        },
+        "topics": {
+          "cdc.public.customers": {
+            "rows": 469,
+            "distinct": 469,
+            "kafka_present": 469,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.merchants": {
+            "rows": 57,
+            "distinct": 57,
+            "kafka_present": 57,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.accounts": {
+            "rows": 526,
+            "distinct": 526,
+            "kafka_present": 526,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.transactions": {
+            "rows": 1089,
+            "distinct": 1089,
+            "kafka_present": 1089,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.refunds": {
+            "rows": 74,
+            "distinct": 74,
+            "kafka_present": 74,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.support_tickets": {
+            "rows": 102,
+            "distinct": 102,
+            "kafka_present": 102,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.help_articles": {
+            "rows": 34,
+            "distinct": 34,
+            "kafka_present": 34,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          }
+        },
+        "bronze_duplicates": {
+          "scope": "total over all topics",
+          "duplicate_rows": 0,
+          "expected": 0,
+          "equal": true
+        },
+        "compacting": {
+          "customers": true,
+          "merchants": true,
+          "accounts": true,
+          "transactions": true,
+          "refunds": true,
+          "support_tickets": true,
+          "help_articles": true
+        },
+        "compacting_unverified": [],
+        "rebuild": {
+          "customers": {
+            "rows": 237,
+            "equal": true,
+            "checksum": "61f07936_1c4b9382",
+            "rebuilt_checksum": "61f07936_1c4b9382",
+            "rebuilt_rows": 237
+          },
+          "merchants": {
+            "rows": 29,
+            "equal": true,
+            "checksum": "3ec91060_5454a3e6",
+            "rebuilt_checksum": "3ec91060_5454a3e6",
+            "rebuilt_rows": 29
+          },
+          "accounts": {
+            "rows": 266,
+            "equal": true,
+            "checksum": "30e90962_639289b1",
+            "rebuilt_checksum": "30e90962_639289b1",
+            "rebuilt_rows": 266
+          },
+          "transactions": {
+            "rows": 891,
+            "equal": true,
+            "checksum": "43286df0_b4d36140",
+            "rebuilt_checksum": "43286df0_b4d36140",
+            "rebuilt_rows": 891
+          },
+          "refunds": {
+            "rows": 74,
+            "equal": true,
+            "checksum": "5fe344ae_97074240",
+            "rebuilt_checksum": "5fe344ae_97074240",
+            "rebuilt_rows": 74
+          },
+          "support_tickets": {
+            "rows": 102,
+            "equal": true,
+            "checksum": "f504b963_290b8494",
+            "rebuilt_checksum": "f504b963_290b8494",
+            "rebuilt_rows": 102
+          },
+          "help_articles": {
+            "rows": 34,
+            "equal": true,
+            "checksum": "581eb32a_49f8897a",
+            "rebuilt_checksum": "581eb32a_49f8897a",
+            "rebuilt_rows": 34
+          }
+        },
+        "qdrant": {
+          "consistent": {
+            "ok": true,
+            "waited_s": 2.0,
+            "counts": {
+              "points": 206,
+              "entities_in_index": 136,
+              "stale_chunks": 0,
+              "orphaned_chunks": 0,
+              "duplicate_chunks": 0,
+              "wrong_model_chunks": 0,
+              "ahead_chunks": 0,
+              "missing_entities": 0
+            }
+          },
+          "matches_postgres": {
+            "ok": true,
+            "waited_s": 1.7,
+            "counts": {
+              "entities_expected": 136,
+              "missing": 0,
+              "extra": 0,
+              "differing": 0,
+              "multi_version": 0
+            }
+          }
+        },
+        "notes": [],
+        "durations_s": {
+          "cut": 50.1,
+          "postgres": 2.7,
+          "spark_probe": 24.1,
+          "kafka": 16.3,
+          "qdrant": 3.8,
+          "total": 99.2
+        },
+        "diff_file": ".run/g10a-diff-F4.json"
+      },
+      "F1": {
+        "label": "F1",
+        "ok": true,
+        "scope_note": "A clean reconcile means no mismatch was found between the compared stores at this cut. It does not show that undetected faults are absent.",
+        "cut": {
+          "lsn": "0/26EC7D0",
+          "confirmed_flush_lsn": "0/26ECC28",
+          "paused": true,
+          "pause_start": {
+            "generator_running": false,
+            "next_txn": 1900,
+            "writes": {
+              "accounts": 2385,
+              "customers": 319,
+              "help_articles": 95,
+              "merchants": 31,
+              "refunds": 87,
+              "support_tickets": 300,
+              "transactions": 1070
+            }
+          },
+          "pause_end": {
+            "generator_running": false,
+            "next_txn": 1900,
+            "writes": {
+              "accounts": 2385,
+              "customers": 319,
+              "help_articles": 95,
+              "merchants": 31,
+              "refunds": 87,
+              "support_tickets": 300,
+              "transactions": 1070
+            }
+          },
+          "flush_reached": true,
+          "flush_wait_s": 48.6,
+          "checkpoints_reached": true,
+          "checkpoint_wait_s": 1.7,
+          "end_offsets": {
+            "cdc.public.customers": {
+              "0": 152,
+              "1": 159,
+              "2": 188
+            },
+            "cdc.public.merchants": {
+              "0": 25,
+              "1": 16,
+              "2": 18
+            },
+            "cdc.public.accounts": {
+              "0": 228,
+              "1": 360,
+              "2": 303
+            },
+            "cdc.public.transactions": {
+              "0": 438,
+              "1": 390,
+              "2": 440
+            },
+            "cdc.public.refunds": {
+              "0": 26,
+              "1": 29,
+              "2": 32
+            },
+            "cdc.public.support_tickets": {
+              "0": 54,
+              "1": 60,
+              "2": 54
+            },
+            "cdc.public.help_articles": {
+              "0": 14,
+              "1": 19,
+              "2": 16
+            }
+          },
+          "committed_offsets": {
+            "silver": {
+              "cdc.public.refunds": {
+                "0": 26,
+                "1": 29,
+                "2": 32
+              },
+              "cdc.public.merchants": {
+                "0": 25,
+                "1": 16,
+                "2": 18
+              },
+              "cdc.public.accounts": {
+                "0": 228,
+                "1": 360,
+                "2": 303
+              },
+              "cdc.public.customers": {
+                "0": 152,
+                "1": 159,
+                "2": 188
+              },
+              "cdc.public.support_tickets": {
+                "0": 54,
+                "1": 60,
+                "2": 54
+              },
+              "cdc.public.transactions": {
+                "0": 438,
+                "1": 390,
+                "2": 440
+              },
+              "cdc.public.help_articles": {
+                "0": 14,
+                "1": 19,
+                "2": 16
+              }
+            },
+            "bronze": {
+              "cdc.public.refunds": {
+                "0": 26,
+                "1": 29,
+                "2": 32
+              },
+              "cdc.public.merchants": {
+                "0": 25,
+                "1": 16,
+                "2": 18
+              },
+              "cdc.public.accounts": {
+                "0": 228,
+                "1": 360,
+                "2": 303
+              },
+              "cdc.public.customers": {
+                "0": 152,
+                "1": 159,
+                "2": 188
+              },
+              "cdc.public.support_tickets": {
+                "0": 54,
+                "1": 60,
+                "2": 54
+              },
+              "cdc.public.transactions": {
+                "0": 438,
+                "1": 390,
+                "2": 440
+              },
+              "cdc.public.help_articles": {
+                "0": 14,
+                "1": 19,
+                "2": 16
+              }
+            }
+          },
+          "lagging_partitions": {
+            "silver": 0,
+            "bronze": 0
+          },
+          "lag": {
+            "silver": {},
+            "bronze": {}
+          },
+          "missing_topics": [],
+          "notes": []
+        },
+        "tables": {
+          "customers": {
+            "table": "customers",
+            "ok": true,
+            "pg_count": 250,
+            "silver_live": 250,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "9ff2f7bb_ac5ff8bd",
+            "silver_checksum": "9ff2f7bb_ac5ff8bd",
+            "mismatch_buckets": []
+          },
+          "merchants": {
+            "table": "merchants",
+            "ok": true,
+            "pg_count": 31,
+            "silver_live": 31,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "64ef00e6_ea83f686",
+            "silver_checksum": "64ef00e6_ea83f686",
+            "mismatch_buckets": []
+          },
+          "accounts": {
+            "table": "accounts",
+            "ok": true,
+            "pg_count": 281,
+            "silver_live": 281,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "fb590932_5a1bc428",
+            "silver_checksum": "fb590932_5a1bc428",
+            "mismatch_buckets": []
+          },
+          "transactions": {
+            "table": "transactions",
+            "ok": true,
+            "pg_count": 1070,
+            "silver_live": 1070,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "48b62c4c_43511eed",
+            "silver_checksum": "48b62c4c_43511eed",
+            "mismatch_buckets": []
+          },
+          "refunds": {
+            "table": "refunds",
+            "ok": true,
+            "pg_count": 87,
+            "silver_live": 87,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "59077284_c59ad5d2",
+            "silver_checksum": "59077284_c59ad5d2",
+            "mismatch_buckets": []
+          },
+          "support_tickets": {
+            "table": "support_tickets",
+            "ok": true,
+            "pg_count": 134,
+            "silver_live": 134,
+            "silver_tombstones": 4,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "56d4caaf_0361e348",
+            "silver_checksum": "56d4caaf_0361e348",
+            "mismatch_buckets": []
+          },
+          "help_articles": {
+            "table": "help_articles",
+            "ok": true,
+            "pg_count": 37,
+            "silver_live": 37,
+            "silver_tombstones": 1,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "06cc030b_6dfa9a8d",
+            "silver_checksum": "06cc030b_6dfa9a8d",
+            "mismatch_buckets": []
+          }
+        },
+        "topics": {
+          "cdc.public.customers": {
+            "rows": 766,
+            "distinct": 499,
+            "kafka_present": 250,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 267,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.merchants": {
+            "rows": 59,
+            "distinct": 59,
+            "kafka_present": 31,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.accounts": {
+            "rows": 891,
+            "distinct": 891,
+            "kafka_present": 281,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.transactions": {
+            "rows": 1268,
+            "distinct": 1268,
+            "kafka_present": 1070,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.refunds": {
+            "rows": 87,
+            "distinct": 87,
+            "kafka_present": 87,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.support_tickets": {
+            "rows": 336,
+            "distinct": 168,
+            "kafka_present": 138,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 168,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.help_articles": {
+            "rows": 49,
+            "distinct": 49,
+            "kafka_present": 38,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          }
+        },
+        "bronze_duplicates": {
+          "scope": "total over all topics",
+          "duplicate_rows": 435,
+          "expected": 435,
+          "equal": true
+        },
+        "compacting": {
+          "customers": true,
+          "merchants": true,
+          "accounts": true,
+          "transactions": true,
+          "refunds": true,
+          "support_tickets": true,
+          "help_articles": true
+        },
+        "compacting_unverified": [],
+        "rebuild": {
+          "customers": {
+            "rows": 250,
+            "equal": true,
+            "checksum": "f6cf69bf_6d0b7231",
+            "rebuilt_checksum": "f6cf69bf_6d0b7231",
+            "rebuilt_rows": 250
+          },
+          "merchants": {
+            "rows": 31,
+            "equal": true,
+            "checksum": "654531ae_1b35b224",
+            "rebuilt_checksum": "654531ae_1b35b224",
+            "rebuilt_rows": 31
+          },
+          "accounts": {
+            "rows": 281,
+            "equal": true,
+            "checksum": "01bdb93a_6ca8835b",
+            "rebuilt_checksum": "01bdb93a_6ca8835b",
+            "rebuilt_rows": 281
+          },
+          "transactions": {
+            "rows": 1070,
+            "equal": true,
+            "checksum": "48e5c2c4_da3d8505",
+            "rebuilt_checksum": "48e5c2c4_da3d8505",
+            "rebuilt_rows": 1070
+          },
+          "refunds": {
+            "rows": 87,
+            "equal": true,
+            "checksum": "0b6f5e55_f3bff78c",
+            "rebuilt_checksum": "0b6f5e55_f3bff78c",
+            "rebuilt_rows": 87
+          },
+          "support_tickets": {
+            "rows": 138,
+            "equal": true,
+            "checksum": "5f13269c_5820da40",
+            "rebuilt_checksum": "5f13269c_5820da40",
+            "rebuilt_rows": 138
+          },
+          "help_articles": {
+            "rows": 38,
+            "equal": true,
+            "checksum": "e6cc347b_e1c8f0d5",
+            "rebuilt_checksum": "e6cc347b_e1c8f0d5",
+            "rebuilt_rows": 38
+          }
+        },
+        "qdrant": {
+          "consistent": {
+            "ok": true,
+            "waited_s": 2.0,
+            "counts": {
+              "points": 243,
+              "entities_in_index": 171,
+              "stale_chunks": 0,
+              "orphaned_chunks": 0,
+              "duplicate_chunks": 0,
+              "wrong_model_chunks": 0,
+              "ahead_chunks": 0,
+              "missing_entities": 0
+            }
+          },
+          "matches_postgres": {
+            "ok": true,
+            "waited_s": 1.7,
+            "counts": {
+              "entities_expected": 171,
+              "missing": 0,
+              "extra": 0,
+              "differing": 0,
+              "multi_version": 0
+            }
+          }
+        },
+        "notes": [],
+        "durations_s": {
+          "cut": 53.4,
+          "postgres": 2.7,
+          "spark_probe": 28.5,
+          "kafka": 9.6,
+          "qdrant": 3.7,
+          "total": 100.3
+        },
+        "diff_file": ".run/g10a-diff-F1.json"
+      },
+      "F2": {
+        "label": "F2",
+        "ok": true,
+        "scope_note": "A clean reconcile means no mismatch was found between the compared stores at this cut. It does not show that undetected faults are absent.",
+        "cut": {
+          "lsn": "0/27D5BD0",
+          "confirmed_flush_lsn": "0/27D8E50",
+          "paused": true,
+          "pause_start": {
+            "generator_running": false,
+            "next_txn": 2200,
+            "writes": {
+              "accounts": 2760,
+              "customers": 345,
+              "help_articles": 112,
+              "merchants": 33,
+              "refunds": 100,
+              "support_tickets": 359,
+              "transactions": 1256
+            }
+          },
+          "pause_end": {
+            "generator_running": false,
+            "next_txn": 2200,
+            "writes": {
+              "accounts": 2760,
+              "customers": 345,
+              "help_articles": 112,
+              "merchants": 33,
+              "refunds": 100,
+              "support_tickets": 359,
+              "transactions": 1256
+            }
+          },
+          "flush_reached": true,
+          "flush_wait_s": 64.8,
+          "checkpoints_reached": true,
+          "checkpoint_wait_s": 1.7,
+          "end_offsets": {
+            "cdc.public.customers": {
+              "0": 161,
+              "1": 170,
+              "2": 197
+            },
+            "cdc.public.merchants": {
+              "0": 26,
+              "1": 16,
+              "2": 19
+            },
+            "cdc.public.accounts": {
+              "0": 326,
+              "1": 500,
+              "2": 443
+            },
+            "cdc.public.transactions": {
+              "0": 500,
+              "1": 446,
+              "2": 508
+            },
+            "cdc.public.refunds": {
+              "0": 31,
+              "1": 34,
+              "2": 35
+            },
+            "cdc.public.support_tickets": {
+              "0": 69,
+              "1": 91,
+              "2": 73
+            },
+            "cdc.public.help_articles": {
+              "0": 16,
+              "1": 24,
+              "2": 30
+            }
+          },
+          "committed_offsets": {
+            "silver": {
+              "cdc.public.refunds": {
+                "0": 31,
+                "1": 34,
+                "2": 35
+              },
+              "cdc.public.merchants": {
+                "0": 26,
+                "1": 16,
+                "2": 19
+              },
+              "cdc.public.accounts": {
+                "0": 326,
+                "1": 500,
+                "2": 443
+              },
+              "cdc.public.customers": {
+                "0": 161,
+                "1": 170,
+                "2": 197
+              },
+              "cdc.public.support_tickets": {
+                "0": 69,
+                "1": 91,
+                "2": 73
+              },
+              "cdc.public.transactions": {
+                "0": 500,
+                "1": 446,
+                "2": 508
+              },
+              "cdc.public.help_articles": {
+                "0": 16,
+                "1": 24,
+                "2": 30
+              }
+            },
+            "bronze": {
+              "cdc.public.refunds": {
+                "0": 31,
+                "1": 34,
+                "2": 35
+              },
+              "cdc.public.merchants": {
+                "0": 26,
+                "1": 16,
+                "2": 19
+              },
+              "cdc.public.accounts": {
+                "0": 326,
+                "1": 500,
+                "2": 443
+              },
+              "cdc.public.customers": {
+                "0": 161,
+                "1": 170,
+                "2": 197
+              },
+              "cdc.public.support_tickets": {
+                "0": 69,
+                "1": 91,
+                "2": 73
+              },
+              "cdc.public.transactions": {
+                "0": 500,
+                "1": 446,
+                "2": 508
+              },
+              "cdc.public.help_articles": {
+                "0": 16,
+                "1": 24,
+                "2": 30
+              }
+            }
+          },
+          "lagging_partitions": {
+            "silver": 0,
+            "bronze": 0
+          },
+          "lag": {
+            "silver": {},
+            "bronze": {}
+          },
+          "missing_topics": [],
+          "notes": []
+        },
+        "tables": {
+          "customers": {
+            "table": "customers",
+            "ok": true,
+            "pg_count": 260,
+            "silver_live": 260,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "d4784957_8edbe57c",
+            "silver_checksum": "d4784957_8edbe57c",
+            "mismatch_buckets": []
+          },
+          "merchants": {
+            "table": "merchants",
+            "ok": true,
+            "pg_count": 33,
+            "silver_live": 33,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "481f9614_c6ef85d3",
+            "silver_checksum": "481f9614_c6ef85d3",
+            "mismatch_buckets": []
+          },
+          "accounts": {
+            "table": "accounts",
+            "ok": true,
+            "pg_count": 293,
+            "silver_live": 293,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "0a5f7458_6f6bfd50",
+            "silver_checksum": "0a5f7458_6f6bfd50",
+            "mismatch_buckets": []
+          },
+          "transactions": {
+            "table": "transactions",
+            "ok": true,
+            "pg_count": 1256,
+            "silver_live": 1256,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "db602d52_54f4412d",
+            "silver_checksum": "db602d52_54f4412d",
+            "mismatch_buckets": []
+          },
+          "refunds": {
+            "table": "refunds",
+            "ok": true,
+            "pg_count": 100,
+            "silver_live": 100,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "12a7051d_5290da50",
+            "silver_checksum": "12a7051d_5290da50",
+            "mismatch_buckets": []
+          },
+          "support_tickets": {
+            "table": "support_tickets",
+            "ok": true,
+            "pg_count": 163,
+            "silver_live": 163,
+            "silver_tombstones": 8,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "2519f6d1_1b607dab",
+            "silver_checksum": "2519f6d1_1b607dab",
+            "mismatch_buckets": []
+          },
+          "help_articles": {
+            "table": "help_articles",
+            "ok": true,
+            "pg_count": 44,
+            "silver_live": 44,
+            "silver_tombstones": 3,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "ba8cfb55_ee1dee86",
+            "silver_checksum": "ba8cfb55_ee1dee86",
+            "mismatch_buckets": []
+          }
+        },
+        "topics": {
+          "cdc.public.customers": {
+            "rows": 795,
+            "distinct": 528,
+            "kafka_present": 279,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 267,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.merchants": {
+            "rows": 61,
+            "distinct": 61,
+            "kafka_present": 33,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.accounts": {
+            "rows": 1269,
+            "distinct": 1269,
+            "kafka_present": 659,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.transactions": {
+            "rows": 1454,
+            "distinct": 1454,
+            "kafka_present": 1256,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.refunds": {
+            "rows": 100,
+            "distinct": 100,
+            "kafka_present": 100,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.support_tickets": {
+            "rows": 401,
+            "distinct": 233,
+            "kafka_present": 199,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 168,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.help_articles": {
+            "rows": 70,
+            "distinct": 70,
+            "kafka_present": 58,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          }
+        },
+        "bronze_duplicates": {
+          "scope": "total over all topics",
+          "duplicate_rows": 435,
+          "expected": 435,
+          "equal": true
+        },
+        "compacting": {
+          "customers": true,
+          "merchants": true,
+          "accounts": true,
+          "transactions": true,
+          "refunds": true,
+          "support_tickets": true,
+          "help_articles": true
+        },
+        "compacting_unverified": [],
+        "rebuild": {
+          "customers": {
+            "rows": 260,
+            "equal": true,
+            "checksum": "62b89792_c02848ad",
+            "rebuilt_checksum": "62b89792_c02848ad",
+            "rebuilt_rows": 260
+          },
+          "merchants": {
+            "rows": 33,
+            "equal": true,
+            "checksum": "4c4c95f5_af198c05",
+            "rebuilt_checksum": "4c4c95f5_af198c05",
+            "rebuilt_rows": 33
+          },
+          "accounts": {
+            "rows": 293,
+            "equal": true,
+            "checksum": "28a3dce4_1d963104",
+            "rebuilt_checksum": "28a3dce4_1d963104",
+            "rebuilt_rows": 293
+          },
+          "transactions": {
+            "rows": 1256,
+            "equal": true,
+            "checksum": "ed624860_1f1cdd57",
+            "rebuilt_checksum": "ed624860_1f1cdd57",
+            "rebuilt_rows": 1256
+          },
+          "refunds": {
+            "rows": 100,
+            "equal": true,
+            "checksum": "fdc8e4c2_d4859344",
+            "rebuilt_checksum": "fdc8e4c2_d4859344",
+            "rebuilt_rows": 100
+          },
+          "support_tickets": {
+            "rows": 171,
+            "equal": true,
+            "checksum": "65f6dc00_598362c0",
+            "rebuilt_checksum": "65f6dc00_598362c0",
+            "rebuilt_rows": 171
+          },
+          "help_articles": {
+            "rows": 47,
+            "equal": true,
+            "checksum": "2dfe6d39_68bb482d",
+            "rebuilt_checksum": "2dfe6d39_68bb482d",
+            "rebuilt_rows": 47
+          }
+        },
+        "qdrant": {
+          "consistent": {
+            "ok": true,
+            "waited_s": 1.9,
+            "counts": {
+              "points": 316,
+              "entities_in_index": 207,
+              "stale_chunks": 0,
+              "orphaned_chunks": 0,
+              "duplicate_chunks": 0,
+              "wrong_model_chunks": 0,
+              "ahead_chunks": 0,
+              "missing_entities": 0
+            }
+          },
+          "matches_postgres": {
+            "ok": true,
+            "waited_s": 1.7,
+            "counts": {
+              "entities_expected": 207,
+              "missing": 0,
+              "extra": 0,
+              "differing": 0,
+              "multi_version": 0
+            }
+          }
+        },
+        "notes": [],
+        "durations_s": {
+          "cut": 69.7,
+          "postgres": 2.7,
+          "spark_probe": 31.5,
+          "kafka": 5.7,
+          "qdrant": 3.6,
+          "total": 115.6
+        },
+        "diff_file": ".run/g10a-diff-F2.json"
+      },
+      "F3": {
+        "label": "F3",
+        "ok": true,
+        "scope_note": "A clean reconcile means no mismatch was found between the compared stores at this cut. It does not show that undetected faults are absent.",
+        "cut": {
+          "lsn": "0/329B180",
+          "confirmed_flush_lsn": "0/32CFF40",
+          "paused": true,
+          "pause_start": {
+            "generator_running": false,
+            "next_txn": 10000,
+            "writes": {
+              "accounts": 12591,
+              "customers": 996,
+              "help_articles": 460,
+              "merchants": 61,
+              "refunds": 464,
+              "support_tickets": 1900,
+              "transactions": 6124
+            }
+          },
+          "pause_end": {
+            "generator_running": false,
+            "next_txn": 10000,
+            "writes": {
+              "accounts": 12591,
+              "customers": 996,
+              "help_articles": 460,
+              "merchants": 61,
+              "refunds": 464,
+              "support_tickets": 1900,
+              "transactions": 6124
+            }
+          },
+          "flush_reached": true,
+          "flush_wait_s": 58.9,
+          "checkpoints_reached": true,
+          "checkpoint_wait_s": 1.8,
+          "end_offsets": {
+            "cdc.public.customers": {
+              "0": 424,
+              "1": 401,
+              "2": 354
+            },
+            "cdc.public.merchants": {
+              "0": 34,
+              "1": 23,
+              "2": 32
+            },
+            "cdc.public.accounts": {
+              "0": 2792,
+              "1": 4165,
+              "2": 4143
+            },
+            "cdc.public.transactions": {
+              "0": 2124,
+              "1": 2070,
+              "2": 2128
+            },
+            "cdc.public.refunds": {
+              "0": 158,
+              "1": 142,
+              "2": 164
+            },
+            "cdc.public.support_tickets": {
+              "0": 606,
+              "1": 709,
+              "2": 597
+            },
+            "cdc.public.help_articles": {
+              "0": 123,
+              "1": 135,
+              "2": 200
+            }
+          },
+          "committed_offsets": {
+            "silver": {
+              "cdc.public.refunds": {
+                "0": 158,
+                "1": 142,
+                "2": 164
+              },
+              "cdc.public.merchants": {
+                "0": 34,
+                "1": 23,
+                "2": 32
+              },
+              "cdc.public.accounts": {
+                "0": 2792,
+                "1": 4165,
+                "2": 4143
+              },
+              "cdc.public.customers": {
+                "0": 424,
+                "1": 401,
+                "2": 354
+              },
+              "cdc.public.support_tickets": {
+                "0": 606,
+                "1": 709,
+                "2": 597
+              },
+              "cdc.public.transactions": {
+                "0": 2124,
+                "1": 2070,
+                "2": 2128
+              },
+              "cdc.public.help_articles": {
+                "0": 123,
+                "1": 135,
+                "2": 200
+              }
+            },
+            "bronze": {
+              "cdc.public.refunds": {
+                "0": 158,
+                "1": 142,
+                "2": 164
+              },
+              "cdc.public.merchants": {
+                "0": 34,
+                "1": 23,
+                "2": 32
+              },
+              "cdc.public.accounts": {
+                "0": 2792,
+                "1": 4165,
+                "2": 4143
+              },
+              "cdc.public.customers": {
+                "0": 424,
+                "1": 401,
+                "2": 354
+              },
+              "cdc.public.support_tickets": {
+                "0": 606,
+                "1": 709,
+                "2": 597
+              },
+              "cdc.public.transactions": {
+                "0": 2124,
+                "1": 2070,
+                "2": 2128
+              },
+              "cdc.public.help_articles": {
+                "0": 123,
+                "1": 135,
+                "2": 200
+              }
+            }
+          },
+          "lagging_partitions": {
+            "silver": 0,
+            "bronze": 0
+          },
+          "lag": {
+            "silver": {},
+            "bronze": {}
+          },
+          "missing_topics": [],
+          "notes": []
+        },
+        "tables": {
+          "customers": {
+            "table": "customers",
+            "ok": true,
+            "pg_count": 480,
+            "silver_live": 480,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "d7b937aa_cc290af7",
+            "silver_checksum": "d7b937aa_cc290af7",
+            "mismatch_buckets": []
+          },
+          "merchants": {
+            "table": "merchants",
+            "ok": true,
+            "pg_count": 61,
+            "silver_live": 61,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "ac8bef44_629cfc94",
+            "silver_checksum": "ac8bef44_629cfc94",
+            "mismatch_buckets": []
+          },
+          "accounts": {
+            "table": "accounts",
+            "ok": true,
+            "pg_count": 541,
+            "silver_live": 541,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "5ccbb0ff_4ba560f1",
+            "silver_checksum": "5ccbb0ff_4ba560f1",
+            "mismatch_buckets": []
+          },
+          "transactions": {
+            "table": "transactions",
+            "ok": true,
+            "pg_count": 6124,
+            "silver_live": 6124,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "c18e869b_c7e7cc08",
+            "silver_checksum": "c18e869b_c7e7cc08",
+            "mismatch_buckets": []
+          },
+          "refunds": {
+            "table": "refunds",
+            "ok": true,
+            "pg_count": 464,
+            "silver_live": 464,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "4b5a9f55_d32849bd",
+            "silver_checksum": "4b5a9f55_d32849bd",
+            "mismatch_buckets": []
+          },
+          "support_tickets": {
+            "table": "support_tickets",
+            "ok": true,
+            "pg_count": 808,
+            "silver_live": 808,
+            "silver_tombstones": 146,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "0d54e4d2_fddbf41d",
+            "silver_checksum": "0d54e4d2_fddbf41d",
+            "mismatch_buckets": []
+          },
+          "help_articles": {
+            "table": "help_articles",
+            "ok": true,
+            "pg_count": 91,
+            "silver_live": 91,
+            "silver_tombstones": 43,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "3d9bf86c_35b49ace",
+            "silver_checksum": "3d9bf86c_35b49ace",
+            "mismatch_buckets": []
+          }
+        },
+        "topics": {
+          "cdc.public.customers": {
+            "rows": 1446,
+            "distinct": 1179,
+            "kafka_present": 679,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 267,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.merchants": {
+            "rows": 89,
+            "distinct": 89,
+            "kafka_present": 61,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.accounts": {
+            "rows": 11100,
+            "distinct": 11100,
+            "kafka_present": 4718,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.transactions": {
+            "rows": 6322,
+            "distinct": 6322,
+            "kafka_present": 6124,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.refunds": {
+            "rows": 464,
+            "distinct": 464,
+            "kafka_present": 464,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.support_tickets": {
+            "rows": 2080,
+            "distinct": 1912,
+            "kafka_present": 1265,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 168,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.help_articles": {
+            "rows": 458,
+            "distinct": 458,
+            "kafka_present": 281,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          }
+        },
+        "bronze_duplicates": {
+          "scope": "total over all topics",
+          "duplicate_rows": 435,
+          "expected": 435,
+          "equal": true
+        },
+        "compacting": {
+          "customers": true,
+          "merchants": true,
+          "accounts": true,
+          "transactions": true,
+          "refunds": true,
+          "support_tickets": true,
+          "help_articles": true
+        },
+        "compacting_unverified": [],
+        "rebuild": {
+          "customers": {
+            "rows": 480,
+            "equal": true,
+            "checksum": "54852bc7_118d2d2d",
+            "rebuilt_checksum": "54852bc7_118d2d2d",
+            "rebuilt_rows": 480
+          },
+          "merchants": {
+            "rows": 61,
+            "equal": true,
+            "checksum": "b8f438c2_bd0be83a",
+            "rebuilt_checksum": "b8f438c2_bd0be83a",
+            "rebuilt_rows": 61
+          },
+          "accounts": {
+            "rows": 541,
+            "equal": true,
+            "checksum": "bb65bd41_65217ddb",
+            "rebuilt_checksum": "bb65bd41_65217ddb",
+            "rebuilt_rows": 541
+          },
+          "transactions": {
+            "rows": 6124,
+            "equal": true,
+            "checksum": "c4150ea0_d31d85f8",
+            "rebuilt_checksum": "c4150ea0_d31d85f8",
+            "rebuilt_rows": 6124
+          },
+          "refunds": {
+            "rows": 464,
+            "equal": true,
+            "checksum": "287022c4_bc266bde",
+            "rebuilt_checksum": "287022c4_bc266bde",
+            "rebuilt_rows": 464
+          },
+          "support_tickets": {
+            "rows": 954,
+            "equal": true,
+            "checksum": "86b5eada_79107e55",
+            "rebuilt_checksum": "86b5eada_79107e55",
+            "rebuilt_rows": 954
+          },
+          "help_articles": {
+            "rows": 134,
+            "equal": true,
+            "checksum": "cd4258d9_ea4d03e5",
+            "rebuilt_checksum": "cd4258d9_ea4d03e5",
+            "rebuilt_rows": 134
+          }
+        },
+        "qdrant": {
+          "consistent": {
+            "ok": true,
+            "waited_s": 2.8,
+            "counts": {
+              "points": 1155,
+              "entities_in_index": 899,
+              "stale_chunks": 0,
+              "orphaned_chunks": 0,
+              "duplicate_chunks": 0,
+              "wrong_model_chunks": 0,
+              "ahead_chunks": 0,
+              "missing_entities": 0
+            }
+          },
+          "matches_postgres": {
+            "ok": true,
+            "waited_s": 1.8,
+            "counts": {
+              "entities_expected": 899,
+              "missing": 0,
+              "extra": 0,
+              "differing": 0,
+              "multi_version": 0
+            }
+          }
+        },
+        "notes": [],
+        "durations_s": {
+          "cut": 64.0,
+          "postgres": 2.8,
+          "spark_probe": 56.8,
+          "kafka": 9.3,
+          "qdrant": 4.6,
+          "total": 140.7
+        },
+        "diff_file": ".run/g10a-diff-F3.json"
+      },
+      "F5": {
+        "label": "F5",
+        "ok": true,
+        "scope_note": "A clean reconcile means no mismatch was found between the compared stores at this cut. It does not show that undetected faults are absent.",
+        "cut": {
+          "lsn": "0/367E150",
+          "confirmed_flush_lsn": "0/367E210",
+          "paused": true,
+          "pause_start": {
+            "generator_running": false,
+            "next_txn": 12100,
+            "writes": {
+              "accounts": 15263,
+              "customers": 1171,
+              "help_articles": 563,
+              "merchants": 73,
+              "refunds": 570,
+              "support_tickets": 2304,
+              "transactions": 7424
+            }
+          },
+          "pause_end": {
+            "generator_running": false,
+            "next_txn": 12100,
+            "writes": {
+              "accounts": 15263,
+              "customers": 1171,
+              "help_articles": 563,
+              "merchants": 73,
+              "refunds": 570,
+              "support_tickets": 2304,
+              "transactions": 7424
+            }
+          },
+          "flush_reached": true,
+          "flush_wait_s": 13.4,
+          "checkpoints_reached": true,
+          "checkpoint_wait_s": 32.6,
+          "end_offsets": {
+            "cdc.public.customers": {
+              "0": 485,
+              "1": 475,
+              "2": 394
+            },
+            "cdc.public.merchants": {
+              "0": 39,
+              "1": 25,
+              "2": 37
+            },
+            "cdc.public.accounts": {
+              "0": 3436,
+              "1": 5134,
+              "2": 5202
+            },
+            "cdc.public.transactions": {
+              "0": 2543,
+              "1": 2526,
+              "2": 2553
+            },
+            "cdc.public.refunds": {
+              "0": 189,
+              "1": 175,
+              "2": 206
+            },
+            "cdc.public.support_tickets": {
+              "0": 757,
+              "1": 845,
+              "2": 750
+            },
+            "cdc.public.help_articles": {
+              "0": 152,
+              "1": 173,
+              "2": 247
+            }
+          },
+          "committed_offsets": {
+            "silver": {
+              "cdc.public.refunds": {
+                "0": 189,
+                "1": 175,
+                "2": 206
+              },
+              "cdc.public.merchants": {
+                "0": 39,
+                "1": 25,
+                "2": 37
+              },
+              "cdc.public.accounts": {
+                "0": 3436,
+                "1": 5134,
+                "2": 5202
+              },
+              "cdc.public.customers": {
+                "0": 485,
+                "1": 475,
+                "2": 394
+              },
+              "cdc.public.support_tickets": {
+                "0": 757,
+                "1": 845,
+                "2": 750
+              },
+              "cdc.public.transactions": {
+                "0": 2543,
+                "1": 2526,
+                "2": 2553
+              },
+              "cdc.public.help_articles": {
+                "0": 152,
+                "1": 173,
+                "2": 247
+              }
+            },
+            "bronze": {
+              "cdc.public.refunds": {
+                "0": 189,
+                "1": 175,
+                "2": 206
+              },
+              "cdc.public.merchants": {
+                "0": 39,
+                "1": 25,
+                "2": 37
+              },
+              "cdc.public.accounts": {
+                "0": 3436,
+                "1": 5134,
+                "2": 5202
+              },
+              "cdc.public.customers": {
+                "0": 485,
+                "1": 475,
+                "2": 394
+              },
+              "cdc.public.support_tickets": {
+                "0": 757,
+                "1": 845,
+                "2": 750
+              },
+              "cdc.public.transactions": {
+                "0": 2543,
+                "1": 2526,
+                "2": 2553
+              },
+              "cdc.public.help_articles": {
+                "0": 152,
+                "1": 173,
+                "2": 247
+              }
+            }
+          },
+          "lagging_partitions": {
+            "silver": 0,
+            "bronze": 0
+          },
+          "lag": {
+            "silver": {},
+            "bronze": {}
+          },
+          "missing_topics": [],
+          "notes": []
+        },
+        "tables": {
+          "customers": {
+            "table": "customers",
+            "ok": true,
+            "pg_count": 552,
+            "silver_live": 552,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "00acfd4d_f3c02680",
+            "silver_checksum": "00acfd4d_f3c02680",
+            "mismatch_buckets": []
+          },
+          "merchants": {
+            "table": "merchants",
+            "ok": true,
+            "pg_count": 73,
+            "silver_live": 73,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "49fb0b6f_6e0a41e7",
+            "silver_checksum": "49fb0b6f_6e0a41e7",
+            "mismatch_buckets": []
+          },
+          "accounts": {
+            "table": "accounts",
+            "ok": true,
+            "pg_count": 625,
+            "silver_live": 625,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "ad1d00dd_f101102d",
+            "silver_checksum": "ad1d00dd_f101102d",
+            "mismatch_buckets": []
+          },
+          "transactions": {
+            "table": "transactions",
+            "ok": true,
+            "pg_count": 7424,
+            "silver_live": 7424,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "5674fa18_6197a4a1",
+            "silver_checksum": "5674fa18_6197a4a1",
+            "mismatch_buckets": []
+          },
+          "refunds": {
+            "table": "refunds",
+            "ok": true,
+            "pg_count": 570,
+            "silver_live": 570,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "eba15e3c_60c25cf2",
+            "silver_checksum": "eba15e3c_60c25cf2",
+            "mismatch_buckets": []
+          },
+          "support_tickets": {
+            "table": "support_tickets",
+            "ok": true,
+            "pg_count": 972,
+            "silver_live": 972,
+            "silver_tombstones": 182,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "b8cf574c_da838377",
+            "silver_checksum": "b8cf574c_da838377",
+            "mismatch_buckets": []
+          },
+          "help_articles": {
+            "table": "help_articles",
+            "ok": true,
+            "pg_count": 107,
+            "silver_live": 107,
+            "silver_tombstones": 54,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "3b01d633_74649077",
+            "silver_checksum": "3b01d633_74649077",
+            "mismatch_buckets": []
+          }
+        },
+        "topics": {
+          "cdc.public.customers": {
+            "rows": 1621,
+            "distinct": 1354,
+            "kafka_present": 655,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 267,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.merchants": {
+            "rows": 101,
+            "distinct": 101,
+            "kafka_present": 73,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.accounts": {
+            "rows": 13772,
+            "distinct": 13772,
+            "kafka_present": 3213,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.transactions": {
+            "rows": 7622,
+            "distinct": 7622,
+            "kafka_present": 7424,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.refunds": {
+            "rows": 570,
+            "distinct": 570,
+            "kafka_present": 570,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.support_tickets": {
+            "rows": 2520,
+            "distinct": 2352,
+            "kafka_present": 1248,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 168,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.help_articles": {
+            "rows": 572,
+            "distinct": 572,
+            "kafka_present": 206,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          }
+        },
+        "bronze_duplicates": {
+          "scope": "total over all topics",
+          "duplicate_rows": 435,
+          "expected": 435,
+          "equal": true
+        },
+        "compacting": {
+          "customers": true,
+          "merchants": true,
+          "accounts": true,
+          "transactions": true,
+          "refunds": true,
+          "support_tickets": true,
+          "help_articles": true
+        },
+        "compacting_unverified": [],
+        "rebuild": {
+          "customers": {
+            "rows": 552,
+            "equal": true,
+            "checksum": "102faaeb_82da6722",
+            "rebuilt_checksum": "102faaeb_82da6722",
+            "rebuilt_rows": 552
+          },
+          "merchants": {
+            "rows": 73,
+            "equal": true,
+            "checksum": "a60b9a39_27322565",
+            "rebuilt_checksum": "a60b9a39_27322565",
+            "rebuilt_rows": 73
+          },
+          "accounts": {
+            "rows": 625,
+            "equal": true,
+            "checksum": "95bd06f4_2c25be8b",
+            "rebuilt_checksum": "95bd06f4_2c25be8b",
+            "rebuilt_rows": 625
+          },
+          "transactions": {
+            "rows": 7424,
+            "equal": true,
+            "checksum": "f3ea2a30_89c81e2b",
+            "rebuilt_checksum": "f3ea2a30_89c81e2b",
+            "rebuilt_rows": 7424
+          },
+          "refunds": {
+            "rows": 570,
+            "equal": true,
+            "checksum": "4ae42872_996c4b7e",
+            "rebuilt_checksum": "4ae42872_996c4b7e",
+            "rebuilt_rows": 570
+          },
+          "support_tickets": {
+            "rows": 1154,
+            "equal": true,
+            "checksum": "1e966b4d_c8780581",
+            "rebuilt_checksum": "1e966b4d_c8780581",
+            "rebuilt_rows": 1154
+          },
+          "help_articles": {
+            "rows": 161,
+            "equal": true,
+            "checksum": "1d553bf4_748b742a",
+            "rebuilt_checksum": "1d553bf4_748b742a",
+            "rebuilt_rows": 161
+          }
+        },
+        "qdrant": {
+          "consistent": {
+            "ok": true,
+            "waited_s": 3.0,
+            "counts": {
+              "points": 1375,
+              "entities_in_index": 1079,
+              "stale_chunks": 0,
+              "orphaned_chunks": 0,
+              "duplicate_chunks": 0,
+              "wrong_model_chunks": 0,
+              "ahead_chunks": 0,
+              "missing_entities": 0
+            }
+          },
+          "matches_postgres": {
+            "ok": true,
+            "waited_s": 1.9,
+            "counts": {
+              "entities_expected": 1079,
+              "missing": 0,
+              "extra": 0,
+              "differing": 0,
+              "multi_version": 0
+            }
+          }
+        },
+        "notes": [],
+        "durations_s": {
+          "cut": 49.8,
+          "postgres": 2.8,
+          "spark_probe": 66.5,
+          "kafka": 16.4,
+          "qdrant": 4.9,
+          "total": 143.7
+        },
+        "diff_file": ".run/g10a-diff-F5.json"
+      },
+      "F6a": {
+        "label": "F6a",
+        "ok": true,
+        "scope_note": "A clean reconcile means no mismatch was found between the compared stores at this cut. It does not show that undetected faults are absent.",
+        "cut": {
+          "lsn": "0/37D7480",
+          "confirmed_flush_lsn": "0/37EC778",
+          "paused": true,
+          "pause_start": {
+            "generator_running": false,
+            "next_txn": 12400,
+            "writes": {
+              "accounts": 15630,
+              "customers": 1197,
+              "help_articles": 585,
+              "merchants": 74,
+              "refunds": 581,
+              "support_tickets": 2360,
+              "transactions": 7611
+            }
+          },
+          "pause_end": {
+            "generator_running": false,
+            "next_txn": 12400,
+            "writes": {
+              "accounts": 15630,
+              "customers": 1197,
+              "help_articles": 585,
+              "merchants": 74,
+              "refunds": 581,
+              "support_tickets": 2360,
+              "transactions": 7611
+            }
+          },
+          "flush_reached": true,
+          "flush_wait_s": 26.1,
+          "checkpoints_reached": true,
+          "checkpoint_wait_s": 1.8,
+          "end_offsets": {
+            "cdc.public.customers": {
+              "0": 498,
+              "1": 483,
+              "2": 399
+            },
+            "cdc.public.merchants": {
+              "0": 40,
+              "1": 25,
+              "2": 37
+            },
+            "cdc.public.accounts": {
+              "0": 3521,
+              "1": 5248,
+              "2": 5370
+            },
+            "cdc.public.transactions": {
+              "0": 2608,
+              "1": 2593,
+              "2": 2608
+            },
+            "cdc.public.refunds": {
+              "0": 190,
+              "1": 180,
+              "2": 211
+            },
+            "cdc.public.support_tickets": {
+              "0": 782,
+              "1": 861,
+              "2": 768
+            },
+            "cdc.public.help_articles": {
+              "0": 159,
+              "1": 181,
+              "2": 255
+            }
+          },
+          "committed_offsets": {
+            "silver": {
+              "cdc.public.refunds": {
+                "0": 190,
+                "1": 180,
+                "2": 211
+              },
+              "cdc.public.merchants": {
+                "0": 40,
+                "1": 25,
+                "2": 37
+              },
+              "cdc.public.accounts": {
+                "0": 3521,
+                "1": 5248,
+                "2": 5370
+              },
+              "cdc.public.customers": {
+                "0": 498,
+                "1": 483,
+                "2": 399
+              },
+              "cdc.public.support_tickets": {
+                "0": 782,
+                "1": 861,
+                "2": 768
+              },
+              "cdc.public.transactions": {
+                "0": 2608,
+                "1": 2593,
+                "2": 2608
+              },
+              "cdc.public.help_articles": {
+                "0": 159,
+                "1": 181,
+                "2": 255
+              }
+            },
+            "bronze": {
+              "cdc.public.refunds": {
+                "0": 190,
+                "1": 180,
+                "2": 211
+              },
+              "cdc.public.merchants": {
+                "0": 40,
+                "1": 25,
+                "2": 37
+              },
+              "cdc.public.accounts": {
+                "0": 3521,
+                "1": 5248,
+                "2": 5370
+              },
+              "cdc.public.customers": {
+                "0": 498,
+                "1": 483,
+                "2": 399
+              },
+              "cdc.public.support_tickets": {
+                "0": 782,
+                "1": 861,
+                "2": 768
+              },
+              "cdc.public.transactions": {
+                "0": 2608,
+                "1": 2593,
+                "2": 2608
+              },
+              "cdc.public.help_articles": {
+                "0": 159,
+                "1": 181,
+                "2": 255
+              }
+            }
+          },
+          "lagging_partitions": {
+            "silver": 0,
+            "bronze": 0
+          },
+          "lag": {
+            "silver": {},
+            "bronze": {}
+          },
+          "missing_topics": [],
+          "notes": []
+        },
+        "tables": {
+          "customers": {
+            "table": "customers",
+            "ok": true,
+            "pg_count": 558,
+            "silver_live": 558,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "fa51da61_187bf806",
+            "silver_checksum": "fa51da61_187bf806",
+            "mismatch_buckets": []
+          },
+          "merchants": {
+            "table": "merchants",
+            "ok": true,
+            "pg_count": 74,
+            "silver_live": 74,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "d4473eb2_07cb3a07",
+            "silver_checksum": "d4473eb2_07cb3a07",
+            "mismatch_buckets": []
+          },
+          "accounts": {
+            "table": "accounts",
+            "ok": true,
+            "pg_count": 632,
+            "silver_live": 632,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "ea97bbb4_2eac7fb1",
+            "silver_checksum": "ea97bbb4_2eac7fb1",
+            "mismatch_buckets": []
+          },
+          "transactions": {
+            "table": "transactions",
+            "ok": true,
+            "pg_count": 7611,
+            "silver_live": 7611,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "595380aa_47a97957",
+            "silver_checksum": "595380aa_47a97957",
+            "mismatch_buckets": []
+          },
+          "refunds": {
+            "table": "refunds",
+            "ok": true,
+            "pg_count": 581,
+            "silver_live": 581,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "a175acfb_fe68b8fa",
+            "silver_checksum": "a175acfb_fe68b8fa",
+            "mismatch_buckets": []
+          },
+          "support_tickets": {
+            "table": "support_tickets",
+            "ok": true,
+            "pg_count": 1000,
+            "silver_live": 1000,
+            "silver_tombstones": 185,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "cd1dfc95_e9db16c1",
+            "silver_checksum": "cd1dfc95_e9db16c1",
+            "mismatch_buckets": []
+          },
+          "help_articles": {
+            "table": "help_articles",
+            "ok": true,
+            "pg_count": 112,
+            "silver_live": 112,
+            "silver_tombstones": 55,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "f025b9c5_fe71c990",
+            "silver_checksum": "f025b9c5_fe71c990",
+            "mismatch_buckets": []
+          }
+        },
+        "topics": {
+          "cdc.public.customers": {
+            "rows": 1647,
+            "distinct": 1380,
+            "kafka_present": 578,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 267,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.merchants": {
+            "rows": 102,
+            "distinct": 102,
+            "kafka_present": 74,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.accounts": {
+            "rows": 14139,
+            "distinct": 14139,
+            "kafka_present": 992,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.transactions": {
+            "rows": 7809,
+            "distinct": 7809,
+            "kafka_present": 7611,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.refunds": {
+            "rows": 581,
+            "distinct": 581,
+            "kafka_present": 581,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.support_tickets": {
+            "rows": 2579,
+            "distinct": 2411,
+            "kafka_present": 1031,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 168,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.help_articles": {
+            "rows": 595,
+            "distinct": 595,
+            "kafka_present": 131,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          }
+        },
+        "bronze_duplicates": {
+          "scope": "total over all topics",
+          "duplicate_rows": 435,
+          "expected": 435,
+          "equal": true
+        },
+        "compacting": {
+          "customers": true,
+          "merchants": true,
+          "accounts": true,
+          "transactions": true,
+          "refunds": true,
+          "support_tickets": true,
+          "help_articles": true
+        },
+        "compacting_unverified": [],
+        "rebuild": {
+          "customers": {
+            "rows": 558,
+            "equal": true,
+            "checksum": "ba1dac24_1a0a2fc3",
+            "rebuilt_checksum": "ba1dac24_1a0a2fc3",
+            "rebuilt_rows": 558
+          },
+          "merchants": {
+            "rows": 74,
+            "equal": true,
+            "checksum": "3be592db_7d77f82c",
+            "rebuilt_checksum": "3be592db_7d77f82c",
+            "rebuilt_rows": 74
+          },
+          "accounts": {
+            "rows": 632,
+            "equal": true,
+            "checksum": "8a02517f_7fd3a34c",
+            "rebuilt_checksum": "8a02517f_7fd3a34c",
+            "rebuilt_rows": 632
+          },
+          "transactions": {
+            "rows": 7611,
+            "equal": true,
+            "checksum": "10f9eac5_8e85a46d",
+            "rebuilt_checksum": "10f9eac5_8e85a46d",
+            "rebuilt_rows": 7611
+          },
+          "refunds": {
+            "rows": 581,
+            "equal": true,
+            "checksum": "31b63fe9_b75e4d2c",
+            "rebuilt_checksum": "31b63fe9_b75e4d2c",
+            "rebuilt_rows": 581
+          },
+          "support_tickets": {
+            "rows": 1185,
+            "equal": true,
+            "checksum": "b76f2229_2029c0a2",
+            "rebuilt_checksum": "b76f2229_2029c0a2",
+            "rebuilt_rows": 1185
+          },
+          "help_articles": {
+            "rows": 167,
+            "equal": true,
+            "checksum": "b8051eb4_949175fd",
+            "rebuilt_checksum": "b8051eb4_949175fd",
+            "rebuilt_rows": 167
+          }
+        },
+        "qdrant": {
+          "consistent": {
+            "ok": true,
+            "waited_s": 2.8,
+            "counts": {
+              "points": 1412,
+              "entities_in_index": 1112,
+              "stale_chunks": 0,
+              "orphaned_chunks": 0,
+              "duplicate_chunks": 0,
+              "wrong_model_chunks": 0,
+              "ahead_chunks": 0,
+              "missing_entities": 0
+            }
+          },
+          "matches_postgres": {
+            "ok": true,
+            "waited_s": 1.8,
+            "counts": {
+              "entities_expected": 1112,
+              "missing": 0,
+              "extra": 0,
+              "differing": 0,
+              "multi_version": 0
+            }
+          }
+        },
+        "notes": [],
+        "durations_s": {
+          "cut": 31.2,
+          "postgres": 2.8,
+          "spark_probe": 68.1,
+          "kafka": 8.3,
+          "qdrant": 4.7,
+          "total": 118.4
+        },
+        "diff_file": ".run/g10a-diff-F6a.json"
+      },
+      "F6b": {
+        "label": "F6b",
+        "ok": true,
+        "scope_note": "A clean reconcile means no mismatch was found between the compared stores at this cut. It does not show that undetected faults are absent.",
+        "cut": {
+          "lsn": "0/38D8C80",
+          "confirmed_flush_lsn": "0/38D91D0",
+          "paused": true,
+          "pause_start": {
+            "generator_running": false,
+            "next_txn": 12400,
+            "writes": {
+              "accounts": 15630,
+              "customers": 1197,
+              "help_articles": 587,
+              "merchants": 74,
+              "refunds": 583,
+              "support_tickets": 2360,
+              "transactions": 7611
+            }
+          },
+          "pause_end": {
+            "generator_running": false,
+            "next_txn": 12400,
+            "writes": {
+              "accounts": 15630,
+              "customers": 1197,
+              "help_articles": 587,
+              "merchants": 74,
+              "refunds": 583,
+              "support_tickets": 2360,
+              "transactions": 7611
+            }
+          },
+          "flush_reached": true,
+          "flush_wait_s": 68.1,
+          "checkpoints_reached": true,
+          "checkpoint_wait_s": 1.8,
+          "end_offsets": {
+            "cdc.public.customers": {
+              "0": 498,
+              "1": 483,
+              "2": 399
+            },
+            "cdc.public.merchants": {
+              "0": 40,
+              "1": 25,
+              "2": 37
+            },
+            "cdc.public.accounts": {
+              "0": 3521,
+              "1": 5248,
+              "2": 5370
+            },
+            "cdc.public.transactions": {
+              "0": 2608,
+              "1": 2593,
+              "2": 2608
+            },
+            "cdc.public.refunds": {
+              "0": 192,
+              "1": 180,
+              "2": 211
+            },
+            "cdc.public.support_tickets": {
+              "0": 782,
+              "1": 861,
+              "2": 768
+            },
+            "cdc.public.help_articles": {
+              "0": 161,
+              "1": 181,
+              "2": 255
+            }
+          },
+          "committed_offsets": {
+            "silver": {
+              "cdc.public.refunds": {
+                "0": 192,
+                "1": 180,
+                "2": 211
+              },
+              "cdc.public.merchants": {
+                "0": 40,
+                "1": 25,
+                "2": 37
+              },
+              "cdc.public.accounts": {
+                "0": 3521,
+                "1": 5248,
+                "2": 5370
+              },
+              "cdc.public.customers": {
+                "0": 498,
+                "1": 483,
+                "2": 399
+              },
+              "cdc.public.support_tickets": {
+                "0": 782,
+                "1": 861,
+                "2": 768
+              },
+              "cdc.public.transactions": {
+                "0": 2608,
+                "1": 2593,
+                "2": 2608
+              },
+              "cdc.public.help_articles": {
+                "0": 161,
+                "1": 181,
+                "2": 255
+              }
+            },
+            "bronze": {
+              "cdc.public.refunds": {
+                "0": 192,
+                "1": 180,
+                "2": 211
+              },
+              "cdc.public.merchants": {
+                "0": 40,
+                "1": 25,
+                "2": 37
+              },
+              "cdc.public.accounts": {
+                "0": 3521,
+                "1": 5248,
+                "2": 5370
+              },
+              "cdc.public.customers": {
+                "0": 498,
+                "1": 483,
+                "2": 399
+              },
+              "cdc.public.support_tickets": {
+                "0": 782,
+                "1": 861,
+                "2": 768
+              },
+              "cdc.public.transactions": {
+                "0": 2608,
+                "1": 2593,
+                "2": 2608
+              },
+              "cdc.public.help_articles": {
+                "0": 161,
+                "1": 181,
+                "2": 255
+              }
+            }
+          },
+          "lagging_partitions": {
+            "silver": 0,
+            "bronze": 0
+          },
+          "lag": {
+            "silver": {},
+            "bronze": {}
+          },
+          "missing_topics": [],
+          "notes": []
+        },
+        "tables": {
+          "customers": {
+            "table": "customers",
+            "ok": true,
+            "pg_count": 558,
+            "silver_live": 558,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "fa51da61_187bf806",
+            "silver_checksum": "fa51da61_187bf806",
+            "mismatch_buckets": []
+          },
+          "merchants": {
+            "table": "merchants",
+            "ok": true,
+            "pg_count": 74,
+            "silver_live": 74,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "d4473eb2_07cb3a07",
+            "silver_checksum": "d4473eb2_07cb3a07",
+            "mismatch_buckets": []
+          },
+          "accounts": {
+            "table": "accounts",
+            "ok": true,
+            "pg_count": 632,
+            "silver_live": 632,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "ea97bbb4_2eac7fb1",
+            "silver_checksum": "ea97bbb4_2eac7fb1",
+            "mismatch_buckets": []
+          },
+          "transactions": {
+            "table": "transactions",
+            "ok": true,
+            "pg_count": 7611,
+            "silver_live": 7611,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "595380aa_47a97957",
+            "silver_checksum": "595380aa_47a97957",
+            "mismatch_buckets": []
+          },
+          "refunds": {
+            "table": "refunds",
+            "ok": true,
+            "pg_count": 582,
+            "silver_live": 582,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "26c909f7_016cea74",
+            "silver_checksum": "26c909f7_016cea74",
+            "mismatch_buckets": []
+          },
+          "support_tickets": {
+            "table": "support_tickets",
+            "ok": true,
+            "pg_count": 1000,
+            "silver_live": 1000,
+            "silver_tombstones": 185,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "cd1dfc95_e9db16c1",
+            "silver_checksum": "cd1dfc95_e9db16c1",
+            "mismatch_buckets": []
+          },
+          "help_articles": {
+            "table": "help_articles",
+            "ok": true,
+            "pg_count": 112,
+            "silver_live": 112,
+            "silver_tombstones": 55,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "47727ef9_d62461b4",
+            "silver_checksum": "47727ef9_d62461b4",
+            "mismatch_buckets": []
+          }
+        },
+        "topics": {
+          "cdc.public.customers": {
+            "rows": 1647,
+            "distinct": 1380,
+            "kafka_present": 558,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 267,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.merchants": {
+            "rows": 102,
+            "distinct": 102,
+            "kafka_present": 74,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.accounts": {
+            "rows": 14139,
+            "distinct": 14139,
+            "kafka_present": 632,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.transactions": {
+            "rows": 7809,
+            "distinct": 7809,
+            "kafka_present": 7611,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.refunds": {
+            "rows": 583,
+            "distinct": 583,
+            "kafka_present": 583,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.support_tickets": {
+            "rows": 2579,
+            "distinct": 2411,
+            "kafka_present": 1002,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 168,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.help_articles": {
+            "rows": 597,
+            "distinct": 597,
+            "kafka_present": 114,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          }
+        },
+        "bronze_duplicates": {
+          "scope": "total over all topics",
+          "duplicate_rows": 435,
+          "expected": 435,
+          "equal": true
+        },
+        "compacting": {
+          "customers": true,
+          "merchants": true,
+          "accounts": true,
+          "transactions": true,
+          "refunds": true,
+          "support_tickets": true,
+          "help_articles": true
+        },
+        "compacting_unverified": [],
+        "rebuild": {
+          "customers": {
+            "rows": 558,
+            "equal": true,
+            "checksum": "ba1dac24_1a0a2fc3",
+            "rebuilt_checksum": "ba1dac24_1a0a2fc3",
+            "rebuilt_rows": 558
+          },
+          "merchants": {
+            "rows": 74,
+            "equal": true,
+            "checksum": "3be592db_7d77f82c",
+            "rebuilt_checksum": "3be592db_7d77f82c",
+            "rebuilt_rows": 74
+          },
+          "accounts": {
+            "rows": 632,
+            "equal": true,
+            "checksum": "8a02517f_7fd3a34c",
+            "rebuilt_checksum": "8a02517f_7fd3a34c",
+            "rebuilt_rows": 632
+          },
+          "transactions": {
+            "rows": 7611,
+            "equal": true,
+            "checksum": "10f9eac5_8e85a46d",
+            "rebuilt_checksum": "10f9eac5_8e85a46d",
+            "rebuilt_rows": 7611
+          },
+          "refunds": {
+            "rows": 582,
+            "equal": true,
+            "checksum": "d5b8ca79_2b571fa8",
+            "rebuilt_checksum": "d5b8ca79_2b571fa8",
+            "rebuilt_rows": 582
+          },
+          "support_tickets": {
+            "rows": 1185,
+            "equal": true,
+            "checksum": "b76f2229_2029c0a2",
+            "rebuilt_checksum": "b76f2229_2029c0a2",
+            "rebuilt_rows": 1185
+          },
+          "help_articles": {
+            "rows": 167,
+            "equal": true,
+            "checksum": "5a6a7840_008ca81d",
+            "rebuilt_checksum": "5a6a7840_008ca81d",
+            "rebuilt_rows": 167
+          }
+        },
+        "qdrant": {
+          "consistent": {
+            "ok": true,
+            "waited_s": 3.3,
+            "counts": {
+              "points": 1412,
+              "entities_in_index": 1112,
+              "stale_chunks": 0,
+              "orphaned_chunks": 0,
+              "duplicate_chunks": 0,
+              "wrong_model_chunks": 0,
+              "ahead_chunks": 0,
+              "missing_entities": 0
+            }
+          },
+          "matches_postgres": {
+            "ok": true,
+            "waited_s": 1.9,
+            "counts": {
+              "entities_expected": 1112,
+              "missing": 0,
+              "extra": 0,
+              "differing": 0,
+              "multi_version": 0
+            }
+          }
+        },
+        "notes": [],
+        "durations_s": {
+          "cut": 73.2,
+          "postgres": 2.9,
+          "spark_probe": 73.5,
+          "kafka": 10.8,
+          "qdrant": 5.2,
+          "total": 169.0
+        },
+        "diff_file": ".run/g10a-diff-F6b.json"
+      },
+      "END": {
+        "label": "END",
+        "ok": true,
+        "scope_note": "A clean reconcile means no mismatch was found between the compared stores at this cut. It does not show that undetected faults are absent.",
+        "cut": {
+          "lsn": "0/38E02B8",
+          "confirmed_flush_lsn": "0/38E0BF8",
+          "paused": true,
+          "pause_start": {
+            "generator_running": false,
+            "next_txn": 12400,
+            "writes": {
+              "accounts": 15630,
+              "customers": 1197,
+              "help_articles": 587,
+              "merchants": 74,
+              "refunds": 583,
+              "support_tickets": 2360,
+              "transactions": 7611
+            }
+          },
+          "pause_end": {
+            "generator_running": false,
+            "next_txn": 12400,
+            "writes": {
+              "accounts": 15630,
+              "customers": 1197,
+              "help_articles": 587,
+              "merchants": 74,
+              "refunds": 583,
+              "support_tickets": 2360,
+              "transactions": 7611
+            }
+          },
+          "flush_reached": true,
+          "flush_wait_s": 51.9,
+          "checkpoints_reached": true,
+          "checkpoint_wait_s": 1.8,
+          "end_offsets": {
+            "cdc.public.customers": {
+              "0": 498,
+              "1": 483,
+              "2": 399
+            },
+            "cdc.public.merchants": {
+              "0": 40,
+              "1": 25,
+              "2": 37
+            },
+            "cdc.public.accounts": {
+              "0": 3521,
+              "1": 5248,
+              "2": 5370
+            },
+            "cdc.public.transactions": {
+              "0": 2608,
+              "1": 2593,
+              "2": 2608
+            },
+            "cdc.public.refunds": {
+              "0": 192,
+              "1": 180,
+              "2": 211
+            },
+            "cdc.public.support_tickets": {
+              "0": 782,
+              "1": 861,
+              "2": 768
+            },
+            "cdc.public.help_articles": {
+              "0": 161,
+              "1": 181,
+              "2": 255
+            }
+          },
+          "committed_offsets": {
+            "silver": {
+              "cdc.public.refunds": {
+                "0": 192,
+                "1": 180,
+                "2": 211
+              },
+              "cdc.public.merchants": {
+                "0": 40,
+                "1": 25,
+                "2": 37
+              },
+              "cdc.public.accounts": {
+                "0": 3521,
+                "1": 5248,
+                "2": 5370
+              },
+              "cdc.public.customers": {
+                "0": 498,
+                "1": 483,
+                "2": 399
+              },
+              "cdc.public.support_tickets": {
+                "0": 782,
+                "1": 861,
+                "2": 768
+              },
+              "cdc.public.transactions": {
+                "0": 2608,
+                "1": 2593,
+                "2": 2608
+              },
+              "cdc.public.help_articles": {
+                "0": 161,
+                "1": 181,
+                "2": 255
+              }
+            },
+            "bronze": {
+              "cdc.public.refunds": {
+                "0": 192,
+                "1": 180,
+                "2": 211
+              },
+              "cdc.public.merchants": {
+                "0": 40,
+                "1": 25,
+                "2": 37
+              },
+              "cdc.public.accounts": {
+                "0": 3521,
+                "1": 5248,
+                "2": 5370
+              },
+              "cdc.public.customers": {
+                "0": 498,
+                "1": 483,
+                "2": 399
+              },
+              "cdc.public.support_tickets": {
+                "0": 782,
+                "1": 861,
+                "2": 768
+              },
+              "cdc.public.transactions": {
+                "0": 2608,
+                "1": 2593,
+                "2": 2608
+              },
+              "cdc.public.help_articles": {
+                "0": 161,
+                "1": 181,
+                "2": 255
+              }
+            }
+          },
+          "lagging_partitions": {
+            "silver": 0,
+            "bronze": 0
+          },
+          "lag": {
+            "silver": {},
+            "bronze": {}
+          },
+          "missing_topics": [],
+          "notes": []
+        },
+        "tables": {
+          "customers": {
+            "table": "customers",
+            "ok": true,
+            "pg_count": 558,
+            "silver_live": 558,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "fa51da61_187bf806",
+            "silver_checksum": "fa51da61_187bf806",
+            "mismatch_buckets": []
+          },
+          "merchants": {
+            "table": "merchants",
+            "ok": true,
+            "pg_count": 74,
+            "silver_live": 74,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "d4473eb2_07cb3a07",
+            "silver_checksum": "d4473eb2_07cb3a07",
+            "mismatch_buckets": []
+          },
+          "accounts": {
+            "table": "accounts",
+            "ok": true,
+            "pg_count": 632,
+            "silver_live": 632,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "ea97bbb4_2eac7fb1",
+            "silver_checksum": "ea97bbb4_2eac7fb1",
+            "mismatch_buckets": []
+          },
+          "transactions": {
+            "table": "transactions",
+            "ok": true,
+            "pg_count": 7611,
+            "silver_live": 7611,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "595380aa_47a97957",
+            "silver_checksum": "595380aa_47a97957",
+            "mismatch_buckets": []
+          },
+          "refunds": {
+            "table": "refunds",
+            "ok": true,
+            "pg_count": 582,
+            "silver_live": 582,
+            "silver_tombstones": 0,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "26c909f7_016cea74",
+            "silver_checksum": "26c909f7_016cea74",
+            "mismatch_buckets": []
+          },
+          "support_tickets": {
+            "table": "support_tickets",
+            "ok": true,
+            "pg_count": 1000,
+            "silver_live": 1000,
+            "silver_tombstones": 185,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "cd1dfc95_e9db16c1",
+            "silver_checksum": "cd1dfc95_e9db16c1",
+            "mismatch_buckets": []
+          },
+          "help_articles": {
+            "table": "help_articles",
+            "ok": true,
+            "pg_count": 112,
+            "silver_live": 112,
+            "silver_tombstones": 55,
+            "missing": 0,
+            "extra_live": 0,
+            "resurrected": 0,
+            "differing": 0,
+            "duplicates": 0,
+            "tombstone_nonnull": 0,
+            "unavailable_values": 0,
+            "bucket_mismatches": 0,
+            "silver_only_columns": 0,
+            "unreconciled_quarantine": 0,
+            "silver_only_null_columns": 0,
+            "digest_equal": true,
+            "pg_checksum": "47727ef9_d62461b4",
+            "silver_checksum": "47727ef9_d62461b4",
+            "mismatch_buckets": []
+          }
+        },
+        "topics": {
+          "cdc.public.customers": {
+            "rows": 1647,
+            "distinct": 1380,
+            "kafka_present": 558,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 267,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.merchants": {
+            "rows": 102,
+            "distinct": 102,
+            "kafka_present": 74,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.accounts": {
+            "rows": 14139,
+            "distinct": 14139,
+            "kafka_present": 632,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.transactions": {
+            "rows": 7809,
+            "distinct": 7809,
+            "kafka_present": 7611,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.refunds": {
+            "rows": 583,
+            "distinct": 583,
+            "kafka_present": 583,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.support_tickets": {
+            "rows": 2579,
+            "distinct": 2411,
+            "kafka_present": 1002,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 168,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          },
+          "cdc.public.help_articles": {
+            "rows": 597,
+            "distinct": 597,
+            "kafka_present": 114,
+            "missing_in_bronze": 0,
+            "beyond_end": 0,
+            "gaps": 0,
+            "dup_rows": 0,
+            "compacting": true,
+            "ok_ignoring_ledger": true
+          }
+        },
+        "bronze_duplicates": {
+          "scope": "total over all topics",
+          "duplicate_rows": 435,
+          "expected": 435,
+          "equal": true
+        },
+        "compacting": {
+          "customers": true,
+          "merchants": true,
+          "accounts": true,
+          "transactions": true,
+          "refunds": true,
+          "support_tickets": true,
+          "help_articles": true
+        },
+        "compacting_unverified": [],
+        "rebuild": {
+          "customers": {
+            "rows": 558,
+            "equal": true,
+            "checksum": "ba1dac24_1a0a2fc3",
+            "rebuilt_checksum": "ba1dac24_1a0a2fc3",
+            "rebuilt_rows": 558
+          },
+          "merchants": {
+            "rows": 74,
+            "equal": true,
+            "checksum": "3be592db_7d77f82c",
+            "rebuilt_checksum": "3be592db_7d77f82c",
+            "rebuilt_rows": 74
+          },
+          "accounts": {
+            "rows": 632,
+            "equal": true,
+            "checksum": "8a02517f_7fd3a34c",
+            "rebuilt_checksum": "8a02517f_7fd3a34c",
+            "rebuilt_rows": 632
+          },
+          "transactions": {
+            "rows": 7611,
+            "equal": true,
+            "checksum": "10f9eac5_8e85a46d",
+            "rebuilt_checksum": "10f9eac5_8e85a46d",
+            "rebuilt_rows": 7611
+          },
+          "refunds": {
+            "rows": 582,
+            "equal": true,
+            "checksum": "d5b8ca79_2b571fa8",
+            "rebuilt_checksum": "d5b8ca79_2b571fa8",
+            "rebuilt_rows": 582
+          },
+          "support_tickets": {
+            "rows": 1185,
+            "equal": true,
+            "checksum": "b76f2229_2029c0a2",
+            "rebuilt_checksum": "b76f2229_2029c0a2",
+            "rebuilt_rows": 1185
+          },
+          "help_articles": {
+            "rows": 167,
+            "equal": true,
+            "checksum": "5a6a7840_008ca81d",
+            "rebuilt_checksum": "5a6a7840_008ca81d",
+            "rebuilt_rows": 167
+          }
+        },
+        "qdrant": {
+          "consistent": {
+            "ok": true,
+            "waited_s": 3.0,
+            "counts": {
+              "points": 1412,
+              "entities_in_index": 1112,
+              "stale_chunks": 0,
+              "orphaned_chunks": 0,
+              "duplicate_chunks": 0,
+              "wrong_model_chunks": 0,
+              "ahead_chunks": 0,
+              "missing_entities": 0
+            }
+          },
+          "matches_postgres": {
+            "ok": true,
+            "waited_s": 1.9,
+            "counts": {
+              "entities_expected": 1112,
+              "missing": 0,
+              "extra": 0,
+              "differing": 0,
+              "multi_version": 0
+            }
+          }
+        },
+        "notes": [],
+        "durations_s": {
+          "cut": 57.0,
+          "postgres": 2.9,
+          "spark_probe": 72.8,
+          "kafka": 13.9,
+          "qdrant": 4.9,
+          "total": 155.0
+        },
+        "diff_file": ".run/g10a-diff-END.json"
+      }
+    },
+    "bronze_duplicate_ledger": {
+      "F1": 435,
+      "total": 435
+    },
+    "orphans": {
+      "removed_total": 50,
+      "removed_by_table": {
+        "lake.bronze.cdc_events": 50
+      },
+      "errors": {},
+      "grace_s": 0
+    },
+    "phase_seconds": {
+      "F4": 249.7,
+      "F1": 359.6,
+      "F2": 300.6,
+      "F3": 576.8,
+      "F5": 294.6,
+      "F6a": 256.3,
+      "F6b": 396.4,
+      "END": 182.4
+    },
+    "limits": [
+      "F4: the snapshot retry ran with no concurrent writers; a transaction committing across the retry was not tested",
+      "F5: graceful restart of a dev-container broker; no hard-crash and no acknowledged-write claim",
+      "F6b: registry gate bypassed (compatibility NONE); silver's gate tested; contracts-ci covers the registry separately",
+      "F3: the parked mid_merge hook sits between two tables' MERGEs, not inside an Iceberg write; orphan files are counted at END and reported, not asserted",
+      "Continuous mode catches wrong values; it does not detect lag or loss",
+      "F2: the re-produced records keep stale images at new offsets in the topics; on a compacting topic a rebuild from the topic would not be safe, bronze is the rebuild source",
+      "One machine, one seed, one run per topic setting; nothing here is extrapolated beyond this machine"
+    ],
+    "preregistered": {
+      "F1": {
+        "fault": "Duplicate events",
+        "injection": "Reset the silver/bronze consumer to replay an offset range",
+        "detection": "none needed",
+        "outcome": "self-healed: silver unchanged (LSN guard); bronze holds duplicate rows by design"
+      },
+      "F2": {
+        "fault": "Out-of-order updates",
+        "injection": "Produce older-LSN versions of a key after newer ones",
+        "detection": "none needed",
+        "outcome": "self-healed: older LSN ignored by the MERGE condition"
+      },
+      "F3": {
+        "fault": "Spark kill mid-MERGE",
+        "injection": "`SIGKILL` the streaming container during foreachBatch",
+        "detection": "reconciler (if any mismatch)",
+        "outcome": "self-healed on restart: batch re-run is idempotent; orphan files left for G8 cleanup"
+      },
+      "F4": {
+        "fault": "Connector crash mid-snapshot",
+        "injection": "Kill the Connect worker during the initial snapshot",
+        "detection": "connector-status alert",
+        "outcome": "self-healed or caught: snapshot restarts; duplicates absorbed by the LSN guard"
+      },
+      "F5": {
+        "fault": "Redpanda restart",
+        "injection": "Restart the broker under load",
+        "detection": "connector-status / slot-lag alert during downtime",
+        "outcome": "self-healed: no loss after recovery"
+      },
+      "F6a": {
+        "fault": "Schema drift: add column",
+        "injection": "`ALTER TABLE \u2026 ADD COLUMN` on a live table",
+        "detection": "none needed",
+        "outcome": "self-healed: column appears in silver without a restart"
+      },
+      "F6b": {
+        "fault": "Schema drift: incompatible change",
+        "injection": "Type narrowing or rename",
+        "detection": "registry compatibility check (CI) / quarantine count > 0",
+        "outcome": "caught: rows land in `quarantine_<table>` with `SCHEMA_INCOMPATIBLE`"
+      },
+      "F13": {
+        "fault": "TOAST placeholder leak",
+        "injection": "Update a non-text column of a 10 KB help article",
+        "detection": "`__debezium_unavailable_value` count = 0",
+        "outcome": "must not occur (REPLICA IDENTITY FULL); caught if it does"
+      }
+    },
+    "recovered_s_definition": "seconds from the start of the injection to the end of the gate and oracle",
+    "checks": [
+      {
+        "check": "F4: preflight (services running, connector healthy, no fault file, no generator)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F4: Connect was SIGKILLed inside the snapshot (0 < r events < table rows)",
+        "ok": true,
+        "detail": "r events on transactions at the kill 198 of 824 rows"
+      },
+      {
+        "check": "F4: the snapshot restarted and re-emitted rows (keys with 2+ r events > 0)",
+        "ok": true,
+        "detail": "keys with 2+ r events {\"accounts\": 260, \"customers\": 232, \"help_articles\": 0, \"merchants\": 28, \"refunds\": 0, \"support_tickets\": 0, \"transactions\": 198}; topics reached the re-emission target True; connector RUNNING True; topics stable True"
+      },
+      {
+        "check": "F4: exporter sampler covered the Connect outage (connector-status check fired: recorded, not required)",
+        "ok": true,
+        "detail": "{\"samples\": 94, \"exporter_answered\": 94, \"connector_status_fired\": true, \"peak_slot_lag_bytes\": 751336.0, \"slot_lag_grew\": true, \"fired\": true}"
+      },
+      {
+        "check": "F4: connector config restored to pg-shop.json",
+        "ok": true,
+        "detail": "live config equals the rendered file"
+      },
+      {
+        "check": "topics: every CDC topic's cleanup.policy matches --topics",
+        "ok": true,
+        "detail": "--topics compact; compacting per table {\"accounts\": true, \"customers\": true, \"help_articles\": true, \"merchants\": true, \"refunds\": true, \"support_tickets\": true, \"transactions\": true}"
+      },
+      {
+        "check": "F4 cut: the generator stayed paused during the reconcile",
+        "ok": true,
+        "detail": "generator_running False->False; next_txn 1600->1600; settled=True"
+      },
+      {
+        "check": "F4 cut: confirmed_flush_lsn reached the cut",
+        "ok": true,
+        "detail": "cut=0/25EB570 flushed=0/25EB908 waited 45 s"
+      },
+      {
+        "check": "F4 cut: silver and bronze committed offsets reached the topic end offsets",
+        "ok": true,
+        "detail": "lagging partitions {\"bronze\": 0, \"silver\": 0} waited 2 s; checkpoints read"
+      },
+      {
+        "check": "F4 reconcile: per-table counts equal Postgres",
+        "ok": true,
+        "detail": "all 0; postgres rows 1633, silver live 1633"
+      },
+      {
+        "check": "F4 reconcile: per-table and per-bucket checksums equal Postgres",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F4 reconcile: silver tombstones have no live Postgres row and no non-key values (logical delete)",
+        "ok": true,
+        "detail": "tombstones 0; all 0"
+      },
+      {
+        "check": "F4 reconcile: bronze holds every record present in Kafka; duplicate rows equal the replay ledger",
+        "ok": true,
+        "detail": "duplicate rows 0 expected 0; missing in bronze 0; beyond end 0; gaps 0 (allowed only on compacting topics); compacting ['accounts', 'customers', 'help_articles', 'merchants', 'refunds', 'support_tickets', 'transactions']; unverified []"
+      },
+      {
+        "check": "F4 reconcile: silver equals its rebuild from bronze (count + checksum)",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F4 reconcile: Qdrant has 0 stale, orphaned, duplicate, wrong-model and missing, and equals Postgres",
+        "ok": true,
+        "detail": "{\"consistent\": {\"counts\": {\"ahead_chunks\": 0, \"duplicate_chunks\": 0, \"entities_in_index\": 136, \"missing_entities\": 0, \"orphaned_chunks\": 0, \"points\": 206, \"stale_chunks\": 0, \"wrong_model_chunks\": 0}, \"ok\": true, \"waited_s\": 2.0}, \"matches_postgres\": {\"counts\": {\"differing\": 0, \"entities_expected\": 136, \"extra\": 0, \"missing\": 0, \"multi_version\": 0}, \"ok\": true, \"waited_s\": 1.7}}"
+      },
+      {
+        "check": "F4 reconcile: no __debezium_unavailable_value in silver",
+        "ok": true,
+        "detail": "all 0"
+      },
+      {
+        "check": "F4 oracle: silver equals ground truth",
+        "ok": true,
+        "detail": "{\"missing\": 0, \"differing\": 0, \"extra_live\": 0, \"resurrected\": 0, \"duplicates\": 0, \"tombstone_pii\": 0}"
+      },
+      {
+        "check": "F4 scoring: scored against the pre-registered matrix (clean gate required, SILENT fails)",
+        "ok": true,
+        "detail": "outcome caught; classify says caught; gate clean; detections fired ['connector_status']"
+      },
+      {
+        "check": "F1: preflight (services running, connector healthy, no fault file, no generator)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F1: the silver consumer re-ran a non-empty offset range (event log shows the re-run batch with n_events > 0)",
+        "ok": true,
+        "detail": "replayed 973 offsets of silver over batches 5..7 (12 checkpoint files removed); batches re-run in the event log 1; caught up True"
+      },
+      {
+        "check": "F1: silver content unchanged by the replay (count + checksum, 7 tables)",
+        "ok": true,
+        "detail": "tables compared 7; index in sync before True"
+      },
+      {
+        "check": "F1: bronze duplicate rows equal the replayed records exactly (bronze holds duplicates by design)",
+        "ok": true,
+        "detail": "records appended again 435; bronze rows +435, distinct offsets +0"
+      },
+      {
+        "check": "F1: Qdrant points and payloads unchanged",
+        "ok": true,
+        "detail": "points 243"
+      },
+      {
+        "check": "F1 cut: the generator stayed paused during the reconcile",
+        "ok": true,
+        "detail": "generator_running False->False; next_txn 1900->1900; settled=True"
+      },
+      {
+        "check": "F1 cut: confirmed_flush_lsn reached the cut",
+        "ok": true,
+        "detail": "cut=0/26EC7D0 flushed=0/26ECC28 waited 49 s"
+      },
+      {
+        "check": "F1 cut: silver and bronze committed offsets reached the topic end offsets",
+        "ok": true,
+        "detail": "lagging partitions {\"bronze\": 0, \"silver\": 0} waited 2 s; checkpoints read"
+      },
+      {
+        "check": "F1 reconcile: per-table counts equal Postgres",
+        "ok": true,
+        "detail": "all 0; postgres rows 1890, silver live 1890"
+      },
+      {
+        "check": "F1 reconcile: per-table and per-bucket checksums equal Postgres",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F1 reconcile: silver tombstones have no live Postgres row and no non-key values (logical delete)",
+        "ok": true,
+        "detail": "tombstones 5; all 0"
+      },
+      {
+        "check": "F1 reconcile: bronze holds every record present in Kafka; duplicate rows equal the replay ledger",
+        "ok": true,
+        "detail": "duplicate rows 435 expected 435; missing in bronze 0; beyond end 0; gaps 0 (allowed only on compacting topics); compacting ['accounts', 'customers', 'help_articles', 'merchants', 'refunds', 'support_tickets', 'transactions']; unverified []"
+      },
+      {
+        "check": "F1 reconcile: silver equals its rebuild from bronze (count + checksum)",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F1 reconcile: Qdrant has 0 stale, orphaned, duplicate, wrong-model and missing, and equals Postgres",
+        "ok": true,
+        "detail": "{\"consistent\": {\"counts\": {\"ahead_chunks\": 0, \"duplicate_chunks\": 0, \"entities_in_index\": 171, \"missing_entities\": 0, \"orphaned_chunks\": 0, \"points\": 243, \"stale_chunks\": 0, \"wrong_model_chunks\": 0}, \"ok\": true, \"waited_s\": 2.0}, \"matches_postgres\": {\"counts\": {\"differing\": 0, \"entities_expected\": 171, \"extra\": 0, \"missing\": 0, \"multi_version\": 0}, \"ok\": true, \"waited_s\": 1.7}}"
+      },
+      {
+        "check": "F1 reconcile: no __debezium_unavailable_value in silver",
+        "ok": true,
+        "detail": "all 0"
+      },
+      {
+        "check": "F1 oracle: silver equals ground truth",
+        "ok": true,
+        "detail": "{\"missing\": 0, \"differing\": 0, \"extra_live\": 0, \"resurrected\": 0, \"duplicates\": 0, \"tombstone_pii\": 0}"
+      },
+      {
+        "check": "F1 scoring: scored against the pre-registered matrix (clean gate required, SILENT fails)",
+        "ok": true,
+        "detail": "outcome self-healed in this run; classify says self_healed; gate clean; detections fired none"
+      },
+      {
+        "check": "F2: preflight (services running, connector healthy, no fault file, no generator)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F2: N older-LSN records were produced after newer ones (high watermarks rose by exactly N)",
+        "ok": true,
+        "detail": "N=10: produced 10 of 10, of which 2 for the ad-hoc article; high watermarks +10; errors []"
+      },
+      {
+        "check": "F2: the MERGE received the older LSNs (event log changes contain them, non-vacuous)",
+        "ok": true,
+        "detail": "older (table, key, lsn) triples in the event log 9 of 9; silver caught up True"
+      },
+      {
+        "check": "F2: silver content unchanged (count + checksum, 7 tables)",
+        "ok": true,
+        "detail": "tables compared 7; index in sync before True"
+      },
+      {
+        "check": "F2: an older insert after a logical delete did not resurrect the row",
+        "ok": true,
+        "detail": "silver tombstone before True; after True; older records re-produced for the article 2"
+      },
+      {
+        "check": "F2: Qdrant points and payloads unchanged",
+        "ok": true,
+        "detail": "points 316"
+      },
+      {
+        "check": "F2 cut: the generator stayed paused during the reconcile",
+        "ok": true,
+        "detail": "generator_running False->False; next_txn 2200->2200; settled=True"
+      },
+      {
+        "check": "F2 cut: confirmed_flush_lsn reached the cut",
+        "ok": true,
+        "detail": "cut=0/27D5BD0 flushed=0/27D8E50 waited 65 s"
+      },
+      {
+        "check": "F2 cut: silver and bronze committed offsets reached the topic end offsets",
+        "ok": true,
+        "detail": "lagging partitions {\"bronze\": 0, \"silver\": 0} waited 2 s; checkpoints read"
+      },
+      {
+        "check": "F2 reconcile: per-table counts equal Postgres",
+        "ok": true,
+        "detail": "all 0; postgres rows 2149, silver live 2149"
+      },
+      {
+        "check": "F2 reconcile: per-table and per-bucket checksums equal Postgres",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F2 reconcile: silver tombstones have no live Postgres row and no non-key values (logical delete)",
+        "ok": true,
+        "detail": "tombstones 11; all 0"
+      },
+      {
+        "check": "F2 reconcile: bronze holds every record present in Kafka; duplicate rows equal the replay ledger",
+        "ok": true,
+        "detail": "duplicate rows 435 expected 435; missing in bronze 0; beyond end 0; gaps 0 (allowed only on compacting topics); compacting ['accounts', 'customers', 'help_articles', 'merchants', 'refunds', 'support_tickets', 'transactions']; unverified []"
+      },
+      {
+        "check": "F2 reconcile: silver equals its rebuild from bronze (count + checksum)",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F2 reconcile: Qdrant has 0 stale, orphaned, duplicate, wrong-model and missing, and equals Postgres",
+        "ok": true,
+        "detail": "{\"consistent\": {\"counts\": {\"ahead_chunks\": 0, \"duplicate_chunks\": 0, \"entities_in_index\": 207, \"missing_entities\": 0, \"orphaned_chunks\": 0, \"points\": 316, \"stale_chunks\": 0, \"wrong_model_chunks\": 0}, \"ok\": true, \"waited_s\": 1.9}, \"matches_postgres\": {\"counts\": {\"differing\": 0, \"entities_expected\": 207, \"extra\": 0, \"missing\": 0, \"multi_version\": 0}, \"ok\": true, \"waited_s\": 1.7}}"
+      },
+      {
+        "check": "F2 reconcile: no __debezium_unavailable_value in silver",
+        "ok": true,
+        "detail": "all 0"
+      },
+      {
+        "check": "F2 oracle: silver equals ground truth",
+        "ok": true,
+        "detail": "{\"missing\": 0, \"differing\": 0, \"extra_live\": 0, \"resurrected\": 0, \"duplicates\": 0, \"tombstone_pii\": 0}"
+      },
+      {
+        "check": "F2 scoring: scored against the pre-registered matrix (clean gate required, SILENT fails)",
+        "ok": true,
+        "detail": "outcome self-healed in this run; classify says self_healed; gate clean; detections fired none"
+      },
+      {
+        "check": "F3: preflight (services running, connector healthy, no fault file, no generator)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F3: SIGKILLed spark-streams at mid_merge (between two tables' MERGEs in one batch)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F3: SIGKILLed spark-streams after merge_start under load (in-flight attempts=3)",
+        "ok": true,
+        "detail": "3 of 3 kills landed after the marker"
+      },
+      {
+        "check": "F3: changes kept flowing during the kills",
+        "ok": true,
+        "detail": "txns 2200 -> 9700"
+      },
+      {
+        "check": "F3 continuous: silver rows match the ground-truth version at their own LSN (judged>0, mismatches=0)",
+        "ok": true,
+        "detail": "{\"judged\": 1050, \"unjudged\": 2361, \"mismatches\": 0}"
+      },
+      {
+        "check": "F3 cut: the generator stayed paused during the reconcile",
+        "ok": true,
+        "detail": "generator_running False->False; next_txn 10000->10000; settled=True"
+      },
+      {
+        "check": "F3 cut: confirmed_flush_lsn reached the cut",
+        "ok": true,
+        "detail": "cut=0/329B180 flushed=0/32CFF40 waited 59 s"
+      },
+      {
+        "check": "F3 cut: silver and bronze committed offsets reached the topic end offsets",
+        "ok": true,
+        "detail": "lagging partitions {\"bronze\": 0, \"silver\": 0} waited 2 s; checkpoints read"
+      },
+      {
+        "check": "F3 reconcile: per-table counts equal Postgres",
+        "ok": true,
+        "detail": "all 0; postgres rows 8569, silver live 8569"
+      },
+      {
+        "check": "F3 reconcile: per-table and per-bucket checksums equal Postgres",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F3 reconcile: silver tombstones have no live Postgres row and no non-key values (logical delete)",
+        "ok": true,
+        "detail": "tombstones 189; all 0"
+      },
+      {
+        "check": "F3 reconcile: bronze holds every record present in Kafka; duplicate rows equal the replay ledger",
+        "ok": true,
+        "detail": "duplicate rows 435 expected 435; missing in bronze 0; beyond end 0; gaps 0 (allowed only on compacting topics); compacting ['accounts', 'customers', 'help_articles', 'merchants', 'refunds', 'support_tickets', 'transactions']; unverified []"
+      },
+      {
+        "check": "F3 reconcile: silver equals its rebuild from bronze (count + checksum)",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F3 reconcile: Qdrant has 0 stale, orphaned, duplicate, wrong-model and missing, and equals Postgres",
+        "ok": true,
+        "detail": "{\"consistent\": {\"counts\": {\"ahead_chunks\": 0, \"duplicate_chunks\": 0, \"entities_in_index\": 899, \"missing_entities\": 0, \"orphaned_chunks\": 0, \"points\": 1155, \"stale_chunks\": 0, \"wrong_model_chunks\": 0}, \"ok\": true, \"waited_s\": 2.8}, \"matches_postgres\": {\"counts\": {\"differing\": 0, \"entities_expected\": 899, \"extra\": 0, \"missing\": 0, \"multi_version\": 0}, \"ok\": true, \"waited_s\": 1.8}}"
+      },
+      {
+        "check": "F3 reconcile: no __debezium_unavailable_value in silver",
+        "ok": true,
+        "detail": "all 0"
+      },
+      {
+        "check": "F3 oracle: silver equals ground truth",
+        "ok": true,
+        "detail": "{\"missing\": 0, \"differing\": 0, \"extra_live\": 0, \"resurrected\": 0, \"duplicates\": 0, \"tombstone_pii\": 0}"
+      },
+      {
+        "check": "F3 scoring: scored against the pre-registered matrix (clean gate required, SILENT fails)",
+        "ok": true,
+        "detail": "outcome self-healed in this run; classify says self_healed; gate clean; detections fired none"
+      },
+      {
+        "check": "F5: preflight (services running, connector healthy, no fault file, no generator)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F5: Redpanda restarted while the generator kept writing",
+        "ok": true,
+        "detail": "transactions committed during the outage 59"
+      },
+      {
+        "check": "F5: connector RUNNING after recovery",
+        "ok": true,
+        "detail": "task restarted by this check: False"
+      },
+      {
+        "check": "F5: the connector forwarded changes after recovery (RUNNING is not proof: confirmed_flush_lsn must advance while the generator writes)",
+        "ok": true,
+        "detail": "confirmed_flush_lsn 0/3379C70 -> 0/3567AD0 after 60 s of load past recovery"
+      },
+      {
+        "check": "F5: spark-streams running after recovery",
+        "ok": true,
+        "detail": "restart count 0; started by this check: False"
+      },
+      {
+        "check": "F5: slot lag and connector status were sampled through the outage",
+        "ok": true,
+        "detail": "{\"samples\": 11, \"exporter_answered\": 11, \"connector_status_fired\": false, \"peak_slot_lag_bytes\": 982136.0, \"slot_lag_grew\": true, \"slot_lag_threshold_bytes\": 1073741824, \"breach_claimed\": false}"
+      },
+      {
+        "check": "F5 cut: the generator stayed paused during the reconcile",
+        "ok": true,
+        "detail": "generator_running False->False; next_txn 12100->12100; settled=True"
+      },
+      {
+        "check": "F5 cut: confirmed_flush_lsn reached the cut",
+        "ok": true,
+        "detail": "cut=0/367E150 flushed=0/367E210 waited 13 s"
+      },
+      {
+        "check": "F5 cut: silver and bronze committed offsets reached the topic end offsets",
+        "ok": true,
+        "detail": "lagging partitions {\"bronze\": 0, \"silver\": 0} waited 33 s; checkpoints read"
+      },
+      {
+        "check": "F5 reconcile: per-table counts equal Postgres",
+        "ok": true,
+        "detail": "all 0; postgres rows 10323, silver live 10323"
+      },
+      {
+        "check": "F5 reconcile: per-table and per-bucket checksums equal Postgres",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F5 reconcile: silver tombstones have no live Postgres row and no non-key values (logical delete)",
+        "ok": true,
+        "detail": "tombstones 236; all 0"
+      },
+      {
+        "check": "F5 reconcile: bronze holds every record present in Kafka; duplicate rows equal the replay ledger",
+        "ok": true,
+        "detail": "duplicate rows 435 expected 435; missing in bronze 0; beyond end 0; gaps 0 (allowed only on compacting topics); compacting ['accounts', 'customers', 'help_articles', 'merchants', 'refunds', 'support_tickets', 'transactions']; unverified []"
+      },
+      {
+        "check": "F5 reconcile: silver equals its rebuild from bronze (count + checksum)",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F5 reconcile: Qdrant has 0 stale, orphaned, duplicate, wrong-model and missing, and equals Postgres",
+        "ok": true,
+        "detail": "{\"consistent\": {\"counts\": {\"ahead_chunks\": 0, \"duplicate_chunks\": 0, \"entities_in_index\": 1079, \"missing_entities\": 0, \"orphaned_chunks\": 0, \"points\": 1375, \"stale_chunks\": 0, \"wrong_model_chunks\": 0}, \"ok\": true, \"waited_s\": 3.0}, \"matches_postgres\": {\"counts\": {\"differing\": 0, \"entities_expected\": 1079, \"extra\": 0, \"missing\": 0, \"multi_version\": 0}, \"ok\": true, \"waited_s\": 1.9}}"
+      },
+      {
+        "check": "F5 reconcile: no __debezium_unavailable_value in silver",
+        "ok": true,
+        "detail": "all 0"
+      },
+      {
+        "check": "F5 oracle: silver equals ground truth",
+        "ok": true,
+        "detail": "{\"missing\": 0, \"differing\": 0, \"extra_live\": 0, \"resurrected\": 0, \"duplicates\": 0, \"tombstone_pii\": 0}"
+      },
+      {
+        "check": "F5 scoring: scored against the pre-registered matrix (clean gate required, SILENT fails)",
+        "ok": true,
+        "detail": "outcome self-healed in this run; classify says self_healed; gate clean; detections fired none; the expected detection did not fire (recorded, not required)"
+      },
+      {
+        "check": "F6a: preflight (services running, connector healthy, no fault file, no generator)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F6a: add column: the new column appears in silver and carries the values",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F6a: add column: no restart was needed (same container start time, restart count unchanged)",
+        "ok": true,
+        "detail": "{\"started_at\": \"2026-11-10T23:08:02.053482347Z\", \"restart_count\": 0, \"running\": true}"
+      },
+      {
+        "check": "F6a: add column: silver schema now lists `locale`",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F6a cut: the generator stayed paused during the reconcile",
+        "ok": true,
+        "detail": "generator_running False->False; next_txn 12400->12400; settled=True"
+      },
+      {
+        "check": "F6a cut: confirmed_flush_lsn reached the cut",
+        "ok": true,
+        "detail": "cut=0/37D7480 flushed=0/37EC778 waited 26 s"
+      },
+      {
+        "check": "F6a cut: silver and bronze committed offsets reached the topic end offsets",
+        "ok": true,
+        "detail": "lagging partitions {\"bronze\": 0, \"silver\": 0} waited 2 s; checkpoints read"
+      },
+      {
+        "check": "F6a reconcile: per-table counts equal Postgres",
+        "ok": true,
+        "detail": "all 0; postgres rows 10568, silver live 10568"
+      },
+      {
+        "check": "F6a reconcile: per-table and per-bucket checksums equal Postgres",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F6a reconcile: silver tombstones have no live Postgres row and no non-key values (logical delete)",
+        "ok": true,
+        "detail": "tombstones 240; all 0"
+      },
+      {
+        "check": "F6a reconcile: bronze holds every record present in Kafka; duplicate rows equal the replay ledger",
+        "ok": true,
+        "detail": "duplicate rows 435 expected 435; missing in bronze 0; beyond end 0; gaps 0 (allowed only on compacting topics); compacting ['accounts', 'customers', 'help_articles', 'merchants', 'refunds', 'support_tickets', 'transactions']; unverified []"
+      },
+      {
+        "check": "F6a reconcile: silver equals its rebuild from bronze (count + checksum)",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F6a reconcile: Qdrant has 0 stale, orphaned, duplicate, wrong-model and missing, and equals Postgres",
+        "ok": true,
+        "detail": "{\"consistent\": {\"counts\": {\"ahead_chunks\": 0, \"duplicate_chunks\": 0, \"entities_in_index\": 1112, \"missing_entities\": 0, \"orphaned_chunks\": 0, \"points\": 1412, \"stale_chunks\": 0, \"wrong_model_chunks\": 0}, \"ok\": true, \"waited_s\": 2.8}, \"matches_postgres\": {\"counts\": {\"differing\": 0, \"entities_expected\": 1112, \"extra\": 0, \"missing\": 0, \"multi_version\": 0}, \"ok\": true, \"waited_s\": 1.8}}"
+      },
+      {
+        "check": "F6a reconcile: no __debezium_unavailable_value in silver",
+        "ok": true,
+        "detail": "all 0"
+      },
+      {
+        "check": "F6a oracle: silver equals ground truth",
+        "ok": true,
+        "detail": "{\"missing\": 0, \"differing\": 0, \"extra_live\": 0, \"resurrected\": 0, \"duplicates\": 0, \"tombstone_pii\": 0}"
+      },
+      {
+        "check": "F6a scoring: scored against the pre-registered matrix (clean gate required, SILENT fails)",
+        "ok": true,
+        "detail": "outcome self-healed in this run; classify says self_healed; gate clean; detections fired none"
+      },
+      {
+        "check": "F6b: preflight (services running, connector healthy, no fault file, no generator)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F6b: quarantine: a column rename (drop + add) lands in quarantine_help_articles with SCHEMA_INCOMPATIBLE",
+        "ok": true,
+        "detail": "[{\"reason\": \"SCHEMA_INCOMPATIBLE: possible rename: removed ['locale'], added ['locale_renamed']\", \"schema_id\": 18, \"count\": 1}]"
+      },
+      {
+        "check": "F6b: quarantine: a type narrowing lands in quarantine_refunds with SCHEMA_INCOMPATIBLE",
+        "ok": true,
+        "detail": "[{\"reason\": \"SCHEMA_INCOMPATIBLE: column amount changed type decimal(12,2) -> DECIMAL(8,2)\", \"schema_id\": 19, \"count\": 1}]"
+      },
+      {
+        "check": "F6b: quarantine: the stream was not blocked; a later update to the same row applies and silver matches Postgres",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "F6b: before recovery the reconciler reports the parked row as a mismatch (non-vacuous)",
+        "ok": true,
+        "detail": "reconcile ok False; refunds missing 1"
+      },
+      {
+        "check": "F6b cut: the generator stayed paused during the reconcile",
+        "ok": true,
+        "detail": "generator_running False->False; next_txn 12400->12400; settled=True"
+      },
+      {
+        "check": "F6b cut: confirmed_flush_lsn reached the cut",
+        "ok": true,
+        "detail": "cut=0/38D8C80 flushed=0/38D91D0 waited 68 s"
+      },
+      {
+        "check": "F6b cut: silver and bronze committed offsets reached the topic end offsets",
+        "ok": true,
+        "detail": "lagging partitions {\"bronze\": 0, \"silver\": 0} waited 2 s; checkpoints read"
+      },
+      {
+        "check": "F6b reconcile: per-table counts equal Postgres",
+        "ok": true,
+        "detail": "all 0; postgres rows 10569, silver live 10569"
+      },
+      {
+        "check": "F6b reconcile: per-table and per-bucket checksums equal Postgres",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F6b reconcile: silver tombstones have no live Postgres row and no non-key values (logical delete)",
+        "ok": true,
+        "detail": "tombstones 240; all 0"
+      },
+      {
+        "check": "F6b reconcile: bronze holds every record present in Kafka; duplicate rows equal the replay ledger",
+        "ok": true,
+        "detail": "duplicate rows 435 expected 435; missing in bronze 0; beyond end 0; gaps 0 (allowed only on compacting topics); compacting ['accounts', 'customers', 'help_articles', 'merchants', 'refunds', 'support_tickets', 'transactions']; unverified []"
+      },
+      {
+        "check": "F6b reconcile: silver equals its rebuild from bronze (count + checksum)",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "F6b reconcile: Qdrant has 0 stale, orphaned, duplicate, wrong-model and missing, and equals Postgres",
+        "ok": true,
+        "detail": "{\"consistent\": {\"counts\": {\"ahead_chunks\": 0, \"duplicate_chunks\": 0, \"entities_in_index\": 1112, \"missing_entities\": 0, \"orphaned_chunks\": 0, \"points\": 1412, \"stale_chunks\": 0, \"wrong_model_chunks\": 0}, \"ok\": true, \"waited_s\": 3.3}, \"matches_postgres\": {\"counts\": {\"differing\": 0, \"entities_expected\": 1112, \"extra\": 0, \"missing\": 0, \"multi_version\": 0}, \"ok\": true, \"waited_s\": 1.9}}"
+      },
+      {
+        "check": "F6b reconcile: no __debezium_unavailable_value in silver",
+        "ok": true,
+        "detail": "all 0"
+      },
+      {
+        "check": "F6b: every quarantined key has a later applied silver version after recovery",
+        "ok": true,
+        "detail": "parked refund applied True; quarantined keys without a later silver version 0"
+      },
+      {
+        "check": "F6b scoring: scored against the pre-registered matrix (clean gate required, SILENT fails, CAUGHT required)",
+        "ok": true,
+        "detail": "outcome caught; classify says caught; gate clean; detections fired ['quarantine_count', 'reconciler_before_recovery']"
+      },
+      {
+        "check": "END: physical, Iceberg orphan files from the killed writers counted and removed with writers stopped",
+        "ok": true,
+        "detail": "50 orphan files removed physically ({\"lake.bronze.cdc_events\": 50}); errors none"
+      },
+      {
+        "check": "END cut: the generator stayed paused during the reconcile",
+        "ok": true,
+        "detail": "generator_running False->False; next_txn 12400->12400; settled=True"
+      },
+      {
+        "check": "END cut: confirmed_flush_lsn reached the cut",
+        "ok": true,
+        "detail": "cut=0/38E02B8 flushed=0/38E0BF8 waited 52 s"
+      },
+      {
+        "check": "END cut: silver and bronze committed offsets reached the topic end offsets",
+        "ok": true,
+        "detail": "lagging partitions {\"bronze\": 0, \"silver\": 0} waited 2 s; checkpoints read"
+      },
+      {
+        "check": "END reconcile: per-table counts equal Postgres",
+        "ok": true,
+        "detail": "all 0; postgres rows 10569, silver live 10569"
+      },
+      {
+        "check": "END reconcile: per-table and per-bucket checksums equal Postgres",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "END reconcile: silver tombstones have no live Postgres row and no non-key values (logical delete)",
+        "ok": true,
+        "detail": "tombstones 240; all 0"
+      },
+      {
+        "check": "END reconcile: bronze holds every record present in Kafka; duplicate rows equal the replay ledger",
+        "ok": true,
+        "detail": "duplicate rows 435 expected 435; missing in bronze 0; beyond end 0; gaps 0 (allowed only on compacting topics); compacting ['accounts', 'customers', 'help_articles', 'merchants', 'refunds', 'support_tickets', 'transactions']; unverified []"
+      },
+      {
+        "check": "END reconcile: silver equals its rebuild from bronze (count + checksum)",
+        "ok": true,
+        "detail": "{}"
+      },
+      {
+        "check": "END reconcile: Qdrant has 0 stale, orphaned, duplicate, wrong-model and missing, and equals Postgres",
+        "ok": true,
+        "detail": "{\"consistent\": {\"counts\": {\"ahead_chunks\": 0, \"duplicate_chunks\": 0, \"entities_in_index\": 1112, \"missing_entities\": 0, \"orphaned_chunks\": 0, \"points\": 1412, \"stale_chunks\": 0, \"wrong_model_chunks\": 0}, \"ok\": true, \"waited_s\": 3.0}, \"matches_postgres\": {\"counts\": {\"differing\": 0, \"entities_expected\": 1112, \"extra\": 0, \"missing\": 0, \"multi_version\": 0}, \"ok\": true, \"waited_s\": 1.9}}"
+      },
+      {
+        "check": "END reconcile: no __debezium_unavailable_value in silver",
+        "ok": true,
+        "detail": "all 0"
+      },
+      {
+        "check": "END: compaction physically removed records from Kafka (the offset-gap path was exercised)",
+        "ok": true,
+        "detail": "records present in Kafka of end offsets, per topic {\"cdc.public.accounts\": \"632 of 14139\", \"cdc.public.customers\": \"558 of 1380\", \"cdc.public.help_articles\": \"114 of 597\", \"cdc.public.merchants\": \"74 of 102\", \"cdc.public.refunds\": \"583 of 583\", \"cdc.public.support_tickets\": \"1002 of 2411\", \"cdc.public.transactions\": \"7611 of 7809\"}"
+      },
+      {
+        "check": "END: fault table scored against design section 5",
+        "ok": true,
+        "detail": "faults scored 7 of 7; table wording clean True"
+      },
+      {
+        "check": "manifest: wording and identifier scan clean",
+        "ok": true,
+        "detail": "wording violations []; 13-digit identifiers 0"
+      }
+    ]
+  }
+}
