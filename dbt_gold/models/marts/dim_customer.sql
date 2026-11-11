@@ -1,6 +1,7 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
+    views_enabled=false,
     unique_key='customer_id',
     on_schema_change='fail'
 ) }}
