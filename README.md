@@ -1,10 +1,80 @@
 # AI Data Reliability Platform
 
-CDC → Iceberg → vector index + versioned training datasets.
+**A pipeline that copies a company's database into an analytics lake and an AI search index, and then measures, with recorded runs, whether those copies stay fresh, correct, deletable and traceable.**
 
-Postgres changes flow through Debezium and Redpanda into Apache Iceberg (bronze/silver), then into a Qdrant vector index. The project's goal is to **measure** that the copies are fresh, idempotent, deletable and traceable.
+## The problem
 
-> Status: **Milestone A, G6 (vector index consumer), G8 (deletion propagation) and G10a (fault subset and reconciliation) done. G11a is partial: R2 and R4 are done (from existing manifests), R1 is deferred (ADR-0024).** R2, R3 and R4 have measured results; R1 is not measured yet, so its cell carries no number. **Milestone B has started: G4 (gold layer: SCD2 dimensions, facts and a double-entry ledger, dbt on Trino) is done, g4-check 37/37 at `b3202eb`. Gold is not covered by the forget workflow until G8b.**
+Apps keep their data in a database. Analysts, dashboards and AI features need copies of it, and copies go wrong in predictable ways:
+
+- they **go stale**, so a search answer or a report reflects yesterday's data;
+- a failure or a restart **duplicates or loses** rows;
+- the source schema changes and **breaks** downstream jobs;
+- when a customer asks to be forgotten, their personal data **lingers** in every copy (lake files, old versions, search index, logs);
+- nobody can say where a given number came from.
+
+## What this project does
+
+It builds a small but realistic version of that pipeline on one laptop, fed by a synthetic payments-and-support business (customers, merchants, accounts, transactions, refunds, support tickets, help articles), and then **tests it by breaking it on purpose** and recording the outcome.
+
+It is a learning and portfolio project, not a product. Every claim in this repo points to a recorded run. The "What this project does not claim" section at the bottom lists what is deliberately left out.
+
+## How the data flows
+
+```
+Postgres ──► Debezium ──► Redpanda ──► Spark ──► Iceberg lake ───────────────► dbt on Trino ──► gold tables
+(the app's   (reads the    (message     (streams   bronze: every change, kept    (SCD2 history, facts,
+ database)    change log)   queue)       into the   silver: current state         double-entry ledger)
+                                         lake)             │
+                                                           └──► embedder ──► Qdrant (vector search)
+```
+
+1. **Postgres** is the source of truth: the app's database.
+2. **Debezium** reads Postgres's own change journal and turns every insert, update and delete into a message. This is *change data capture* (CDC), and it avoids repeatedly copying whole tables.
+3. **Redpanda** holds those messages in a durable queue, with a schema registry that rejects incompatible message shapes.
+4. **Spark** reads the queue and writes two Iceberg tables per source table: **bronze** (the raw, append-only change log) and **silver** (the current state, with deletes recorded as markers).
+5. **dbt on Trino** turns bronze and silver into **gold**: business-ready tables with full history of customers and merchants, a transactions fact table and a double-entry ledger that must net to zero.
+6. An **embedder** turns help articles and support tickets into vectors in **Qdrant**, the index an AI assistant would search.
+
+## What each tool is for
+
+| Tool | Role in this project |
+|---|---|
+| **PostgreSQL 17** | The source database (logical replication on) |
+| **Debezium / Kafka Connect** | Reads Postgres's write-ahead log and emits change events |
+| **Redpanda** (+ schema registry, Avro) | Kafka-compatible message queue; stores and checks message schemas |
+| **Spark Structured Streaming** | Streams messages into the lake; does the ordered merge into silver |
+| **Apache Iceberg** | Table format over files, with versions (snapshots) that allow time travel, and that also mean old data lingers until cleaned |
+| **Lakekeeper** | The Iceberg catalog: registry of which tables exist and where |
+| **SeaweedFS** | Local S3-compatible object storage that holds the lake files |
+| **Trino** | SQL engine that reads the Iceberg tables; dbt runs on it |
+| **dbt** | SQL transformations with tests and enforced contracts (the gold layer) |
+| **Qdrant** | Vector database for similarity search over embeddings |
+| **sentence-transformers** | Small CPU model that creates the embeddings |
+| **Dagster** | Orchestrator for maintenance, checks and the "forget a customer" workflow |
+| **Prometheus-style exporter** | Exposes pipeline health (connector status, replication lag) |
+| **Python, pytest, Hypothesis** | The data generator, the fault injector, the checks, and property-based tests |
+
+## The questions it answers
+
+| | Question | Status |
+|---|---|---|
+| **R1** | How fresh is the vector index? (time from a database change to its being searchable) | Not measured yet (deferred) |
+| **R2** | After a delete request, how long until the data is logically absent from every copy, and how long until it is physically removed? | Measured |
+| **R3** | If I break the pipeline in six scripted ways, does a reconciler catch or heal every discrepancy? | Measured |
+| **R4** | After replays and crashes, is the silver layer free of duplicates, losses and resurrected rows? | Measured |
+| **G4** | Does the gold layer (history, facts, ledger) stay correct against the source? | Measured |
+
+Two words used throughout: **logical** deletion means a row is hidden or marked and no longer returned by queries; **physical** deletion means the underlying bytes are really gone from storage. The two happen at different times, and this project always says which one it means.
+
+## Where the project is
+
+- **Done:** the pipeline end to end (source, CDC, lake, vector index), the right-to-be-forgotten workflow (G8), six fault-injection experiments with a reconciler (G10a), measurements of R2, R3 and R4 (G11a), and the gold layer (G4).
+- **Next:** extending deletion to the gold layer (G8b), versioned training datasets (G7), fuller data contracts and quality checks (G5), lineage (G9), the R1 freshness measurement (G11b), a scale study (G12) and observability and write-up (G13).
+- The step-by-step plan is [`delegated-orbiting-garden.md`](delegated-orbiting-garden.md). Every design decision has its own short record in [`docs/adr/`](docs/adr/).
+
+## How to read the results
+
+Each result below names the **run manifest**: a JSON file in [`runs/manifests/`](runs/manifests/) recording the code commit, the machine, the checks and their outcomes. Results are from one run on one laptop, so they are counts from that run, not rates or production numbers. The "check" scripts (`scripts/g*_check.py`) are the experiments: each starts from a clean stack, runs the scenario and records pass or fail per check.
 
 ## Results (R2, R3 and R4 measured; R1 deferred)
 | ID | Question | Result | Run manifest |
